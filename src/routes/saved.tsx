@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   buildIdeaSharePath,
   buildIdeaShareUrl,
@@ -44,19 +43,6 @@ function SavedIdeasPage() {
 
   return (
     <main className="mx-auto flex min-h-svh w-full max-w-6xl flex-col gap-8 px-4 py-8 md:px-6 md:py-10">
-      <Tabs
-        value="saved"
-        onValueChange={(value) =>
-          navigate({ to: value === "saved" ? "/saved" : "/" })
-        }
-        className="gap-4"
-      >
-        <TabsList variant="line" className="bg-transparent px-0">
-          <TabsTrigger value="lab">Idea Lab</TabsTrigger>
-          <TabsTrigger value="saved">Saved Ideas</TabsTrigger>
-        </TabsList>
-      </Tabs>
-
       <section className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
         <Card className="rounded-[2rem] border border-border/70 py-0 shadow-sm">
           <CardContent className="space-y-5 px-6 py-8 md:px-8">

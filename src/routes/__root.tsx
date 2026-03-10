@@ -3,8 +3,8 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 import { TanStackDevtools } from "@tanstack/react-devtools"
 
 import { AppFooter } from "@/components/app-footer"
+import { AppNavbar } from "@/components/app-navbar"
 import { ThemeProvider } from "@/components/theme-provider"
-import { ThemeToggleTabs } from "@/components/theme-toggle-tabs"
 import appCss from "../styles.css?url"
 
 export const Route = createRootRoute({
@@ -53,12 +53,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <body className="min-h-svh bg-background text-foreground antialiased">
         <ThemeProvider>
           <div className="flex min-h-svh flex-col">
-            <div className="sticky top-0 z-30 border-b border-border/60 bg-background/75 backdrop-blur">
-              <div className="mx-auto flex w-full max-w-6xl justify-end px-4 py-4 md:px-6">
-                <ThemeToggleTabs />
-              </div>
-            </div>
-            {children}
+            <AppNavbar />
+            <div className="flex-1 pt-20 md:pt-24">{children}</div>
             <AppFooter />
           </div>
         </ThemeProvider>

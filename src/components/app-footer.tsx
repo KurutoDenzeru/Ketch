@@ -1,15 +1,18 @@
 import { Github, Instagram, Linkedin } from "lucide-react"
 
+import { ThemeToggleTabs } from "@/components/theme-toggle-tabs"
+
 export function AppFooter() {
   return (
     <footer className="mt-auto border-t border-border/70 bg-background/85 backdrop-blur">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-6 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between md:px-6">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-6 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between md:px-6">
         <div className="flex flex-col gap-1">
-          <p className="font-medium text-foreground">AI Startup Idea Lab</p>
+          <p className="font-medium text-foreground">Ketch</p>
           <p>Copyright {new Date().getFullYear()} All Rights Reserved</p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-3">
+          <ThemeToggleTabs />
           <a
             href="https://github.com"
             target="_blank"

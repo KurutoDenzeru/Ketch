@@ -16,24 +16,36 @@ export function ThemeToggleTabs() {
 
   if (!mounted) {
     return (
-      <div className="h-10 w-[18rem] rounded-full border border-border/70 bg-background/80 shadow-sm" />
+      <div className="h-10 w-32 rounded-full border border-border/70 bg-background/80 shadow-sm" />
     )
   }
 
   return (
     <Tabs value={theme ?? "system"} onValueChange={setTheme} className="gap-0">
       <TabsList className="h-10 rounded-full border border-border/70 bg-background/85 p-1 shadow-sm backdrop-blur">
-        <TabsTrigger value="system" className="rounded-full px-4">
+        <TabsTrigger
+          value="system"
+          className="rounded-full px-3"
+          title="System"
+          aria-label="System theme"
+        >
           <LaptopMinimal className="size-4" />
-          System
         </TabsTrigger>
-        <TabsTrigger value="light" className="rounded-full px-4">
+        <TabsTrigger
+          value="light"
+          className="rounded-full px-3"
+          title="Light"
+          aria-label="Light theme"
+        >
           <SunMedium className="size-4" />
-          Light
         </TabsTrigger>
-        <TabsTrigger value="dark" className="rounded-full px-4">
+        <TabsTrigger
+          value="dark"
+          className="rounded-full px-3"
+          title="Dark"
+          aria-label="Dark theme"
+        >
           <MoonStar className="size-4" />
-          Dark
         </TabsTrigger>
       </TabsList>
     </Tabs>

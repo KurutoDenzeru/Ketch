@@ -7,7 +7,6 @@ import { IdeaCard } from "@/components/idea-card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   buildIdeaSharePath,
   buildIdeaShareUrl,
@@ -128,19 +127,6 @@ function SharedIdeaPage() {
   if (!decodedPayload || !idea || !currentPayload) {
     return (
       <main className="mx-auto flex min-h-svh w-full max-w-4xl flex-col gap-8 px-4 py-8 md:px-6 md:py-10">
-        <Tabs
-          value="lab"
-          onValueChange={(value) =>
-            navigate({ to: value === "saved" ? "/saved" : "/" })
-          }
-          className="gap-4"
-        >
-          <TabsList variant="line" className="bg-transparent px-0">
-            <TabsTrigger value="lab">Idea Lab</TabsTrigger>
-            <TabsTrigger value="saved">Saved Ideas</TabsTrigger>
-          </TabsList>
-        </Tabs>
-
         <Card className="rounded-[2rem] border border-dashed border-border/70 py-0 shadow-sm">
           <CardContent className="space-y-4 px-6 py-8 text-center">
             <h1 className="font-display text-4xl leading-none">
@@ -166,19 +152,6 @@ function SharedIdeaPage() {
 
   return (
     <main className="mx-auto flex min-h-svh w-full max-w-6xl flex-col gap-8 px-4 py-8 md:px-6 md:py-10">
-      <Tabs
-        value="lab"
-        onValueChange={(value) =>
-          navigate({ to: value === "saved" ? "/saved" : "/" })
-        }
-        className="gap-4"
-      >
-        <TabsList variant="line" className="bg-transparent px-0">
-          <TabsTrigger value="lab">Idea Lab</TabsTrigger>
-          <TabsTrigger value="saved">Saved Ideas</TabsTrigger>
-        </TabsList>
-      </Tabs>
-
       <section className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
         <Card className="rounded-[2rem] border border-border/70 py-0 shadow-sm">
           <CardContent className="space-y-5 px-6 py-8 md:px-8">
