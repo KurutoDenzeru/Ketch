@@ -12,6 +12,7 @@ import {
   ShieldCheck,
 } from "lucide-react"
 
+import { AnalysisDashboard } from "@/components/analysis-dashboard"
 import { NameSuggestions } from "@/components/name-suggestions"
 import { PitchSection } from "@/components/pitch-section"
 import { Badge } from "@/components/ui/badge"
@@ -237,6 +238,10 @@ export function IdeaCard({
               Refresh twist
             </Button>
           </div>
+
+          <Separator />
+
+          <AnalysisDashboard idea={idea} />
 
           <Separator />
 

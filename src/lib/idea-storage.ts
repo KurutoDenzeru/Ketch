@@ -38,6 +38,14 @@ function isStartupIdea(value: unknown): value is StartupIdea {
   }
 
   const candidate = value as Record<string, unknown>
+  const analysis =
+    candidate.analysis && typeof candidate.analysis === "object"
+      ? (candidate.analysis as Record<string, unknown>)
+      : null
+  const frameworkFit =
+    analysis?.frameworkFit && typeof analysis.frameworkFit === "object"
+      ? (analysis.frameworkFit as Record<string, unknown>)
+      : null
 
   return (
     isString(candidate.name) &&
@@ -48,7 +56,22 @@ function isStartupIdea(value: unknown): value is StartupIdea {
     isString(candidate.monetization) &&
     typeof candidate.validationScore === "number" &&
     isStringArray(candidate.alternativeNames) &&
-    isString(candidate.category)
+    isString(candidate.category) &&
+    analysis !== null &&
+    isStringArray(analysis.tags) &&
+    isString(analysis.whyNow) &&
+    isStringArray(analysis.proofSignals) &&
+    isString(analysis.marketGap) &&
+    isString(analysis.executionPlan) &&
+    Array.isArray(analysis.scoreMetrics) &&
+    Array.isArray(analysis.trendPoints) &&
+    frameworkFit !== null &&
+    typeof frameworkFit.audience === "number" &&
+    typeof frameworkFit.community === "number" &&
+    typeof frameworkFit.product === "number" &&
+    Array.isArray(analysis.valueLadder) &&
+    Array.isArray(analysis.keywordSignals) &&
+    Array.isArray(analysis.detailedPlan)
   )
 }
 
@@ -220,6 +243,19 @@ export function formatIdeaForClipboard(payload: ShareableIdeaPayload) {
     `Monetization: ${payload.idea.monetization}`,
     `Validation score: ${payload.idea.validationScore}/10`,
     `Alternative names: ${payload.idea.alternativeNames.join(", ")}`,
+    `Tags: ${payload.idea.analysis.tags.join(", ")}`,
+    "",
+    "Why Now",
+    payload.idea.analysis.whyNow,
+    "",
+    "Proof & Signals",
+    ...payload.idea.analysis.proofSignals.map((item) => `- ${item}`),
+    "",
+    "Market Gap",
+    payload.idea.analysis.marketGap,
+    "",
+    "Execution Plan",
+    payload.idea.analysis.executionPlan,
   ]
 
   if (payload.pitch) {

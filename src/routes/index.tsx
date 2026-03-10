@@ -4,17 +4,16 @@ import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
 import {
   Bookmark,
   ChevronRight,
-  LoaderCircle,
+  Compass,
+  Lightbulb,
   Sparkles,
   Target,
-  WandSparkles,
 } from "lucide-react"
 
+import { IdeaBriefForm } from "@/components/idea-brief-form"
 import { IdeaCard } from "@/components/idea-card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
@@ -31,16 +30,14 @@ import {
   generatePitch,
   regenerateIdeaFacet,
 } from "@/lib/gemini"
-import { cn } from "@/lib/utils"
 import type {
-  IdeaCategory,
+  IdeaBriefInput,
   IdeaFacet,
   MarketValidation,
   ShareableIdeaPayload,
   StartupIdea,
   StartupPitch,
 } from "@/types/idea"
-import { ideaCategories } from "@/types/idea"
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -52,6 +49,15 @@ export const Route = createFileRoute("/")({
   }),
   component: IndexPage,
 })
+
+const initialBrief: IdeaBriefInput = {
+  category: "AI Tool",
+  concept: "",
+  problem: "",
+  audience: "",
+  founderEdge: "",
+  constraints: "",
+}
 
 function IdeaCardSkeleton() {
   return (
@@ -70,7 +76,7 @@ function IdeaCardSkeleton() {
           <Skeleton className="h-28 w-full rounded-[1.5rem]" />
           <Skeleton className="h-28 w-full rounded-[1.5rem]" />
         </div>
-        <Skeleton className="h-36 w-full rounded-[1.5rem]" />
+        <Skeleton className="h-56 w-full rounded-[1.5rem]" />
       </CardContent>
     </Card>
   )
@@ -82,7 +88,7 @@ async function copyText(value: string) {
 
 function IndexPage() {
   const navigate = useNavigate()
-  const [category, setCategory] = useState<IdeaCategory>("AI Tool")
+  const [brief, setBrief] = useState<IdeaBriefInput>(initialBrief)
   const [idea, setIdea] = useState<StartupIdea | null>(null)
   const [pitch, setPitch] = useState<StartupPitch | null>(null)
   const [marketValidation, setMarketValidation] =
@@ -95,8 +101,7 @@ function IndexPage() {
   }, [])
 
   const ideaMutation = useMutation({
-    mutationFn: (nextCategory: IdeaCategory) =>
-      generateIdea({ data: { category: nextCategory } }),
+    mutationFn: (input: IdeaBriefInput) => generateIdea({ data: input }),
     onSuccess: (nextIdea) => {
       setIdea(nextIdea)
       setPitch(null)
@@ -201,7 +206,7 @@ function IndexPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-6xl flex-col gap-8 px-4 py-8 md:px-6 md:py-10">
+    <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 md:px-6 md:py-10">
       <Tabs
         value="lab"
         onValueChange={(value) =>
@@ -215,12 +220,12 @@ function IndexPage() {
         </TabsList>
       </Tabs>
 
-      <section className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
+      <section className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
         <Card className="rounded-[2rem] border border-border/70 bg-card/85 py-0 shadow-sm">
           <CardContent className="space-y-6 px-6 py-8 md:px-8">
             <div className="flex flex-wrap gap-2">
               <Badge variant="outline" className="rounded-full px-3 py-1">
-                YC-style startup generator
+                Founder-first evaluator
               </Badge>
               <Badge variant="outline" className="rounded-full px-3 py-1">
                 Gemini powered
@@ -232,34 +237,46 @@ function IndexPage() {
                 AI Startup Idea Lab
               </h1>
               <p className="max-w-2xl text-base leading-7 text-muted-foreground md:text-lg">
-                Generate startup concepts, turn them into mini pitches, and run
-                a lightweight market validation pass before you save or share
-                them.
+                Bring a rough concept or a real founder problem. The lab will
+                generate the startup, score the opportunity, explain why now,
+                surface proof signals, and outline an execution strategy with
+                visual analysis.
               </p>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3">
               {[
                 [
-                  "Idea generation",
-                  "Startup name, tagline, twist, and monetization",
+                  Lightbulb,
+                  "Idea framing",
+                  "Use your own brief instead of starting from a blank prompt.",
                 ],
                 [
-                  "Pitch builder",
-                  "Problem, solution, market, and business model",
+                  Target,
+                  "Opportunity scoring",
+                  "Review timing, defensibility, demand signals, and fit.",
                 ],
-                ["Market validation", "Competition, risks, and likely users"],
-              ].map(([label, text]) => (
-                <div
-                  key={label}
-                  className="rounded-[1.5rem] border border-border/70 bg-muted/35 p-4"
-                >
-                  <div className="mb-2 text-xs font-semibold tracking-[0.22em] text-muted-foreground uppercase">
-                    {label}
+                [
+                  Compass,
+                  "Execution mapping",
+                  "Get a phased rollout plan, market gap notes, and keyword cues.",
+                ],
+              ].map(([Icon, label, text]) => {
+                const ItemIcon = Icon as typeof Lightbulb
+
+                return (
+                  <div
+                    key={label}
+                    className="rounded-[1.5rem] border border-border/70 bg-muted/35 p-4"
+                  >
+                    <div className="mb-2 flex items-center gap-2 text-xs font-semibold tracking-[0.22em] text-muted-foreground uppercase">
+                      <ItemIcon className="size-3.5" />
+                      {label}
+                    </div>
+                    <p className="text-sm leading-6 text-foreground">{text}</p>
                   </div>
-                  <p className="text-sm leading-6 text-foreground">{text}</p>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </CardContent>
         </Card>
@@ -267,28 +284,28 @@ function IndexPage() {
         <Card className="rounded-[2rem] border border-border/70 bg-[color-mix(in_oklch,var(--accent)_38%,white)] py-0 shadow-sm">
           <CardHeader className="gap-2 px-6 py-6">
             <CardTitle className="font-display text-3xl leading-none">
-              Lab output
+              What the lab returns
             </CardTitle>
             <p className="text-sm leading-6 text-foreground/75">
-              Every generation returns structured data designed for product
-              thinking, not novelty alone.
+              A polished startup concept plus a compact operator dashboard
+              inspired by research-heavy idea tools.
             </p>
           </CardHeader>
           <CardContent className="space-y-4 px-6 pb-6">
             <div className="rounded-[1.5rem] border border-border/70 bg-card/80 p-4">
               <div className="mb-3 text-xs font-semibold tracking-[0.22em] text-muted-foreground uppercase">
-                JSON fields
+                Analysis Blocks
               </div>
               <div className="grid grid-cols-2 gap-2 text-sm text-foreground/80">
                 {[
-                  "name",
-                  "tagline",
-                  "description",
-                  "audience",
-                  "twist",
-                  "monetization",
-                  "validationScore",
-                  "alternativeNames",
+                  "Why now",
+                  "Proof & signals",
+                  "Market gap",
+                  "Execution plan",
+                  "Trend chart",
+                  "Keyword signals",
+                  "Framework fit",
+                  "Detailed plan",
                 ].map((field) => (
                   <div
                     key={field}
@@ -309,86 +326,39 @@ function IndexPage() {
                 {savedCount} saved {savedCount === 1 ? "idea" : "ideas"} ready
                 to revisit.
               </p>
-              <Button variant="outline" className="mt-4 rounded-full" asChild>
-                <Link to="/saved">
-                  Open saved ideas
-                  <ChevronRight />
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="space-y-5">
-        <Card className="rounded-[2rem] border border-border/70 py-0 shadow-sm">
-          <CardContent className="space-y-5 px-6 py-6">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.24em] text-muted-foreground uppercase">
-                  <Target className="size-3.5" />
-                  Startup Category
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {ideaCategories.map((option) => (
-                    <button
-                      key={option}
-                      type="button"
-                      onClick={() => setCategory(option)}
-                      className={cn(
-                        "rounded-full border px-4 py-2 text-sm transition-transform hover:-translate-y-0.5",
-                        category === option
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : "border-border bg-background text-foreground"
-                      )}
-                    >
-                      {option}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <Button
-                type="button"
-                size="lg"
-                onClick={() => ideaMutation.mutate(category)}
-                disabled={ideaMutation.isPending}
-                className="rounded-full px-5"
+              <Link
+                to="/saved"
+                className="mt-4 inline-flex items-center gap-2 rounded-full border border-border/70 px-4 py-2 text-sm transition-colors hover:bg-muted/60"
               >
-                {ideaMutation.isPending ? (
-                  <LoaderCircle className="animate-spin" />
-                ) : (
-                  <WandSparkles />
-                )}
-                Generate Idea
-              </Button>
-            </div>
-
-            <Separator />
-
-            <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
-              <div className="inline-flex items-center gap-2 rounded-full bg-muted/40 px-3 py-2">
-                <Sparkles className="size-4" />
-                Generate one idea at a time with structured JSON output
-              </div>
-              <div className="inline-flex items-center gap-2 rounded-full bg-muted/40 px-3 py-2">
-                <Bookmark className="size-4" />
-                Save locally and revisit later
-              </div>
+                Open saved ideas
+                <ChevronRight className="size-4" />
+              </Link>
             </div>
           </CardContent>
         </Card>
-
-        {feedback ? (
-          <p className="text-sm text-muted-foreground">{feedback}</p>
-        ) : null}
-
-        {activeError ? (
-          <p className="rounded-[1.25rem] border border-destructive/25 bg-destructive/8 px-4 py-3 text-sm text-destructive">
-            {activeError.message}
-          </p>
-        ) : null}
       </section>
+
+      <IdeaBriefForm
+        brief={brief}
+        onChange={(patch) =>
+          setBrief((currentBrief) => ({
+            ...currentBrief,
+            ...patch,
+          }))
+        }
+        onSubmit={() => ideaMutation.mutate(brief)}
+        isLoading={ideaMutation.isPending}
+      />
+
+      {feedback ? (
+        <p className="text-sm text-muted-foreground">{feedback}</p>
+      ) : null}
+
+      {activeError ? (
+        <p className="rounded-[1.25rem] border border-destructive/25 bg-destructive/8 px-4 py-3 text-sm text-destructive">
+          {activeError.message}
+        </p>
+      ) : null}
 
       <section className="space-y-6">
         {ideaMutation.isPending ? (
@@ -445,12 +415,12 @@ function IndexPage() {
           <Card className="rounded-[2rem] border border-dashed border-border/70 bg-card/70 py-0 shadow-sm">
             <CardContent className="space-y-4 px-6 py-8 text-center">
               <h2 className="font-display text-3xl leading-none">
-                Your next startup concept starts here
+                Describe the founder context, then let the lab evaluate it
               </h2>
               <p className="mx-auto max-w-2xl text-sm leading-7 text-muted-foreground">
-                Pick a category, generate an idea, then use the pitch and market
-                validation tools to turn it into something that feels closer to
-                a real product concept.
+                Enter the problem, audience, or any advantage you have. The
+                output will be more grounded than a generic startup generator
+                and closer to a portfolio-ready product memo.
               </p>
             </CardContent>
           </Card>

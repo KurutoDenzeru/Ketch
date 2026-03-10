@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start"
 
 import type {
+  IdeaBriefInput,
   IdeaCategory,
   IdeaFacet,
   MarketValidation,
@@ -32,6 +33,124 @@ const ideaResponseSchema = {
       minItems: 3,
       maxItems: 3,
     },
+    analysis: {
+      ...sharedSchemaConfig,
+      properties: {
+        tags: {
+          type: "array",
+          items: { type: "string" },
+          minItems: 4,
+          maxItems: 6,
+        },
+        whyNow: { type: "string" },
+        proofSignals: {
+          type: "array",
+          items: { type: "string" },
+          minItems: 3,
+          maxItems: 5,
+        },
+        marketGap: { type: "string" },
+        executionPlan: { type: "string" },
+        scoreMetrics: {
+          type: "array",
+          minItems: 4,
+          maxItems: 4,
+          items: {
+            ...sharedSchemaConfig,
+            properties: {
+              label: { type: "string" },
+              score: { type: "number" },
+              insight: { type: "string" },
+            },
+            required: ["label", "score", "insight"],
+          },
+        },
+        trendPoints: {
+          type: "array",
+          minItems: 6,
+          maxItems: 8,
+          items: {
+            ...sharedSchemaConfig,
+            properties: {
+              label: { type: "string" },
+              interest: { type: "number" },
+            },
+            required: ["label", "interest"],
+          },
+        },
+        frameworkFit: {
+          ...sharedSchemaConfig,
+          properties: {
+            audience: { type: "number" },
+            community: { type: "number" },
+            product: { type: "number" },
+          },
+          required: ["audience", "community", "product"],
+        },
+        valueLadder: {
+          type: "array",
+          minItems: 4,
+          maxItems: 5,
+          items: {
+            ...sharedSchemaConfig,
+            properties: {
+              label: { type: "string" },
+              score: { type: "number" },
+            },
+            required: ["label", "score"],
+          },
+        },
+        keywordSignals: {
+          type: "array",
+          minItems: 4,
+          maxItems: 5,
+          items: {
+            ...sharedSchemaConfig,
+            properties: {
+              term: { type: "string" },
+              volume: { type: "string" },
+              competition: { type: "string" },
+              score: { type: "number" },
+            },
+            required: ["term", "volume", "competition", "score"],
+          },
+        },
+        detailedPlan: {
+          type: "array",
+          minItems: 4,
+          maxItems: 5,
+          items: {
+            ...sharedSchemaConfig,
+            properties: {
+              phase: { type: "string" },
+              timeframe: { type: "string" },
+              objective: { type: "string" },
+              actions: {
+                type: "array",
+                items: { type: "string" },
+                minItems: 2,
+                maxItems: 4,
+              },
+              outcome: { type: "string" },
+            },
+            required: ["phase", "timeframe", "objective", "actions", "outcome"],
+          },
+        },
+      },
+      required: [
+        "tags",
+        "whyNow",
+        "proofSignals",
+        "marketGap",
+        "executionPlan",
+        "scoreMetrics",
+        "trendPoints",
+        "frameworkFit",
+        "valueLadder",
+        "keywordSignals",
+        "detailedPlan",
+      ],
+    },
   },
   required: [
     "name",
@@ -42,6 +161,7 @@ const ideaResponseSchema = {
     "monetization",
     "validationScore",
     "alternativeNames",
+    "analysis",
   ],
 } as const
 
@@ -172,12 +292,33 @@ function assertStringArray(value: unknown, fieldName: string) {
   return value.map((item) => item.trim()).filter(Boolean)
 }
 
+function clampMetricScore(value: number) {
+  return Math.max(1, Math.min(10, Math.round(value)))
+}
+
 function normalizeIdea(payload: unknown, category: IdeaCategory): StartupIdea {
   if (!payload || typeof payload !== "object") {
     throw new Error("Gemini returned an invalid idea payload.")
   }
 
   const candidate = payload as Record<string, unknown>
+  const analysis =
+    candidate.analysis && typeof candidate.analysis === "object"
+      ? (candidate.analysis as Record<string, unknown>)
+      : null
+
+  if (!analysis) {
+    throw new Error("Gemini returned an invalid analysis payload.")
+  }
+
+  const frameworkFit =
+    analysis.frameworkFit && typeof analysis.frameworkFit === "object"
+      ? (analysis.frameworkFit as Record<string, unknown>)
+      : null
+
+  if (!frameworkFit) {
+    throw new Error("Gemini returned an invalid framework fit payload.")
+  }
 
   return {
     name: assertString(candidate.name, "name"),
@@ -192,6 +333,150 @@ function normalizeIdea(payload: unknown, category: IdeaCategory): StartupIdea {
       "alternativeNames"
     ).slice(0, 3),
     category,
+    analysis: {
+      tags: assertStringArray(analysis.tags, "analysis.tags").slice(0, 6),
+      whyNow: assertString(analysis.whyNow, "analysis.whyNow"),
+      proofSignals: assertStringArray(
+        analysis.proofSignals,
+        "analysis.proofSignals"
+      ).slice(0, 5),
+      marketGap: assertString(analysis.marketGap, "analysis.marketGap"),
+      executionPlan: assertString(
+        analysis.executionPlan,
+        "analysis.executionPlan"
+      ),
+      scoreMetrics: (Array.isArray(analysis.scoreMetrics)
+        ? analysis.scoreMetrics
+        : []
+      ).map((item, index) => {
+        if (!item || typeof item !== "object") {
+          throw new Error(
+            `Gemini returned an invalid score metric at ${index}.`
+          )
+        }
+
+        const metric = item as Record<string, unknown>
+
+        return {
+          label: assertString(
+            metric.label,
+            `analysis.scoreMetrics.${index}.label`
+          ),
+          score: clampMetricScore(Number(metric.score)),
+          insight: assertString(
+            metric.insight,
+            `analysis.scoreMetrics.${index}.insight`
+          ),
+        }
+      }),
+      trendPoints: (Array.isArray(analysis.trendPoints)
+        ? analysis.trendPoints
+        : []
+      ).map((item, index) => {
+        if (!item || typeof item !== "object") {
+          throw new Error(`Gemini returned an invalid trend point at ${index}.`)
+        }
+
+        const point = item as Record<string, unknown>
+
+        return {
+          label: assertString(
+            point.label,
+            `analysis.trendPoints.${index}.label`
+          ),
+          interest: Math.max(
+            10,
+            Math.min(100, Math.round(Number(point.interest)))
+          ),
+        }
+      }),
+      frameworkFit: {
+        audience: clampMetricScore(Number(frameworkFit.audience)),
+        community: clampMetricScore(Number(frameworkFit.community)),
+        product: clampMetricScore(Number(frameworkFit.product)),
+      },
+      valueLadder: (Array.isArray(analysis.valueLadder)
+        ? analysis.valueLadder
+        : []
+      ).map((item, index) => {
+        if (!item || typeof item !== "object") {
+          throw new Error(
+            `Gemini returned an invalid value ladder step at ${index}.`
+          )
+        }
+
+        const step = item as Record<string, unknown>
+
+        return {
+          label: assertString(
+            step.label,
+            `analysis.valueLadder.${index}.label`
+          ),
+          score: clampMetricScore(Number(step.score)),
+        }
+      }),
+      keywordSignals: (Array.isArray(analysis.keywordSignals)
+        ? analysis.keywordSignals
+        : []
+      ).map((item, index) => {
+        if (!item || typeof item !== "object") {
+          throw new Error(
+            `Gemini returned an invalid keyword signal at ${index}.`
+          )
+        }
+
+        const signal = item as Record<string, unknown>
+
+        return {
+          term: assertString(
+            signal.term,
+            `analysis.keywordSignals.${index}.term`
+          ),
+          volume: assertString(
+            signal.volume,
+            `analysis.keywordSignals.${index}.volume`
+          ),
+          competition: assertString(
+            signal.competition,
+            `analysis.keywordSignals.${index}.competition`
+          ),
+          score: clampMetricScore(Number(signal.score)),
+        }
+      }),
+      detailedPlan: (Array.isArray(analysis.detailedPlan)
+        ? analysis.detailedPlan
+        : []
+      ).map((item, index) => {
+        if (!item || typeof item !== "object") {
+          throw new Error(`Gemini returned an invalid plan step at ${index}.`)
+        }
+
+        const step = item as Record<string, unknown>
+
+        return {
+          phase: assertString(
+            step.phase,
+            `analysis.detailedPlan.${index}.phase`
+          ),
+          timeframe: assertString(
+            step.timeframe,
+            `analysis.detailedPlan.${index}.timeframe`
+          ),
+          objective: assertString(
+            step.objective,
+            `analysis.detailedPlan.${index}.objective`
+          ),
+          actions: assertStringArray(
+            step.actions,
+            `analysis.detailedPlan.${index}.actions`
+          ).slice(0, 4),
+          outcome: assertString(
+            step.outcome,
+            `analysis.detailedPlan.${index}.outcome`
+          ),
+        }
+      }),
+    },
   }
 }
 
@@ -232,9 +517,19 @@ function normalizeMarketValidation(payload: unknown): MarketValidation {
 }
 
 export const generateIdea = createServerFn({ method: "POST" })
-  .inputValidator((input: { category: IdeaCategory }) => input)
+  .inputValidator((input: IdeaBriefInput) => input)
   .handler(async ({ data }) => {
-    const prompt = `Generate a creative tech startup idea in the ${data.category} category.
+    const prompt = `You are helping a founder sharpen and evaluate a startup idea.
+
+Founder input:
+- Category: ${data.category}
+- Concept direction: ${data.concept || "Not specified. Invent a strong concept."}
+- Problem to solve: ${data.problem || "Not specified"}
+- Target audience: ${data.audience || "Not specified"}
+- Founder edge: ${data.founderEdge || "Not specified"}
+- Constraints: ${data.constraints || "Not specified"}
+
+Use the founder input where it is helpful. If parts are missing, make reasonable assumptions and fill the gaps with a modern, realistic, buildable startup concept.
 
 Return ONLY JSON with:
 - name
@@ -245,8 +540,22 @@ Return ONLY JSON with:
 - monetization
 - validationScore
 - alternativeNames (array of 3)
+- analysis
 
-Make the idea modern, realistic, and portfolio-worthy for an ambitious founder.`
+The analysis object must include:
+- tags (4 to 6 short badge-style tags)
+- whyNow
+- proofSignals (3 to 5 concise bullets)
+- marketGap
+- executionPlan
+- scoreMetrics (exactly 4 objects with label, score, insight)
+- trendPoints (6 to 8 objects with label and interest from 10 to 100)
+- frameworkFit (audience, community, product scores from 1 to 10)
+- valueLadder (4 to 5 objects with label and score from 1 to 10)
+- keywordSignals (4 to 5 objects with term, volume, competition, score)
+- detailedPlan (4 to 5 rollout phases with phase, timeframe, objective, actions, outcome)
+
+Keep the tone practical, specific, and portfolio-worthy.`
 
     const result = await callGemini<StartupIdea>({
       prompt,

@@ -9,6 +9,64 @@ export type IdeaCategory = (typeof ideaCategories)[number]
 
 export type IdeaFacet = "tagline" | "twist"
 
+export type IdeaBriefInput = {
+  category: IdeaCategory
+  concept: string
+  problem: string
+  audience: string
+  founderEdge: string
+  constraints: string
+}
+
+export type IdeaScoreMetric = {
+  label: string
+  score: number
+  insight: string
+}
+
+export type IdeaTrendPoint = {
+  label: string
+  interest: number
+}
+
+export type IdeaKeywordSignal = {
+  term: string
+  volume: string
+  competition: string
+  score: number
+}
+
+export type IdeaValueLadderStep = {
+  label: string
+  score: number
+}
+
+export type DetailedPlanStep = {
+  phase: string
+  timeframe: string
+  objective: string
+  actions: string[]
+  outcome: string
+}
+
+export type IdeaAnalysis = {
+  tags: string[]
+  whyNow: string
+  proofSignals: string[]
+  marketGap: string
+  executionPlan: string
+  scoreMetrics: IdeaScoreMetric[]
+  trendPoints: IdeaTrendPoint[]
+  frameworkFit: {
+    audience: number
+    community: number
+    product: number
+  }
+  valueLadder: IdeaValueLadderStep[]
+  keywordSignals: IdeaKeywordSignal[]
+  detailedPlan: DetailedPlanStep[]
+}
+
 export type StartupIdea = {
   name: string
   tagline: string
@@ -19,6 +77,7 @@ export type StartupIdea = {
   validationScore: number
   alternativeNames: string[]
   category: IdeaCategory
+  analysis: IdeaAnalysis
 }
 
 export type StartupPitch = {

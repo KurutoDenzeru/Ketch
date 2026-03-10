@@ -214,6 +214,18 @@ function SavedIdeasPage() {
                 </div>
 
                 <div className="flex flex-wrap gap-2">
+                  {savedIdea.idea.analysis.tags.map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant="outline"
+                      className="rounded-full px-3 py-1"
+                    >
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+
+                <div className="flex flex-wrap gap-2">
                   <Button type="button" variant="outline" asChild>
                     <a href={buildIdeaSharePath(savedIdea)}>
                       <Share2 />
