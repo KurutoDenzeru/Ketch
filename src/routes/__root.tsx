@@ -15,13 +15,26 @@ export const Route = createRootRoute({
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "TanStack Start Starter",
+        title: "AI Startup Idea Lab",
+      },
+      {
+        name: "description",
+        content:
+          "Generate startup ideas, mini pitches, and AI market validation snapshots with Gemini.",
       },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
+      },
+      {
+        rel: "preconnect",
+        href: "https://api.fonts.coollabs.io",
+      },
+      {
+        rel: "stylesheet",
+        href: "https://api.fonts.coollabs.io/css2?family=Fraunces:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",
       },
     ],
   }),
@@ -34,7 +47,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body className="min-h-svh bg-background text-foreground antialiased">
         {children}
         <TanStackDevtools
           config={{
