@@ -6,7 +6,6 @@ import {
   ChevronRight,
   Compass,
   Lightbulb,
-  Sparkles,
   Target,
 } from "lucide-react"
 
@@ -246,24 +245,22 @@ function IndexPage() {
 
             <div className="grid gap-3 sm:grid-cols-3">
               {[
-                [
-                  Lightbulb,
-                  "Idea framing",
-                  "Use your own brief instead of starting from a blank prompt.",
-                ],
-                [
-                  Target,
-                  "Opportunity scoring",
-                  "Review timing, defensibility, demand signals, and fit.",
-                ],
-                [
-                  Compass,
-                  "Execution mapping",
-                  "Get a phased rollout plan, market gap notes, and keyword cues.",
-                ],
-              ].map(([Icon, label, text]) => {
-                const ItemIcon = Icon as typeof Lightbulb
-
+                {
+                  icon: Lightbulb,
+                  label: "Idea framing",
+                  text: "Use your own brief instead of starting from a blank prompt.",
+                },
+                {
+                  icon: Target,
+                  label: "Opportunity scoring",
+                  text: "Review timing, defensibility, demand signals, and fit.",
+                },
+                {
+                  icon: Compass,
+                  label: "Execution mapping",
+                  text: "Get a phased rollout plan, market gap notes, and keyword cues.",
+                },
+              ].map(({ icon: ItemIcon, label, text }) => {
                 return (
                   <div
                     key={label}

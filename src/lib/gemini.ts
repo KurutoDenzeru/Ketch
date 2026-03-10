@@ -1,3 +1,4 @@
+import { GoogleGenAI, ThinkingLevel } from "@google/genai"
 import { createServerFn } from "@tanstack/react-start"
 
 import type {
@@ -9,8 +10,7 @@ import type {
   StartupPitch,
 } from "@/types/idea"
 
-const GEMINI_API_URL =
-  "https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent"
+const GEMINI_MODEL = "gemini-3-flash-preview"
 
 const sharedSchemaConfig = {
   type: "object",
@@ -220,6 +220,16 @@ function ensureGeminiApiKey() {
   return apiKey
 }
 
+let geminiClient: GoogleGenAI | null = null
+
+function getGeminiClient() {
+  geminiClient ??= new GoogleGenAI({
+    apiKey: ensureGeminiApiKey(),
+  })
+
+  return geminiClient
+}
+
 async function callGemini<T>({
   prompt,
   schema,
@@ -227,41 +237,31 @@ async function callGemini<T>({
   prompt: string
   schema: object
 }) {
-  const response = await fetch(GEMINI_API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "x-goog-api-key": ensureGeminiApiKey(),
-    },
-    body: JSON.stringify({
-      contents: [
-        {
-          role: "user",
-          parts: [{ text: prompt }],
-        },
-      ],
-      generationConfig: {
-        responseMimeType: "application/json",
-        responseJsonSchema: schema,
-        temperature: 1,
+  const response = await getGeminiClient().models.generateContentStream({
+    model: GEMINI_MODEL,
+    config: {
+      temperature: 1,
+      responseMimeType: "application/json",
+      responseJsonSchema: schema,
+      thinkingConfig: {
+        thinkingLevel: ThinkingLevel.HIGH,
       },
-    }),
+    },
+    contents: [
+      {
+        role: "user",
+        parts: [{ text: prompt }],
+      },
+    ],
   })
 
-  if (!response.ok) {
-    const errorText = await response.text()
-    throw new Error(
-      `Gemini request failed with ${response.status}: ${errorText || "Unknown error"}`
-    )
+  let text = ""
+
+  for await (const chunk of response) {
+    text += chunk.text ?? ""
   }
 
-  const payload = await response.json()
-  const text = payload?.candidates?.[0]?.content?.parts
-    ?.map((part: { text?: string }) => part.text ?? "")
-    .join("")
-    .trim()
-
-  if (!text) {
+  if (!text.trim()) {
     throw new Error("Gemini returned an empty response.")
   }
 
