@@ -460,6 +460,7 @@ function IndexPage() {
                 ? (facetMutation.variables?.facet ?? null)
                 : null
             }
+            isSaved={saved}
             sharePath={currentSharePath}
             onSelectAlternativeName={(name) => {
               setIdea((currentIdea) =>

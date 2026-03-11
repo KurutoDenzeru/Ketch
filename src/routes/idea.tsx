@@ -233,6 +233,7 @@ function SharedIdeaPage() {
             ? (facetMutation.variables?.facet ?? null)
             : null
         }
+        isSaved={isIdeaSaved(idea)}
         sharePath={currentSharePath}
         onSelectAlternativeName={(name) => {
           setIdea((currentIdea) =>

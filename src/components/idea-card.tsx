@@ -7,6 +7,7 @@ import {
   LoaderCircle,
   RefreshCcw,
   Rocket,
+  Save,
   Send,
   ShieldCheck,
 } from "lucide-react"
@@ -47,6 +48,7 @@ type IdeaCardProps = {
   isPitchLoading: boolean
   isMarketValidationLoading: boolean
   refreshingFacet: IdeaFacet | null
+  isSaved: boolean
   sharePath: string
   onSelectAlternativeName: (name: string) => void
   onRefreshFacet: (facet: IdeaFacet) => void
@@ -90,6 +92,7 @@ export function IdeaCard({
   isPitchLoading,
   isMarketValidationLoading,
   refreshingFacet,
+  isSaved,
   sharePath,
   onSelectAlternativeName,
   onRefreshFacet,
