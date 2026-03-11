@@ -10,6 +10,7 @@ import {
   SearchCheck,
   Target,
 } from "lucide-react"
+import { toast } from "sonner"
 
 import { IdeaBriefForm } from "@/components/idea-brief-form"
 import { IdeaCard } from "@/components/idea-card"
@@ -93,7 +94,6 @@ function IndexPage() {
   const [marketValidation, setMarketValidation] =
     useState<MarketValidation | null>(null)
   const [savedCount, setSavedCount] = useState(0)
-  const [feedback, setFeedback] = useState<string | null>(null)
 
   useEffect(() => {
     setSavedCount(getSavedIdeas().length)
@@ -105,7 +105,14 @@ function IndexPage() {
       setIdea(nextIdea)
       setPitch(null)
       setMarketValidation(null)
-      setFeedback(`Generated ${nextIdea.name}.`)
+      toast.success("Idea generated", {
+        description: `${nextIdea.name} is ready to review.`,
+      })
+    },
+    onError: (error) => {
+      toast.error("Failed to generate idea", {
+        description: error.message,
+      })
     },
   })
 
@@ -114,7 +121,14 @@ function IndexPage() {
       generatePitch({ data: { idea: currentIdea } }),
     onSuccess: (nextPitch) => {
       setPitch(nextPitch)
-      setFeedback("Pitch ready.")
+      toast.success("Pitch ready", {
+        description: "The founder-ready narrative has been updated.",
+      })
+    },
+    onError: (error) => {
+      toast.error("Failed to generate pitch", {
+        description: error.message,
+      })
     },
   })
 
@@ -123,7 +137,14 @@ function IndexPage() {
       generateMarketValidation({ data: { idea: currentIdea } }),
     onSuccess: (nextValidation) => {
       setMarketValidation(nextValidation)
-      setFeedback("Market validation ready.")
+      toast.success("Validation ready", {
+        description: "The latest market reality check is available below.",
+      })
+    },
+    onError: (error) => {
+      toast.error("Failed to run validation", {
+        description: error.message,
+      })
     },
   })
 
@@ -144,7 +165,22 @@ function IndexPage() {
             }
           : currentIdea
       )
-      setFeedback(`${facet === "tagline" ? "Tagline" : "Twist"} refreshed.`)
+      toast.success(
+        facet === "tagline" ? "Tagline refreshed" : "Twist refreshed",
+        {
+          description: "The generated idea card has been updated in place.",
+        }
+      )
+    },
+    onError: (error, variables) => {
+      toast.error(
+        variables.facet === "tagline"
+          ? "Failed to refresh tagline"
+          : "Failed to refresh twist",
+        {
+          description: error.message,
+        }
+      )
     },
   })
 
@@ -160,12 +196,6 @@ function IndexPage() {
     ? buildIdeaSharePath(currentPayload)
     : "/idea"
 
-  const activeError =
-    ideaMutation.error ??
-    pitchMutation.error ??
-    marketValidationMutation.error ??
-    facetMutation.error
-
   const saved = idea ? isIdeaSaved(idea) : false
 
   async function handleCopyIdea() {
@@ -175,9 +205,13 @@ function IndexPage() {
 
     try {
       await copyText(formatIdeaForClipboard(currentPayload))
-      setFeedback("Idea copied to clipboard.")
+      toast.success("Idea copied", {
+        description: "The full startup idea summary is in your clipboard.",
+      })
     } catch {
-      setFeedback("Clipboard access is unavailable in this browser.")
+      toast.error("Clipboard unavailable", {
+        description: "This browser blocked clipboard access.",
+      })
     }
   }
 
@@ -188,9 +222,13 @@ function IndexPage() {
 
     try {
       await copyText(buildIdeaShareUrl(currentPayload))
-      setFeedback("Share link copied.")
+      toast.success("Share link copied", {
+        description: "You can paste the shared idea URL anywhere.",
+      })
     } catch {
-      setFeedback("Clipboard access is unavailable in this browser.")
+      toast.error("Clipboard unavailable", {
+        description: "This browser blocked clipboard access.",
+      })
     }
   }
 
@@ -201,11 +239,13 @@ function IndexPage() {
 
     saveIdea(currentPayload)
     setSavedCount(getSavedIdeas().length)
-    setFeedback(saved ? "Saved idea updated." : "Idea saved locally.")
+    toast.success(saved ? "Saved idea updated" : "Idea saved locally", {
+      description: "Your startup idea is stored in this browser.",
+    })
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 py-8 md:gap-14 md:px-6 md:py-10">
+    <main className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-8 md:gap-14 md:px-6 md:py-10">
       <section className="space-y-10 px-2 py-6 md:px-8 md:py-10">
         <div className="flex flex-wrap items-center justify-center gap-3">
           <Badge variant="outline" className="rounded-full px-4 py-1.5">
@@ -405,16 +445,6 @@ function IndexPage() {
         </Card>
       </section>
 
-      {feedback ? (
-        <p className="text-sm text-muted-foreground">{feedback}</p>
-      ) : null}
-
-      {activeError ? (
-        <p className="rounded-[1.25rem] border border-destructive/25 bg-destructive/8 px-4 py-3 text-sm text-destructive">
-          {activeError.message}
-        </p>
-      ) : null}
-
       <section className="space-y-6 pt-2 md:pt-4">
         {ideaMutation.isPending ? (
           <IdeaCardSkeleton />
@@ -430,7 +460,6 @@ function IndexPage() {
                 ? (facetMutation.variables?.facet ?? null)
                 : null
             }
-            isSaved={saved}
             sharePath={currentSharePath}
             onSelectAlternativeName={(name) => {
               setIdea((currentIdea) =>
@@ -441,7 +470,9 @@ function IndexPage() {
                     }
                   : currentIdea
               )
-              setFeedback("Active startup name updated.")
+              toast.success("Startup name swapped", {
+                description: `${name} is now the active concept name.`,
+              })
             }}
             onRefreshFacet={(facet) => {
               if (!idea) {

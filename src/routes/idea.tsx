@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react"
 import { useMutation } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { Link2, Share2 } from "lucide-react"
+import { toast } from "sonner"
 
 import { IdeaCard } from "@/components/idea-card"
 import { Badge } from "@/components/ui/badge"
@@ -62,7 +63,6 @@ function SharedIdeaPage() {
   )
   const [marketValidation, setMarketValidation] =
     useState<MarketValidation | null>(decodedPayload?.marketValidation ?? null)
-  const [feedback, setFeedback] = useState<string | null>(null)
 
   useEffect(() => {
     setIdea(decodedPayload?.idea ?? null)
@@ -75,7 +75,14 @@ function SharedIdeaPage() {
       generatePitch({ data: { idea: currentIdea } }),
     onSuccess: (nextPitch) => {
       setPitch(nextPitch)
-      setFeedback("Pitch ready.")
+      toast.success("Pitch ready", {
+        description: "The founder-ready narrative has been refreshed.",
+      })
+    },
+    onError: (error) => {
+      toast.error("Failed to generate pitch", {
+        description: error.message,
+      })
     },
   })
 
@@ -84,7 +91,14 @@ function SharedIdeaPage() {
       generateMarketValidation({ data: { idea: currentIdea } }),
     onSuccess: (nextValidation) => {
       setMarketValidation(nextValidation)
-      setFeedback("Market validation ready.")
+      toast.success("Validation ready", {
+        description: "The shared snapshot now includes fresh validation.",
+      })
+    },
+    onError: (error) => {
+      toast.error("Failed to run validation", {
+        description: error.message,
+      })
     },
   })
 
@@ -105,7 +119,22 @@ function SharedIdeaPage() {
             }
           : currentIdea
       )
-      setFeedback(`${facet === "tagline" ? "Tagline" : "Twist"} refreshed.`)
+      toast.success(
+        facet === "tagline" ? "Tagline refreshed" : "Twist refreshed",
+        {
+          description: "The shared idea view has been updated in place.",
+        }
+      )
+    },
+    onError: (error, variables) => {
+      toast.error(
+        variables.facet === "tagline"
+          ? "Failed to refresh tagline"
+          : "Failed to refresh twist",
+        {
+          description: error.message,
+        }
+      )
     },
   })
 
@@ -121,12 +150,9 @@ function SharedIdeaPage() {
     ? buildIdeaSharePath(currentPayload)
     : "/idea"
 
-  const activeError =
-    pitchMutation.error ?? marketValidationMutation.error ?? facetMutation.error
-
   if (!decodedPayload || !idea || !currentPayload) {
     return (
-      <main className="mx-auto flex min-h-svh w-full max-w-4xl flex-col gap-8 px-4 py-8 md:px-6 md:py-10">
+      <main className="mx-auto flex min-h-svh w-full max-w-7xl flex-col gap-8 px-4 py-8 md:px-6 md:py-10">
         <Card className="rounded-[2rem] border border-dashed border-border/70 py-0 shadow-sm">
           <CardContent className="space-y-4 px-6 py-8 text-center">
             <h1 className="font-display text-4xl leading-none">
@@ -151,7 +177,7 @@ function SharedIdeaPage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-6xl flex-col gap-8 px-4 py-8 md:px-6 md:py-10">
+    <main className="mx-auto flex min-h-svh w-full max-w-7xl flex-col gap-8 px-4 py-8 md:px-6 md:py-10">
       <section className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
         <Card className="rounded-[2rem] border border-border/70 py-0 shadow-sm">
           <CardContent className="space-y-5 px-6 py-8 md:px-8">
@@ -196,16 +222,6 @@ function SharedIdeaPage() {
         </Card>
       </section>
 
-      {feedback ? (
-        <p className="text-sm text-muted-foreground">{feedback}</p>
-      ) : null}
-
-      {activeError ? (
-        <p className="rounded-[1.25rem] border border-destructive/25 bg-destructive/8 px-4 py-3 text-sm text-destructive">
-          {activeError.message}
-        </p>
-      ) : null}
-
       <IdeaCard
         idea={idea}
         pitch={pitch}
@@ -217,7 +233,6 @@ function SharedIdeaPage() {
             ? (facetMutation.variables?.facet ?? null)
             : null
         }
-        isSaved={isIdeaSaved(idea)}
         sharePath={currentSharePath}
         onSelectAlternativeName={(name) => {
           setIdea((currentIdea) =>
@@ -228,7 +243,9 @@ function SharedIdeaPage() {
                 }
               : currentIdea
           )
-          setFeedback("Active startup name updated.")
+          toast.success("Startup name swapped", {
+            description: `${name} is now the active concept name.`,
+          })
         }}
         onRefreshFacet={(facet) => {
           facetMutation.mutate({
@@ -245,22 +262,32 @@ function SharedIdeaPage() {
         onCopy={async () => {
           try {
             await copyText(formatIdeaForClipboard(currentPayload))
-            setFeedback("Idea copied to clipboard.")
+            toast.success("Idea copied", {
+              description: "The full startup idea summary is in your clipboard.",
+            })
           } catch {
-            setFeedback("Clipboard access is unavailable in this browser.")
+            toast.error("Clipboard unavailable", {
+              description: "This browser blocked clipboard access.",
+            })
           }
         }}
         onCopyShareLink={async () => {
           try {
             await copyText(buildIdeaShareUrl(currentPayload))
-            setFeedback("Share link copied.")
+            toast.success("Share link copied", {
+              description: "You can paste the shared idea URL anywhere.",
+            })
           } catch {
-            setFeedback("Clipboard access is unavailable in this browser.")
+            toast.error("Clipboard unavailable", {
+              description: "This browser blocked clipboard access.",
+            })
           }
         }}
         onSave={() => {
           saveIdea(currentPayload)
-          setFeedback("Idea saved locally.")
+          toast.success("Idea saved locally", {
+            description: "Your startup idea is stored in this browser.",
+          })
         }}
       />
     </main>

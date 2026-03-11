@@ -7,7 +7,6 @@ import {
   LoaderCircle,
   RefreshCcw,
   Rocket,
-  Save,
   Send,
   ShieldCheck,
 } from "lucide-react"
@@ -48,7 +47,6 @@ type IdeaCardProps = {
   isPitchLoading: boolean
   isMarketValidationLoading: boolean
   refreshingFacet: IdeaFacet | null
-  isSaved: boolean
   sharePath: string
   onSelectAlternativeName: (name: string) => void
   onRefreshFacet: (facet: IdeaFacet) => void
@@ -92,7 +90,6 @@ export function IdeaCard({
   isPitchLoading,
   isMarketValidationLoading,
   refreshingFacet,
-  isSaved,
   sharePath,
   onSelectAlternativeName,
   onRefreshFacet,
@@ -132,12 +129,6 @@ export function IdeaCard({
               <Gauge className="size-3.5" />
               {validationTone.label}
             </Badge>
-            {isSaved ? (
-              <Badge variant="outline" className="rounded-full px-3 py-1">
-                <Save className="size-3.5" />
-                Saved locally
-              </Badge>
-            ) : null}
           </div>
 
           <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">

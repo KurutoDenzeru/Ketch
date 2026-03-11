@@ -5,6 +5,7 @@ import { TanStackDevtools } from "@tanstack/react-devtools"
 import { AppFooter } from "@/components/app-footer"
 import { AppNavbar } from "@/components/app-navbar"
 import { ThemeProvider } from "@/components/theme-provider"
+import { Toaster } from "@/components/ui/sonner"
 import appCss from "../styles.css?url"
 
 export const Route = createRootRoute({
@@ -59,6 +60,19 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             </div>
             <AppFooter />
           </div>
+          <Toaster
+            position="top-center"
+            expand={false}
+            richColors
+            toastOptions={{
+              classNames: {
+                toast:
+                  "rounded-2xl border border-border/70 bg-background/95 shadow-sm backdrop-blur-xl",
+                title: "text-sm font-medium",
+                description: "text-sm text-muted-foreground",
+              },
+            }}
+          />
         </ThemeProvider>
         <TanStackDevtools
           config={{

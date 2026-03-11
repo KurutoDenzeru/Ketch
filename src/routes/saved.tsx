@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { Bookmark, Copy, LoaderCircle, Share2, Trash2 } from "lucide-react"
+import { toast } from "sonner"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -34,7 +35,6 @@ async function copyText(value: string) {
 function SavedIdeasPage() {
   const navigate = useNavigate()
   const [ideas, setIdeas] = useState<SavedIdea[]>([])
-  const [feedback, setFeedback] = useState<string | null>(null)
   const [activeCopyId, setActiveCopyId] = useState<string | null>(null)
 
   useEffect(() => {
@@ -42,7 +42,7 @@ function SavedIdeasPage() {
   }, [])
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-6xl flex-col gap-8 px-4 py-8 md:px-6 md:py-10">
+    <main className="mx-auto flex min-h-svh w-full max-w-7xl flex-col gap-8 px-4 py-8 md:px-6 md:py-10">
       <section className="grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
         <Card className="rounded-[2rem] border border-border/70 py-0 shadow-sm">
           <CardContent className="space-y-5 px-6 py-8 md:px-8">
@@ -83,10 +83,6 @@ function SavedIdeasPage() {
           </CardContent>
         </Card>
       </section>
-
-      {feedback ? (
-        <p className="text-sm text-muted-foreground">{feedback}</p>
-      ) : null}
 
       <section className="space-y-5">
         {ideas.length === 0 ? (
@@ -225,7 +221,13 @@ function SavedIdeasPage() {
                       setActiveCopyId(savedIdea.id)
                       try {
                         await copyText(buildIdeaShareUrl(savedIdea))
-                        setFeedback("Share link copied.")
+                        toast.success("Share link copied", {
+                          description: "You can paste the shared idea URL anywhere.",
+                        })
+                      } catch {
+                        toast.error("Clipboard unavailable", {
+                          description: "This browser blocked clipboard access.",
+                        })
                       } finally {
                         setActiveCopyId(null)
                       }
@@ -246,7 +248,13 @@ function SavedIdeasPage() {
                       setActiveCopyId(savedIdea.id)
                       try {
                         await copyText(formatIdeaForClipboard(savedIdea))
-                        setFeedback("Idea copied to clipboard.")
+                        toast.success("Idea copied", {
+                          description: "The full startup idea summary is in your clipboard.",
+                        })
+                      } catch {
+                        toast.error("Clipboard unavailable", {
+                          description: "This browser blocked clipboard access.",
+                        })
                       } finally {
                         setActiveCopyId(null)
                       }
@@ -266,7 +274,9 @@ function SavedIdeasPage() {
                     onClick={() => {
                       const nextIdeas = removeIdea(savedIdea.id)
                       setIdeas(nextIdeas)
-                      setFeedback("Saved idea removed.")
+                      toast.success("Saved idea removed", {
+                        description: "The local copy has been deleted from this browser.",
+                      })
                     }}
                   >
                     <Trash2 />

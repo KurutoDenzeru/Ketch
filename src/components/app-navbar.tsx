@@ -13,7 +13,7 @@ export function AppNavbar() {
   return (
     <>
       <div className="fixed inset-x-0 top-4 z-40 hidden px-4 md:top-5 md:block md:px-6">
-        <div className="mx-auto flex w-full max-w-6xl justify-center">
+        <div className="mx-auto flex w-full max-w-7xl justify-center">
           <div className="flex w-full items-center justify-between rounded-[1.75rem] border border-white/35 bg-background/58 px-4 py-3 shadow-sm backdrop-blur-xl supports-[backdrop-filter]:bg-background/48 md:px-5">
             <Link
               to="/"

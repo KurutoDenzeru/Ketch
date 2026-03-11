@@ -98,8 +98,8 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
         </div>
       </div>
 
-      <div className="grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-        <div className="rounded-[1.75rem] border border-border/70 bg-background/80 p-5">
+      <div className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
+        <div className="grid h-full grid-rows-[auto_1fr] rounded-[1.75rem] border border-border/70 bg-background/80 p-5">
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>
               <div className="mb-1 flex items-center gap-2 text-xs font-semibold tracking-[0.22em] text-muted-foreground uppercase">
@@ -123,7 +123,10 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
             </div>
           </div>
 
-          <ChartContainer config={trendConfig} className="h-64 w-full">
+          <ChartContainer
+            config={trendConfig}
+            className="h-full min-h-[18rem] w-full"
+          >
             <AreaChart data={idea.analysis.trendPoints}>
               <defs>
                 <linearGradient id="trendFill" x1="0" x2="0" y1="0" y2="1">
@@ -156,14 +159,14 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
           </ChartContainer>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-2">
+        <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 xl:grid-cols-2">
           {idea.analysis.scoreMetrics.map((metric) => {
             const Icon = getMetricIcon(metric.label)
 
             return (
               <div
                 key={metric.label}
-                className="rounded-[1.75rem] border border-border/70 bg-muted/25 p-4"
+                className="flex h-full flex-col rounded-[1.75rem] border border-border/70 bg-muted/25 p-4"
               >
                 <div className="mb-4 flex items-start justify-between gap-3">
                   <div>
