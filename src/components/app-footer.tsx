@@ -14,7 +14,7 @@ export function AppFooter() {
         <div className="flex flex-wrap items-center gap-3">
           <ThemeToggleTabs />
           <a
-            href="https://github.com"
+            href="https://github.com/KurutoDenzeru/Ketch"
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-2 transition-colors hover:bg-muted/60"
@@ -23,7 +23,7 @@ export function AppFooter() {
             GitHub
           </a>
           <a
-            href="https://linkedin.com"
+            href="https://linkedin.com/in/kurtcalacday/"
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-2 transition-colors hover:bg-muted/60"
@@ -32,7 +32,7 @@ export function AppFooter() {
             LinkedIn
           </a>
           <a
-            href="https://instagram.com"
+            href="https://instagram.com/krtclcdy"
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-2 transition-colors hover:bg-muted/60"
