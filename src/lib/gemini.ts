@@ -526,10 +526,14 @@ Founder input:
 - Concept direction: ${data.concept || "Not specified. Invent a strong concept."}
 - Problem to solve: ${data.problem || "Not specified"}
 - Target audience: ${data.audience || "Not specified"}
-- Founder edge: ${data.founderEdge || "Not specified"}
-- Constraints: ${data.constraints || "Not specified"}
+- Category focus: ${data.categoryFocus || "Not specified"}
+- Desired features: ${
+      data.featurePreferences.length > 0
+        ? data.featurePreferences.join(", ")
+        : "Not specified"
+    }
 
-Use the founder input where it is helpful. If parts are missing, make reasonable assumptions and fill the gaps with a modern, realistic, buildable startup concept.
+Use the founder input where it is helpful. Treat the category focus and desired features as product-shaping constraints. If parts are missing, make reasonable assumptions and fill the gaps with a modern, realistic, buildable startup concept.
 
 Return ONLY JSON with:
 - name

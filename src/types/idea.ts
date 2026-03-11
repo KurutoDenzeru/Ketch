@@ -3,19 +3,114 @@ export const ideaCategories = [
   "AI Tool",
   "Dev Tool",
   "Mobile App",
+  "Marketplace",
+  "Fintech",
+  "Healthcare",
+  "Creator Tool",
+  "Education",
+  "E-commerce",
+  "Cybersecurity",
+  "Climate",
+  "Consumer Social",
+  "Operations",
 ] as const
 
 export type IdeaCategory = (typeof ideaCategories)[number]
 
 export type IdeaFacet = "tagline" | "twist"
 
+export const featurePreferences = [
+  "Fast MVP",
+  "Recurring Revenue",
+  "Viral Loop",
+  "AI Automation",
+  "B2B Workflow",
+  "Mobile First",
+  "Community Driven",
+  "Low Competition",
+] as const
+
+export type FeaturePreference = (typeof featurePreferences)[number]
+
+export const categoryFocusOptions: Record<IdeaCategory, string[]> = {
+  SaaS: ["Internal tools", "Team productivity", "Vertical SaaS", "Analytics"],
+  "AI Tool": [
+    "Agent workflow",
+    "Content generation",
+    "Research assistant",
+    "AI copilots",
+  ],
+  "Dev Tool": ["CI/CD", "Observability", "Testing", "Developer productivity"],
+  "Mobile App": [
+    "Habit tracker",
+    "Consumer utility",
+    "Wellness",
+    "Local discovery",
+  ],
+  Marketplace: [
+    "B2B matching",
+    "Services marketplace",
+    "Niche communities",
+    "Local supply",
+  ],
+  Fintech: [
+    "Expense management",
+    "Embedded finance",
+    "SMB finance",
+    "Personal wealth",
+  ],
+  Healthcare: [
+    "Practice operations",
+    "Patient engagement",
+    "Mental health",
+    "Compliance workflow",
+  ],
+  "Creator Tool": [
+    "Audience growth",
+    "Monetization",
+    "Editing workflow",
+    "Content planning",
+  ],
+  Education: ["Upskilling", "Test prep", "Micro-learning", "School workflow"],
+  "E-commerce": [
+    "Store optimization",
+    "Post-purchase",
+    "Creator commerce",
+    "Inventory workflow",
+  ],
+  Cybersecurity: [
+    "Security training",
+    "AppSec",
+    "Identity",
+    "Threat detection",
+  ],
+  Climate: [
+    "Energy efficiency",
+    "Carbon tracking",
+    "Climate adaptation",
+    "Circular economy",
+  ],
+  "Consumer Social": [
+    "Interest graph",
+    "Messaging",
+    "Status sharing",
+    "Creator community",
+  ],
+  Operations: [
+    "Back-office automation",
+    "Scheduling",
+    "Field operations",
+    "Documentation workflow",
+  ],
+}
+
 export type IdeaBriefInput = {
   category: IdeaCategory
   concept: string
   problem: string
   audience: string
-  founderEdge: string
-  constraints: string
+  categoryFocus: string
+  featurePreferences: FeaturePreference[]
 }
 
 export type IdeaScoreMetric = {

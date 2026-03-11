@@ -53,8 +53,8 @@ const initialBrief: IdeaBriefInput = {
   concept: "",
   problem: "",
   audience: "",
-  founderEdge: "",
-  constraints: "",
+  categoryFocus: "Agent workflow",
+  featurePreferences: ["AI Automation", "Fast MVP"],
 }
 
 function IdeaCardSkeleton() {
