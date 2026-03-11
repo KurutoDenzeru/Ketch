@@ -1,24 +1,49 @@
 "use client"
 
 import {
+  Activity,
   BrainCircuit,
   BriefcaseBusiness,
+  BriefcaseConveyorBelt,
   Building2,
+  Cable,
+  ChartColumn,
+  ClipboardCheck,
+  Coins,
+  Compass,
+  FileText,
   DollarSign,
+  Gauge,
   GraduationCap,
   HeartPulse,
+  KeyRound,
   Layers3,
   Lightbulb,
   LoaderCircle,
+  MapPinned,
+  MessageSquareMore,
+  NotebookPen,
+  Orbit,
+  Radar,
+  Receipt,
+  Route,
+  ScanSearch,
+  School,
+  Search,
+  ShieldAlert,
   type LucideIcon,
   ShieldCheck,
   ShoppingBag,
+  Sparkle,
   Smartphone,
   Sparkles,
   Sprout,
   Store,
+  TestTube2,
   Tags,
   Target,
+  Trophy,
+  UserRoundCheck,
   Wrench,
 } from "lucide-react"
 
@@ -58,7 +83,7 @@ export function IdeaBriefForm({
   isLoading,
 }: IdeaBriefFormProps) {
   const availableFocuses = categoryFocusOptions[brief.category]
-  const FocusIcon = categoryIcons[brief.category]
+  const ActiveFocusIcon = getFocusIcon(brief.categoryFocus)
 
   function toggleFeature(feature: FeaturePreference) {
     const nextPreferences = brief.featurePreferences.includes(feature)
@@ -156,21 +181,25 @@ export function IdeaBriefForm({
               value={brief.categoryFocus}
               onValueChange={(value) => onChange({ categoryFocus: value })}
             >
-              <SelectTrigger className="h-12 min-h-12 w-full rounded-xl px-3 py-0 text-base md:text-sm">
+              <SelectTrigger className="!h-12 min-h-12 w-full rounded-xl px-3 py-0 text-base md:text-sm">
                 <SelectValue placeholder="Choose a focus">
                   <span className="flex items-center gap-2">
-                    <FocusIcon className="size-4 text-muted-foreground" />
+                    <ActiveFocusIcon className="size-4 text-muted-foreground" />
                     <span>{brief.categoryFocus}</span>
                   </span>
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
-                {availableFocuses.map((option) => (
-                  <SelectItem key={option} value={option} className="py-2">
-                    <FocusIcon className="size-4 text-muted-foreground" />
-                    <SelectItemText>{option}</SelectItemText>
-                  </SelectItem>
-                ))}
+                {availableFocuses.map((option) => {
+                  const OptionIcon = getFocusIcon(option)
+
+                  return (
+                    <SelectItem key={option} value={option} className="py-2">
+                      <OptionIcon className="size-4 text-muted-foreground" />
+                      <SelectItemText>{option}</SelectItemText>
+                    </SelectItem>
+                  )
+                })}
               </SelectContent>
             </Select>
           </div>
@@ -242,19 +271,66 @@ export function IdeaBriefForm({
   )
 }
 
-const categoryIcons: Record<IdeaBriefInput["category"], LucideIcon> = {
-  SaaS: Building2,
-  "AI Tool": BrainCircuit,
-  "Dev Tool": Wrench,
-  "Mobile App": Smartphone,
-  Marketplace: Store,
-  Fintech: DollarSign,
-  Healthcare: HeartPulse,
-  "Creator Tool": Sparkles,
-  Education: GraduationCap,
-  "E-commerce": ShoppingBag,
-  Cybersecurity: ShieldCheck,
-  Climate: Sprout,
-  "Consumer Social": BriefcaseBusiness,
-  Operations: Layers3,
+function getFocusIcon(focus: string): LucideIcon {
+  const normalized = focus.toLowerCase()
+
+  if (normalized.includes("agent")) return BrainCircuit
+  if (normalized.includes("content generation")) return Sparkle
+  if (normalized.includes("research")) return Search
+  if (normalized.includes("copilot")) return Orbit
+  if (normalized.includes("internal")) return Building2
+  if (normalized.includes("team productivity")) return BriefcaseBusiness
+  if (normalized.includes("vertical")) return Layers3
+  if (normalized.includes("analytics")) return ChartColumn
+  if (normalized.includes("ci/cd")) return Route
+  if (normalized.includes("observability")) return Gauge
+  if (normalized.includes("testing")) return TestTube2
+  if (normalized.includes("developer productivity")) return Wrench
+  if (normalized.includes("habit")) return Activity
+  if (normalized.includes("consumer utility")) return Smartphone
+  if (normalized.includes("wellness")) return HeartPulse
+  if (normalized.includes("local discovery")) return MapPinned
+  if (normalized.includes("matching")) return Cable
+  if (normalized.includes("services marketplace")) return Store
+  if (normalized.includes("niche communities")) return UserRoundCheck
+  if (normalized.includes("local supply")) return Compass
+  if (normalized.includes("expense")) return Receipt
+  if (normalized.includes("embedded finance")) return Coins
+  if (normalized.includes("smb finance")) return DollarSign
+  if (normalized.includes("personal wealth")) return Trophy
+  if (normalized.includes("practice operations")) return ClipboardCheck
+  if (normalized.includes("patient engagement")) return HeartPulse
+  if (normalized.includes("mental health")) return Activity
+  if (normalized.includes("compliance")) return ClipboardCheck
+  if (normalized.includes("audience growth")) return ChartColumn
+  if (normalized.includes("monetization")) return DollarSign
+  if (normalized.includes("editing workflow")) return NotebookPen
+  if (normalized.includes("content planning")) return FileText
+  if (normalized.includes("upskilling")) return GraduationCap
+  if (normalized.includes("test prep")) return School
+  if (normalized.includes("micro-learning")) return BrainCircuit
+  if (normalized.includes("school workflow")) return School
+  if (normalized.includes("store optimization")) return ShoppingBag
+  if (normalized.includes("post-purchase")) return Receipt
+  if (normalized.includes("creator commerce")) return Store
+  if (normalized.includes("inventory")) return BriefcaseConveyorBelt
+  if (normalized.includes("security training")) return ShieldCheck
+  if (normalized.includes("appsec")) return ShieldAlert
+  if (normalized.includes("identity")) return KeyRound
+  if (normalized.includes("threat detection")) return Radar
+  if (normalized.includes("energy efficiency")) return Sprout
+  if (normalized.includes("carbon tracking")) return ScanSearch
+  if (normalized.includes("climate adaptation")) return Compass
+  if (normalized.includes("circular economy")) return Route
+  if (normalized.includes("interest graph")) return Orbit
+  if (normalized.includes("messaging")) return MessageSquareMore
+  if (normalized.includes("status sharing")) return Sparkles
+  if (normalized.includes("creator community")) return UserRoundCheck
+  if (normalized.includes("back-office automation"))
+    return BriefcaseConveyorBelt
+  if (normalized.includes("scheduling")) return Route
+  if (normalized.includes("field operations")) return Compass
+  if (normalized.includes("documentation")) return FileText
+
+  return Layers3
 }

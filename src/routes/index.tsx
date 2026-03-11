@@ -206,7 +206,7 @@ function IndexPage() {
 
   return (
     <main className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 py-8 md:gap-14 md:px-6 md:py-10">
-      <section className="space-y-8 rounded-[2.5rem] border border-border/70 bg-card/85 px-6 py-10 shadow-sm md:px-10 md:py-14">
+      <section className="space-y-10 px-2 py-6 md:px-8 md:py-10">
         <div className="flex flex-wrap items-center justify-center gap-3">
           <Badge variant="outline" className="rounded-full px-4 py-1.5">
             Founder-first evaluator
@@ -228,32 +228,12 @@ function IndexPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-2 text-sm text-muted-foreground">
-          {[
-            "Why now",
-            "Proof & signals",
-            "Market gap",
-            "Execution plan",
-            "Trend chart",
-            "Keyword cues",
-            "Framework fit",
-            "Detailed plan",
-          ].map((item) => (
-            <span
-              key={item}
-              className="rounded-full border border-border/70 bg-background/75 px-4 py-2"
-            >
-              {item}
-            </span>
-          ))}
-        </div>
-
         <div className="grid gap-3 md:grid-cols-4">
           {[
             {
-              value: "3",
-              label: "Founder inputs",
-              detail: "Concept, audience, problem",
+              value: "14",
+              label: "Startup lanes",
+              detail: "Guided categories to explore",
             },
             {
               value: "8",
