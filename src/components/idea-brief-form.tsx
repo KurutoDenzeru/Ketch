@@ -1,12 +1,25 @@
 "use client"
 
 import {
+  BrainCircuit,
+  BriefcaseBusiness,
+  Building2,
+  DollarSign,
+  GraduationCap,
+  HeartPulse,
   Layers3,
   Lightbulb,
   LoaderCircle,
+  type LucideIcon,
+  ShieldCheck,
+  ShoppingBag,
+  Smartphone,
   Sparkles,
+  Sprout,
+  Store,
   Tags,
   Target,
+  Wrench,
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -17,6 +30,7 @@ import {
   Select,
   SelectContent,
   SelectItem,
+  SelectItemText,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
@@ -44,6 +58,7 @@ export function IdeaBriefForm({
   isLoading,
 }: IdeaBriefFormProps) {
   const availableFocuses = categoryFocusOptions[brief.category]
+  const FocusIcon = categoryIcons[brief.category]
 
   function toggleFeature(feature: FeaturePreference) {
     const nextPreferences = brief.featurePreferences.includes(feature)
@@ -141,13 +156,19 @@ export function IdeaBriefForm({
               value={brief.categoryFocus}
               onValueChange={(value) => onChange({ categoryFocus: value })}
             >
-              <SelectTrigger className="h-12 w-full rounded-xl">
-                <SelectValue placeholder="Choose a focus" />
+              <SelectTrigger className="h-12 min-h-12 w-full rounded-xl px-3 py-0 text-base md:text-sm">
+                <SelectValue placeholder="Choose a focus">
+                  <span className="flex items-center gap-2">
+                    <FocusIcon className="size-4 text-muted-foreground" />
+                    <span>{brief.categoryFocus}</span>
+                  </span>
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 {availableFocuses.map((option) => (
-                  <SelectItem key={option} value={option}>
-                    {option}
+                  <SelectItem key={option} value={option} className="py-2">
+                    <FocusIcon className="size-4 text-muted-foreground" />
+                    <SelectItemText>{option}</SelectItemText>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -219,4 +240,21 @@ export function IdeaBriefForm({
       </CardContent>
     </Card>
   )
+}
+
+const categoryIcons: Record<IdeaBriefInput["category"], LucideIcon> = {
+  SaaS: Building2,
+  "AI Tool": BrainCircuit,
+  "Dev Tool": Wrench,
+  "Mobile App": Smartphone,
+  Marketplace: Store,
+  Fintech: DollarSign,
+  Healthcare: HeartPulse,
+  "Creator Tool": Sparkles,
+  Education: GraduationCap,
+  "E-commerce": ShoppingBag,
+  Cybersecurity: ShieldCheck,
+  Climate: Sprout,
+  "Consumer Social": BriefcaseBusiness,
+  Operations: Layers3,
 }
