@@ -31,11 +31,11 @@ import {
   generateIdea,
   generateMarketValidation,
   generatePitch,
-  regenerateIdeaFacet,
+  regenerateIdea,
+  regenerateIdeaTitles,
 } from "@/lib/gemini"
 import type {
   IdeaBriefInput,
-  IdeaFacet,
   MarketValidation,
   ShareableIdeaPayload,
   StartupIdea,
@@ -190,39 +190,61 @@ function IndexPage() {
     },
   })
 
-  const facetMutation = useMutation({
-    mutationFn: ({
-      currentIdea,
-      facet,
-    }: {
-      currentIdea: StartupIdea
-      facet: IdeaFacet
-    }) => regenerateIdeaFacet({ data: { idea: currentIdea, facet } }),
-    onSuccess: ({ facet, value }) => {
+  const regenerateIdeaMutation = useMutation({
+    mutationFn: (currentIdea: StartupIdea) =>
+      regenerateIdea({ data: { idea: currentIdea } }),
+    onMutate: () => {
+      toast.loading("Regenerating idea...", {
+        id: "regenerate-idea",
+        description: "Ketch is rebuilding this concept from the current snapshot.",
+      })
+    },
+    onSuccess: (nextIdea) => {
+      setIdea(nextIdea)
+      setPitch(null)
+      setMarketValidation(null)
+      toast.success("Idea regenerated", {
+        id: "regenerate-idea",
+        description: `${nextIdea.name} is the new working concept.`,
+      })
+    },
+    onError: (error) => {
+      toast.error("Failed to regenerate idea", {
+        id: "regenerate-idea",
+        description: error.message,
+      })
+    },
+  })
+
+  const regenerateTitlesMutation = useMutation({
+    mutationFn: (currentIdea: StartupIdea) =>
+      regenerateIdeaTitles({ data: { idea: currentIdea } }),
+    onMutate: () => {
+      toast.loading("Generating new titles...", {
+        id: "generate-titles",
+        description: "Ketch is generating a fresh set of names.",
+      })
+    },
+    onSuccess: ({ name, alternativeNames }) => {
       setIdea((currentIdea) =>
         currentIdea
           ? {
               ...currentIdea,
-              [facet]: value,
+              name,
+              alternativeNames,
             }
           : currentIdea
       )
-      toast.success(
-        facet === "tagline" ? "Tagline refreshed" : "Twist refreshed",
-        {
-          description: "The generated idea card has been updated in place.",
-        }
-      )
+      toast.success("New titles ready", {
+        id: "generate-titles",
+        description: `${name} is now the lead title option.`,
+      })
     },
-    onError: (error, variables) => {
-      toast.error(
-        variables.facet === "tagline"
-          ? "Failed to refresh tagline"
-          : "Failed to refresh twist",
-        {
-          description: error.message,
-        }
-      )
+    onError: (error) => {
+      toast.error("Failed to generate new titles", {
+        id: "generate-titles",
+        description: error.message,
+      })
     },
   })
 
@@ -504,11 +526,8 @@ function IndexPage() {
             marketValidation={marketValidation}
             isPitchLoading={pitchMutation.isPending}
             isMarketValidationLoading={marketValidationMutation.isPending}
-            refreshingFacet={
-              facetMutation.isPending
-                ? (facetMutation.variables?.facet ?? null)
-                : null
-            }
+            isRegeneratingIdea={regenerateIdeaMutation.isPending}
+            isRegeneratingTitles={regenerateTitlesMutation.isPending}
             isSaved={saved}
             sharePath={currentSharePath}
             onSelectAlternativeName={(name) => {
@@ -524,14 +543,15 @@ function IndexPage() {
                 description: `${name} is now the active concept name.`,
               })
             }}
-            onRefreshFacet={(facet) => {
-              if (!idea) {
-                return
+            onRegenerateIdea={() => {
+              if (idea) {
+                regenerateIdeaMutation.mutate(idea)
               }
-              facetMutation.mutate({
-                currentIdea: idea,
-                facet,
-              })
+            }}
+            onRegenerateTitles={() => {
+              if (idea) {
+                regenerateTitlesMutation.mutate(idea)
+              }
             }}
             onGeneratePitch={() => {
               if (idea) {

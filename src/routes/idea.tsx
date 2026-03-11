@@ -19,10 +19,10 @@ import {
 import {
   generateMarketValidation,
   generatePitch,
-  regenerateIdeaFacet,
+  regenerateIdea,
+  regenerateIdeaTitles,
 } from "@/lib/gemini"
 import type {
-  IdeaFacet,
   MarketValidation,
   ShareableIdeaPayload,
   StartupIdea,
@@ -102,39 +102,61 @@ function SharedIdeaPage() {
     },
   })
 
-  const facetMutation = useMutation({
-    mutationFn: ({
-      currentIdea,
-      facet,
-    }: {
-      currentIdea: StartupIdea
-      facet: IdeaFacet
-    }) => regenerateIdeaFacet({ data: { idea: currentIdea, facet } }),
-    onSuccess: ({ facet, value }) => {
+  const regenerateIdeaMutation = useMutation({
+    mutationFn: (currentIdea: StartupIdea) =>
+      regenerateIdea({ data: { idea: currentIdea } }),
+    onMutate: () => {
+      toast.loading("Regenerating idea...", {
+        id: "regenerate-shared-idea",
+        description: "Ketch is rebuilding this concept from the current snapshot.",
+      })
+    },
+    onSuccess: (nextIdea) => {
+      setIdea(nextIdea)
+      setPitch(null)
+      setMarketValidation(null)
+      toast.success("Idea regenerated", {
+        id: "regenerate-shared-idea",
+        description: `${nextIdea.name} is the new active concept.`,
+      })
+    },
+    onError: (error) => {
+      toast.error("Failed to regenerate idea", {
+        id: "regenerate-shared-idea",
+        description: error.message,
+      })
+    },
+  })
+
+  const regenerateTitlesMutation = useMutation({
+    mutationFn: (currentIdea: StartupIdea) =>
+      regenerateIdeaTitles({ data: { idea: currentIdea } }),
+    onMutate: () => {
+      toast.loading("Generating new titles...", {
+        id: "generate-shared-titles",
+        description: "Ketch is generating a fresh set of names.",
+      })
+    },
+    onSuccess: ({ name, alternativeNames }) => {
       setIdea((currentIdea) =>
         currentIdea
           ? {
               ...currentIdea,
-              [facet]: value,
+              name,
+              alternativeNames,
             }
           : currentIdea
       )
-      toast.success(
-        facet === "tagline" ? "Tagline refreshed" : "Twist refreshed",
-        {
-          description: "The shared idea view has been updated in place.",
-        }
-      )
+      toast.success("New titles ready", {
+        id: "generate-shared-titles",
+        description: `${name} is now the lead title option.`,
+      })
     },
-    onError: (error, variables) => {
-      toast.error(
-        variables.facet === "tagline"
-          ? "Failed to refresh tagline"
-          : "Failed to refresh twist",
-        {
-          description: error.message,
-        }
-      )
+    onError: (error) => {
+      toast.error("Failed to generate new titles", {
+        id: "generate-shared-titles",
+        description: error.message,
+      })
     },
   })
 
@@ -228,11 +250,8 @@ function SharedIdeaPage() {
         marketValidation={marketValidation}
         isPitchLoading={pitchMutation.isPending}
         isMarketValidationLoading={marketValidationMutation.isPending}
-        refreshingFacet={
-          facetMutation.isPending
-            ? (facetMutation.variables?.facet ?? null)
-            : null
-        }
+        isRegeneratingIdea={regenerateIdeaMutation.isPending}
+        isRegeneratingTitles={regenerateTitlesMutation.isPending}
         isSaved={isIdeaSaved(idea)}
         sharePath={currentSharePath}
         onSelectAlternativeName={(name) => {
@@ -248,11 +267,11 @@ function SharedIdeaPage() {
             description: `${name} is now the active concept name.`,
           })
         }}
-        onRefreshFacet={(facet) => {
-          facetMutation.mutate({
-            currentIdea: idea,
-            facet,
-          })
+        onRegenerateIdea={() => {
+          regenerateIdeaMutation.mutate(idea)
+        }}
+        onRegenerateTitles={() => {
+          regenerateTitlesMutation.mutate(idea)
         }}
         onGeneratePitch={() => {
           pitchMutation.mutate(idea)

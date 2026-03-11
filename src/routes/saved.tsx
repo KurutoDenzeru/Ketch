@@ -1,10 +1,21 @@
 import { useEffect, useState } from "react"
 import { useMutation } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import { CalendarDays, Trash2 } from "lucide-react"
+import { CalendarDays, Sparkles, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
 import { IdeaCard } from "@/components/idea-card"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -19,10 +30,10 @@ import {
 import {
   generateMarketValidation,
   generatePitch,
-  regenerateIdeaFacet,
+  regenerateIdea,
+  regenerateIdeaTitles,
 } from "@/lib/gemini"
 import type {
-  IdeaFacet,
   MarketValidation,
   SavedIdea,
   ShareableIdeaPayload,
@@ -112,18 +123,51 @@ function SavedIdeaCard({ savedIdea, onRemove, onUpdate }: SavedIdeaCardProps) {
     },
   })
 
-  const facetMutation = useMutation({
-    mutationFn: ({
-      currentIdea,
-      facet,
-    }: {
-      currentIdea: StartupIdea
-      facet: IdeaFacet
-    }) => regenerateIdeaFacet({ data: { idea: currentIdea, facet } }),
-    onSuccess: ({ facet, value }) => {
+  const regenerateIdeaMutation = useMutation({
+    mutationFn: (currentIdea: StartupIdea) =>
+      regenerateIdea({ data: { idea: currentIdea } }),
+    onMutate: () => {
+      toast.loading("Regenerating idea...", {
+        id: `regenerate-saved-idea-${savedIdea.id}`,
+        description: "Ketch is rebuilding this saved snapshot.",
+      })
+    },
+    onSuccess: (nextIdea) => {
+      setIdea(nextIdea)
+      setPitch(null)
+      setMarketValidation(null)
+      persistPayload({
+        idea: nextIdea,
+        pitch: null,
+        marketValidation: null,
+      })
+      toast.success("Idea regenerated", {
+        id: `regenerate-saved-idea-${savedIdea.id}`,
+        description: `${nextIdea.name} is the new saved concept.`,
+      })
+    },
+    onError: (error) => {
+      toast.error("Failed to regenerate idea", {
+        id: `regenerate-saved-idea-${savedIdea.id}`,
+        description: error.message,
+      })
+    },
+  })
+
+  const regenerateTitlesMutation = useMutation({
+    mutationFn: (currentIdea: StartupIdea) =>
+      regenerateIdeaTitles({ data: { idea: currentIdea } }),
+    onMutate: () => {
+      toast.loading("Generating new titles...", {
+        id: `generate-saved-titles-${savedIdea.id}`,
+        description: "Ketch is generating a fresh set of names.",
+      })
+    },
+    onSuccess: ({ name, alternativeNames }) => {
       const nextIdea = {
         ...idea,
-        [facet]: value,
+        name,
+        alternativeNames,
       }
 
       setIdea(nextIdea)
@@ -132,22 +176,16 @@ function SavedIdeaCard({ savedIdea, onRemove, onUpdate }: SavedIdeaCardProps) {
         pitch,
         marketValidation,
       })
-      toast.success(
-        facet === "tagline" ? "Tagline refreshed" : "Twist refreshed",
-        {
-          description: "The saved idea has been updated in local storage.",
-        }
-      )
+      toast.success("New titles ready", {
+        id: `generate-saved-titles-${savedIdea.id}`,
+        description: `${name} is now the lead saved title option.`,
+      })
     },
-    onError: (error, variables) => {
-      toast.error(
-        variables.facet === "tagline"
-          ? "Failed to refresh tagline"
-          : "Failed to refresh twist",
-        {
-          description: error.message,
-        }
-      )
+    onError: (error) => {
+      toast.error("Failed to generate new titles", {
+        id: `generate-saved-titles-${savedIdea.id}`,
+        description: error.message,
+      })
     },
   })
 
@@ -170,19 +208,56 @@ function SavedIdeaCard({ savedIdea, onRemove, onUpdate }: SavedIdeaCardProps) {
           </span>
         </div>
 
-        <Button
-          type="button"
-          variant="destructive"
-          onClick={() => {
-            onRemove(savedIdea.id)
-            toast.success("Saved idea removed", {
-              description: "The local copy has been deleted from this browser.",
-            })
-          }}
-        >
-          <Trash2 />
-          Remove
-        </Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => regenerateIdeaMutation.mutate(idea)}
+            disabled={regenerateIdeaMutation.isPending}
+            className="rounded-full"
+          >
+            {regenerateIdeaMutation.isPending ? (
+              <span className="inline-flex items-center">
+                <Sparkles className="animate-pulse" />
+              </span>
+            ) : (
+              <Sparkles />
+            )}
+            Regenerate idea
+          </Button>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button type="button" variant="destructive">
+                <Trash2 />
+                Remove
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Remove saved idea?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This deletes the saved snapshot from local storage, including its
+                  generated pitch and validation data. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  variant="destructive"
+                  onClick={() => {
+                    onRemove(savedIdea.id)
+                    toast.success("Saved idea removed", {
+                      description: "The local copy has been deleted from this browser.",
+                    })
+                  }}
+                >
+                  Remove idea
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
 
       <IdeaCard
@@ -191,9 +266,8 @@ function SavedIdeaCard({ savedIdea, onRemove, onUpdate }: SavedIdeaCardProps) {
         marketValidation={marketValidation}
         isPitchLoading={pitchMutation.isPending}
         isMarketValidationLoading={marketValidationMutation.isPending}
-        refreshingFacet={
-          facetMutation.isPending ? (facetMutation.variables?.facet ?? null) : null
-        }
+        isRegeneratingIdea={regenerateIdeaMutation.isPending}
+        isRegeneratingTitles={regenerateTitlesMutation.isPending}
         isSaved
         sharePath={buildIdeaSharePath(currentPayload)}
         onSelectAlternativeName={(name) => {
@@ -212,11 +286,11 @@ function SavedIdeaCard({ savedIdea, onRemove, onUpdate }: SavedIdeaCardProps) {
             description: `${name} is now the active saved idea name.`,
           })
         }}
-        onRefreshFacet={(facet) => {
-          facetMutation.mutate({
-            currentIdea: idea,
-            facet,
-          })
+        onRegenerateIdea={() => {
+          regenerateIdeaMutation.mutate(idea)
+        }}
+        onRegenerateTitles={() => {
+          regenerateTitlesMutation.mutate(idea)
         }}
         onGeneratePitch={() => {
           pitchMutation.mutate(idea)

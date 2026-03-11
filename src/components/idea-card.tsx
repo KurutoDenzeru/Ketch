@@ -4,8 +4,8 @@ import { useEffect, useState } from "react"
 import {
   Copy,
   Gauge,
+  Sparkles,
   LoaderCircle,
-  RefreshCcw,
   Rocket,
   Save,
   Send,
@@ -34,7 +34,6 @@ import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
 import type {
-  IdeaFacet,
   MarketValidation,
   StartupIdea,
   StartupPitch,
@@ -46,11 +45,13 @@ type IdeaCardProps = {
   marketValidation: MarketValidation | null
   isPitchLoading: boolean
   isMarketValidationLoading: boolean
-  refreshingFacet: IdeaFacet | null
+  isRegeneratingIdea?: boolean
+  isRegeneratingTitles?: boolean
   isSaved: boolean
   sharePath: string
   onSelectAlternativeName: (name: string) => void
-  onRefreshFacet: (facet: IdeaFacet) => void
+  onRegenerateIdea?: () => void
+  onRegenerateTitles: () => void
   onGeneratePitch: () => void
   onGenerateMarketValidation: () => void
   onCopy: () => void
@@ -90,11 +91,13 @@ export function IdeaCard({
   marketValidation,
   isPitchLoading,
   isMarketValidationLoading,
-  refreshingFacet,
+  isRegeneratingIdea = false,
+  isRegeneratingTitles = false,
   isSaved,
   sharePath,
   onSelectAlternativeName,
-  onRefreshFacet,
+  onRegenerateIdea,
+  onRegenerateTitles,
   onGeneratePitch,
   onGenerateMarketValidation,
   onCopy,
@@ -169,31 +172,33 @@ export function IdeaCard({
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => onRefreshFacet("tagline")}
-                    disabled={refreshingFacet !== null}
+                    onClick={onRegenerateTitles}
+                    disabled={isRegeneratingTitles || isRegeneratingIdea}
                     className="rounded-full"
                   >
-                    {refreshingFacet === "tagline" ? (
+                    {isRegeneratingTitles ? (
                       <LoaderCircle className="animate-spin" />
                     ) : (
-                      <RefreshCcw />
+                      <Sparkles />
                     )}
-                    Refresh tagline
+                    Generate new titles
                   </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => onRefreshFacet("twist")}
-                    disabled={refreshingFacet !== null}
-                    className="rounded-full"
-                  >
-                    {refreshingFacet === "twist" ? (
-                      <LoaderCircle className="animate-spin" />
-                    ) : (
-                      <RefreshCcw />
-                    )}
-                    Refresh twist
-                  </Button>
+                  {onRegenerateIdea ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={onRegenerateIdea}
+                      disabled={isRegeneratingIdea || isRegeneratingTitles}
+                      className="rounded-full"
+                    >
+                      {isRegeneratingIdea ? (
+                        <LoaderCircle className="animate-spin" />
+                      ) : (
+                        <Sparkles />
+                      )}
+                      Regenerate idea
+                    </Button>
+                  ) : null}
                 </div>
               </div>
             </div>

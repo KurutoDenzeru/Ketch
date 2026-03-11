@@ -4,7 +4,6 @@ import { createServerFn } from "@tanstack/react-start"
 import type {
   IdeaBriefInput,
   IdeaCategory,
-  IdeaFacet,
   MarketValidation,
   StartupIdea,
   StartupPitch,
@@ -176,12 +175,18 @@ const pitchResponseSchema = {
   required: ["problem", "solution", "market", "businessModel"],
 } as const
 
-const facetResponseSchema = {
+const titlesResponseSchema = {
   ...sharedSchemaConfig,
   properties: {
-    value: { type: "string" },
+    name: { type: "string" },
+    alternativeNames: {
+      type: "array",
+      items: { type: "string" },
+      minItems: 5,
+      maxItems: 5,
+    },
   },
-  required: ["value"],
+  required: ["name", "alternativeNames"],
 } as const
 
 const marketValidationSchema = {
@@ -593,29 +598,73 @@ Keep each field specific and practical.`
     return normalizePitch(result)
   })
 
-export const regenerateIdeaFacet = createServerFn({ method: "POST" })
-  .inputValidator((input: { idea: StartupIdea; facet: IdeaFacet }) => input)
+export const regenerateIdea = createServerFn({ method: "POST" })
+  .inputValidator((input: { idea: StartupIdea }) => input)
   .handler(async ({ data }) => {
-    const fieldLabel = data.facet === "tagline" ? "tagline" : "unique twist"
-
-    const prompt = `Improve only the ${fieldLabel} for this startup idea.
+    const prompt = `Create a fresh but related startup idea using this saved snapshot as the source material.
 
 Startup JSON:
 ${JSON.stringify(data.idea, null, 2)}
 
 Return ONLY JSON with:
-- value
+- name
+- tagline
+- description
+- audience
+- twist
+- monetization
+- validationScore
+- alternativeNames (array of 5)
+- analysis
 
-The new ${fieldLabel} should feel more specific, sharper, and more memorable.`
+Requirements:
+- Keep the same category.
+- Stay in the same market neighborhood and preserve the strongest underlying opportunity.
+- Make the overall concept meaningfully different, sharper, and more realistic.
+- Be more critical with scoring than the original snapshot. Avoid perfect 10s unless clearly exceptional.
+- Keep the idea buildable and commercially plausible.`
 
-    const result = await callGemini<{ value: string }>({
+    const result = await callGemini<StartupIdea>({
       prompt,
-      schema: facetResponseSchema,
+      schema: ideaResponseSchema,
+    })
+
+    return normalizeIdea(result, data.idea.category)
+  })
+
+export const regenerateIdeaTitles = createServerFn({ method: "POST" })
+  .inputValidator((input: { idea: StartupIdea }) => input)
+  .handler(async ({ data }) => {
+    const prompt = `Generate a stronger set of startup titles for this idea.
+
+Startup JSON:
+${JSON.stringify(data.idea, null, 2)}
+
+Return ONLY JSON with:
+- name
+- alternativeNames (array of 5)
+
+Requirements:
+- Keep the names short, brandable, and specific.
+- Avoid generic AI naming clichés.
+- The names should fit the current product positioning.
+- Make the first "name" the strongest recommendation.
+- Do not repeat the exact same title across all five options.`
+
+    const result = await callGemini<{
+      name: string
+      alternativeNames: string[]
+    }>({
+      prompt,
+      schema: titlesResponseSchema,
     })
 
     return {
-      facet: data.facet,
-      value: assertString(result.value, data.facet),
+      name: assertString(result.name, "name"),
+      alternativeNames: assertStringArray(
+        result.alternativeNames,
+        "alternativeNames"
+      ).slice(0, 5),
     }
   })
 
