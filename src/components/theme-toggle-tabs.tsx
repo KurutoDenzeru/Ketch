@@ -16,16 +16,16 @@ export function ThemeToggleTabs() {
 
   if (!mounted) {
     return (
-      <div className="h-10 w-32 rounded-full border border-border/70 bg-background/80 shadow-sm" />
+      <div className="h-[38px] w-[10.5rem] rounded-full border border-border/70 bg-background/80 shadow-sm" />
     )
   }
 
   return (
     <Tabs value={theme ?? "system"} onValueChange={setTheme} className="gap-0">
-      <TabsList className="h-10 rounded-full border border-border/70 bg-background/85 p-1 shadow-sm backdrop-blur">
+      <TabsList className="h-[38px] rounded-full border border-border/70 bg-background/85 p-[2px] shadow-sm backdrop-blur">
         <TabsTrigger
           value="system"
-          className="rounded-full px-3"
+          className="size-[32px] rounded-full border border-transparent px-0 data-[state=active]:border-border/70 data-[state=active]:shadow-sm"
           title="System"
           aria-label="System theme"
         >
@@ -33,7 +33,7 @@ export function ThemeToggleTabs() {
         </TabsTrigger>
         <TabsTrigger
           value="light"
-          className="rounded-full px-3"
+          className="size-[32px] rounded-full border border-transparent px-0 data-[state=active]:border-border/70 data-[state=active]:shadow-sm"
           title="Light"
           aria-label="Light theme"
         >
@@ -41,7 +41,7 @@ export function ThemeToggleTabs() {
         </TabsTrigger>
         <TabsTrigger
           value="dark"
-          className="rounded-full px-3"
+          className="size-[32px] rounded-full border border-transparent px-0 data-[state=active]:border-border/70 data-[state=active]:shadow-sm"
           title="Dark"
           aria-label="Dark theme"
         >

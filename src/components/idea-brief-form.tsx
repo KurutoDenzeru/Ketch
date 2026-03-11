@@ -55,7 +55,7 @@ export function IdeaBriefForm({
 
   return (
     <Card className="rounded-[2rem] border border-border/70 py-0 shadow-sm">
-      <CardHeader className="gap-3 px-6 py-6">
+      <CardHeader className="gap-3 px-6 py-7 md:px-8 md:py-8">
         <div className="flex flex-wrap gap-2">
           <Badge variant="outline" className="rounded-full px-3 py-1">
             Founder brief
@@ -73,7 +73,7 @@ export function IdeaBriefForm({
         </p>
       </CardHeader>
 
-      <CardContent className="space-y-5 px-6 pb-6">
+      <CardContent className="space-y-6 px-6 pb-7 md:px-8 md:pb-8">
         <div className="space-y-3">
           <div className="flex items-center gap-2 text-xs font-semibold tracking-[0.24em] text-muted-foreground uppercase">
             <Target className="size-3.5" />
@@ -115,7 +115,7 @@ export function IdeaBriefForm({
               value={brief.concept}
               onChange={(event) => onChange({ concept: event.target.value })}
               placeholder="AI copilot for restaurant hiring, dev tool for incident reviews, etc."
-              className="h-11 rounded-xl"
+              className="h-12 rounded-xl"
             />
           </div>
 
@@ -128,7 +128,7 @@ export function IdeaBriefForm({
               value={brief.audience}
               onChange={(event) => onChange({ audience: event.target.value })}
               placeholder="Solo founders, agencies, private clinics, indie devs..."
-              className="h-11 rounded-xl"
+              className="h-12 rounded-xl"
             />
           </div>
 
@@ -141,7 +141,7 @@ export function IdeaBriefForm({
               value={brief.categoryFocus}
               onValueChange={(value) => onChange({ categoryFocus: value })}
             >
-              <SelectTrigger className="h-11 w-full rounded-xl">
+              <SelectTrigger className="h-12 w-full rounded-xl">
                 <SelectValue placeholder="Choose a focus" />
               </SelectTrigger>
               <SelectContent>
@@ -164,7 +164,7 @@ export function IdeaBriefForm({
             value={brief.problem}
             onChange={(event) => onChange({ problem: event.target.value })}
             placeholder="What painful workflow, inefficiency, or market frustration should this solve?"
-            className="min-h-24 rounded-2xl"
+            className="min-h-28 rounded-2xl"
           />
         </div>
 

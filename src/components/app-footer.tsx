@@ -17,7 +17,7 @@ export function AppFooter() {
             href="https://github.com/KurutoDenzeru/Ketch"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-2 transition-colors hover:bg-muted/60"
+            className="inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-2 shadow-sm transition-colors hover:bg-muted/60"
           >
             <Github className="size-4" />
             GitHub
@@ -26,7 +26,7 @@ export function AppFooter() {
             href="https://linkedin.com/in/kurtcalacday/"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-2 transition-colors hover:bg-muted/60"
+            className="inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-2 shadow-sm transition-colors hover:bg-muted/60"
           >
             <Linkedin className="size-4" />
             LinkedIn
@@ -35,7 +35,7 @@ export function AppFooter() {
             href="https://instagram.com/krtclcdy"
             target="_blank"
             rel="noreferrer"
-            className="inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-2 transition-colors hover:bg-muted/60"
+            className="inline-flex items-center gap-2 rounded-full border border-border/70 px-3 py-2 shadow-sm transition-colors hover:bg-muted/60"
           >
             <Instagram className="size-4" />
             Instagram

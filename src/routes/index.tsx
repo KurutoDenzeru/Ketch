@@ -205,7 +205,7 @@ function IndexPage() {
   }
 
   return (
-    <main className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 md:px-6 md:py-10">
+    <main className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 py-8 md:gap-14 md:px-6 md:py-10">
       <section className="space-y-8 rounded-[2.5rem] border border-border/70 bg-card/85 px-6 py-10 shadow-sm md:px-10 md:py-14">
         <div className="flex flex-wrap items-center justify-center gap-3">
           <Badge variant="outline" className="rounded-full px-4 py-1.5">
@@ -301,7 +301,7 @@ function IndexPage() {
         isLoading={ideaMutation.isPending}
       />
 
-      <section className="grid gap-4 md:grid-cols-3">
+      <section className="grid gap-4 md:grid-cols-3 md:gap-5">
         {[
           {
             icon: Lightbulb,
@@ -334,7 +334,7 @@ function IndexPage() {
         ))}
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+      <section className="grid gap-4 md:gap-5 lg:grid-cols-[1.15fr_0.85fr]">
         <Card className="rounded-[2rem] border border-border/70 bg-card/80 py-0 shadow-sm">
           <CardContent className="space-y-5 px-6 py-6 md:px-7">
             <div className="space-y-2">
@@ -435,7 +435,7 @@ function IndexPage() {
         </p>
       ) : null}
 
-      <section className="space-y-6">
+      <section className="space-y-6 pt-2 md:pt-4">
         {ideaMutation.isPending ? (
           <IdeaCardSkeleton />
         ) : idea && currentPayload ? (

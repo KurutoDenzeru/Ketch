@@ -54,7 +54,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <ThemeProvider>
           <div className="flex min-h-svh flex-col">
             <AppNavbar />
-            <div className="flex-1 pt-20 md:pt-24">{children}</div>
+            <div className="flex-1 px-0 pt-20 pb-24 md:pt-24 md:pb-0">
+              {children}
+            </div>
             <AppFooter />
           </div>
         </ThemeProvider>
