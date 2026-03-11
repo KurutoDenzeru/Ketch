@@ -1,6 +1,14 @@
-import type { SavedIdea, ShareableIdeaPayload, StartupIdea } from "@/types/idea"
+import {
+  ideaCategories,
+  type IdeaBriefInput,
+  type IdeaLabDraft,
+  type SavedIdea,
+  type ShareableIdeaPayload,
+  type StartupIdea,
+} from "@/types/idea"
 
 const STORAGE_KEY = "ai-startup-idea-lab:saved-ideas"
+const DRAFT_STORAGE_KEY = "ai-startup-idea-lab:current-draft"
 
 function isBrowser() {
   return typeof window !== "undefined"
@@ -29,6 +37,25 @@ function isStringArray(value: unknown): value is string[] {
     Array.isArray(value) &&
     value.length > 0 &&
     value.every((item) => typeof item === "string" && item.trim().length > 0)
+  )
+}
+
+function isIdeaBriefInput(value: unknown): value is IdeaBriefInput {
+  if (!value || typeof value !== "object") {
+    return false
+  }
+
+  const candidate = value as Record<string, unknown>
+
+  return (
+    typeof candidate.category === "string" &&
+    ideaCategories.includes(candidate.category as (typeof ideaCategories)[number]) &&
+    typeof candidate.concept === "string" &&
+    typeof candidate.problem === "string" &&
+    typeof candidate.audience === "string" &&
+    typeof candidate.categoryFocus === "string" &&
+    Array.isArray(candidate.featurePreferences) &&
+    candidate.featurePreferences.every((item) => typeof item === "string")
   )
 }
 
@@ -137,6 +164,27 @@ function isSavedIdea(value: unknown): value is SavedIdea {
   )
 }
 
+function isIdeaLabDraft(value: unknown): value is IdeaLabDraft {
+  if (!value || typeof value !== "object") {
+    return false
+  }
+
+  const candidate = value as Record<string, unknown>
+
+  return (
+    isIdeaBriefInput(candidate.brief) &&
+    (candidate.idea === undefined ||
+      candidate.idea === null ||
+      isStartupIdea(candidate.idea)) &&
+    (candidate.pitch === undefined ||
+      candidate.pitch === null ||
+      isPitch(candidate.pitch)) &&
+    (candidate.marketValidation === undefined ||
+      candidate.marketValidation === null ||
+      isMarketValidation(candidate.marketValidation))
+  )
+}
+
 export function getSavedIdeas() {
   if (!isBrowser()) {
     return [] as SavedIdea[]
@@ -188,6 +236,26 @@ export function saveIdea(payload: ShareableIdeaPayload) {
   return nextIdea
 }
 
+export function updateSavedIdea(id: string, payload: ShareableIdeaPayload) {
+  const existingIdeas = getSavedIdeas()
+  const currentIdea = existingIdeas.find((idea) => idea.id === id)
+
+  if (!currentIdea) {
+    return saveIdea(payload)
+  }
+
+  const nextIdea: SavedIdea = {
+    id,
+    createdAt: currentIdea.createdAt,
+    ...payload,
+  }
+
+  const nextIdeas = existingIdeas.map((idea) => (idea.id === id ? nextIdea : idea))
+  writeSavedIdeas(nextIdeas)
+
+  return nextIdea
+}
+
 export function removeIdea(id: string) {
   const nextIdeas = getSavedIdeas().filter((idea) => idea.id !== id)
   writeSavedIdeas(nextIdeas)
@@ -199,6 +267,41 @@ export function isIdeaSaved(idea: StartupIdea) {
   return getSavedIdeas().some(
     (savedIdea) => getIdeaFingerprint(savedIdea.idea) === fingerprint
   )
+}
+
+export function getIdeaLabDraft() {
+  if (!isBrowser()) {
+    return null as IdeaLabDraft | null
+  }
+
+  const raw = window.localStorage.getItem(DRAFT_STORAGE_KEY)
+
+  if (!raw) {
+    return null as IdeaLabDraft | null
+  }
+
+  try {
+    const parsed = JSON.parse(raw)
+    return isIdeaLabDraft(parsed) ? parsed : null
+  } catch {
+    return null as IdeaLabDraft | null
+  }
+}
+
+export function saveIdeaLabDraft(draft: IdeaLabDraft) {
+  if (!isBrowser()) {
+    return
+  }
+
+  window.localStorage.setItem(DRAFT_STORAGE_KEY, JSON.stringify(draft))
+}
+
+export function clearIdeaLabDraft() {
+  if (!isBrowser()) {
+    return
+  }
+
+  window.localStorage.removeItem(DRAFT_STORAGE_KEY)
 }
 
 export function encodeIdeaForUrl(payload: ShareableIdeaPayload) {

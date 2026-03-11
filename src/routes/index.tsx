@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useMutation } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import {
@@ -21,8 +21,10 @@ import {
   buildIdeaSharePath,
   buildIdeaShareUrl,
   formatIdeaForClipboard,
+  getIdeaLabDraft,
   getSavedIdeas,
   isIdeaSaved,
+  saveIdeaLabDraft,
   saveIdea,
 } from "@/lib/idea-storage"
 import {
@@ -88,29 +90,54 @@ async function copyText(value: string) {
 }
 
 function IndexPage() {
-  const [brief, setBrief] = useState<IdeaBriefInput>(initialBrief)
-  const [idea, setIdea] = useState<StartupIdea | null>(null)
-  const [pitch, setPitch] = useState<StartupPitch | null>(null)
-  const [marketValidation, setMarketValidation] =
-    useState<MarketValidation | null>(null)
+  const generatedIdeaRef = useRef<HTMLElement | null>(null)
+  const [brief, setBrief] = useState<IdeaBriefInput>(
+    () => getIdeaLabDraft()?.brief ?? initialBrief
+  )
+  const [idea, setIdea] = useState<StartupIdea | null>(
+    () => getIdeaLabDraft()?.idea ?? null
+  )
+  const [pitch, setPitch] = useState<StartupPitch | null>(
+    () => getIdeaLabDraft()?.pitch ?? null
+  )
+  const [marketValidation, setMarketValidation] = useState<MarketValidation | null>(
+    () => getIdeaLabDraft()?.marketValidation ?? null
+  )
   const [savedCount, setSavedCount] = useState(0)
 
   useEffect(() => {
     setSavedCount(getSavedIdeas().length)
   }, [])
 
+  useEffect(() => {
+    saveIdeaLabDraft({
+      brief,
+      idea,
+      pitch,
+      marketValidation,
+    })
+  }, [brief, idea, pitch, marketValidation])
+
   const ideaMutation = useMutation({
     mutationFn: (input: IdeaBriefInput) => generateIdea({ data: input }),
+    onMutate: () => {
+      toast.loading("Generating idea...", {
+        id: "generate-idea",
+        description: "Ketch is building the concept and scoring it now.",
+      })
+    },
     onSuccess: (nextIdea) => {
       setIdea(nextIdea)
       setPitch(null)
       setMarketValidation(null)
       toast.success("Idea generated", {
+        id: "generate-idea",
         description: `${nextIdea.name} is ready to review.`,
       })
     },
     onError: (error) => {
       toast.error("Failed to generate idea", {
+        id: "generate-idea",
         description: error.message,
       })
     },
@@ -244,6 +271,18 @@ function IndexPage() {
     })
   }
 
+  function scrollToGeneratedIdea() {
+    generatedIdeaRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    })
+  }
+
+  function handleGenerateIdea() {
+    scrollToGeneratedIdea()
+    ideaMutation.mutate(brief)
+  }
+
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-8 md:gap-14 md:px-6 md:py-10">
       <section className="space-y-10 px-2 py-6 md:px-8 md:py-10">
@@ -317,7 +356,7 @@ function IndexPage() {
             ...patch,
           }))
         }
-        onSubmit={() => ideaMutation.mutate(brief)}
+        onSubmit={handleGenerateIdea}
         isLoading={ideaMutation.isPending}
       />
 
@@ -445,7 +484,10 @@ function IndexPage() {
         </Card>
       </section>
 
-      <section className="space-y-6 pt-2 md:pt-4">
+      <section
+        ref={generatedIdeaRef}
+        className="scroll-mt-28 space-y-6 pt-2 md:scroll-mt-32 md:pt-4"
+      >
         {ideaMutation.isPending ? (
           <IdeaCardSkeleton />
         ) : idea && currentPayload ? (

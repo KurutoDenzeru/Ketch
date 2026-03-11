@@ -195,6 +195,13 @@ export type ShareableIdeaPayload = {
   marketValidation?: MarketValidation | null
 }
 
+export type IdeaLabDraft = {
+  brief: IdeaBriefInput
+  idea?: StartupIdea | null
+  pitch?: StartupPitch | null
+  marketValidation?: MarketValidation | null
+}
+
 export type SavedIdea = ShareableIdeaPayload & {
   id: string
   createdAt: string
