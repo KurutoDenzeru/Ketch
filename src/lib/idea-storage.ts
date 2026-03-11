@@ -262,6 +262,25 @@ export function removeIdea(id: string) {
   return nextIdeas
 }
 
+export function getSavedIdeaByIdea(idea: StartupIdea) {
+  const fingerprint = getIdeaFingerprint(idea)
+  return (
+    getSavedIdeas().find(
+      (savedIdea) => getIdeaFingerprint(savedIdea.idea) === fingerprint
+    ) ?? null
+  )
+}
+
+export function removeIdeaByIdea(idea: StartupIdea) {
+  const savedIdea = getSavedIdeaByIdea(idea)
+
+  if (!savedIdea) {
+    return getSavedIdeas()
+  }
+
+  return removeIdea(savedIdea.id)
+}
+
 export function isIdeaSaved(idea: StartupIdea) {
   const fingerprint = getIdeaFingerprint(idea)
   return getSavedIdeas().some(

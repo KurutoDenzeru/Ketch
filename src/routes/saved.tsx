@@ -163,10 +163,9 @@ function SavedIdeaCard({ savedIdea, onRemove, onUpdate }: SavedIdeaCardProps) {
         description: "Ketch is generating a fresh set of names.",
       })
     },
-    onSuccess: ({ name, alternativeNames }) => {
+    onSuccess: ({ alternativeNames }) => {
       const nextIdea = {
         ...idea,
-        name,
         alternativeNames,
       }
 
@@ -178,7 +177,7 @@ function SavedIdeaCard({ savedIdea, onRemove, onUpdate }: SavedIdeaCardProps) {
       })
       toast.success("New titles ready", {
         id: `generate-saved-titles-${savedIdea.id}`,
-        description: `${name} is now the lead saved title option.`,
+        description: "A fresh set of saved title options is ready to review.",
       })
     },
     onError: (error) => {
@@ -266,7 +265,6 @@ function SavedIdeaCard({ savedIdea, onRemove, onUpdate }: SavedIdeaCardProps) {
         marketValidation={marketValidation}
         isPitchLoading={pitchMutation.isPending}
         isMarketValidationLoading={marketValidationMutation.isPending}
-        isRegeneratingIdea={regenerateIdeaMutation.isPending}
         isRegeneratingTitles={regenerateTitlesMutation.isPending}
         isSaved
         sharePath={buildIdeaSharePath(currentPayload)}
@@ -285,9 +283,6 @@ function SavedIdeaCard({ savedIdea, onRemove, onUpdate }: SavedIdeaCardProps) {
           toast.success("Startup name swapped", {
             description: `${name} is now the active saved idea name.`,
           })
-        }}
-        onRegenerateIdea={() => {
-          regenerateIdeaMutation.mutate(idea)
         }}
         onRegenerateTitles={() => {
           regenerateTitlesMutation.mutate(idea)

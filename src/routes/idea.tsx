@@ -19,7 +19,6 @@ import {
 import {
   generateMarketValidation,
   generatePitch,
-  regenerateIdea,
   regenerateIdeaTitles,
 } from "@/lib/gemini"
 import type {
@@ -102,32 +101,6 @@ function SharedIdeaPage() {
     },
   })
 
-  const regenerateIdeaMutation = useMutation({
-    mutationFn: (currentIdea: StartupIdea) =>
-      regenerateIdea({ data: { idea: currentIdea } }),
-    onMutate: () => {
-      toast.loading("Regenerating idea...", {
-        id: "regenerate-shared-idea",
-        description: "Ketch is rebuilding this concept from the current snapshot.",
-      })
-    },
-    onSuccess: (nextIdea) => {
-      setIdea(nextIdea)
-      setPitch(null)
-      setMarketValidation(null)
-      toast.success("Idea regenerated", {
-        id: "regenerate-shared-idea",
-        description: `${nextIdea.name} is the new active concept.`,
-      })
-    },
-    onError: (error) => {
-      toast.error("Failed to regenerate idea", {
-        id: "regenerate-shared-idea",
-        description: error.message,
-      })
-    },
-  })
-
   const regenerateTitlesMutation = useMutation({
     mutationFn: (currentIdea: StartupIdea) =>
       regenerateIdeaTitles({ data: { idea: currentIdea } }),
@@ -137,19 +110,18 @@ function SharedIdeaPage() {
         description: "Ketch is generating a fresh set of names.",
       })
     },
-    onSuccess: ({ name, alternativeNames }) => {
+    onSuccess: ({ alternativeNames }) => {
       setIdea((currentIdea) =>
         currentIdea
           ? {
               ...currentIdea,
-              name,
               alternativeNames,
             }
           : currentIdea
       )
       toast.success("New titles ready", {
         id: "generate-shared-titles",
-        description: `${name} is now the lead title option.`,
+        description: "A fresh set of title options is ready to review.",
       })
     },
     onError: (error) => {
@@ -250,7 +222,6 @@ function SharedIdeaPage() {
         marketValidation={marketValidation}
         isPitchLoading={pitchMutation.isPending}
         isMarketValidationLoading={marketValidationMutation.isPending}
-        isRegeneratingIdea={regenerateIdeaMutation.isPending}
         isRegeneratingTitles={regenerateTitlesMutation.isPending}
         isSaved={isIdeaSaved(idea)}
         sharePath={currentSharePath}
@@ -266,9 +237,6 @@ function SharedIdeaPage() {
           toast.success("Startup name swapped", {
             description: `${name} is now the active concept name.`,
           })
-        }}
-        onRegenerateIdea={() => {
-          regenerateIdeaMutation.mutate(idea)
         }}
         onRegenerateTitles={() => {
           regenerateTitlesMutation.mutate(idea)

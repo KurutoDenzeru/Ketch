@@ -4,8 +4,8 @@ import { useEffect, useState } from "react"
 import {
   Copy,
   Gauge,
-  Sparkles,
   LoaderCircle,
+  RefreshCcw,
   Rocket,
   Save,
   Send,
@@ -45,12 +45,10 @@ type IdeaCardProps = {
   marketValidation: MarketValidation | null
   isPitchLoading: boolean
   isMarketValidationLoading: boolean
-  isRegeneratingIdea?: boolean
   isRegeneratingTitles?: boolean
   isSaved: boolean
   sharePath: string
   onSelectAlternativeName: (name: string) => void
-  onRegenerateIdea?: () => void
   onRegenerateTitles: () => void
   onGeneratePitch: () => void
   onGenerateMarketValidation: () => void
@@ -91,12 +89,10 @@ export function IdeaCard({
   marketValidation,
   isPitchLoading,
   isMarketValidationLoading,
-  isRegeneratingIdea = false,
   isRegeneratingTitles = false,
   isSaved,
   sharePath,
   onSelectAlternativeName,
-  onRegenerateIdea,
   onRegenerateTitles,
   onGeneratePitch,
   onGenerateMarketValidation,
@@ -146,7 +142,7 @@ export function IdeaCard({
               </CardDescription>
 
               <div className="space-y-3">
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   {idea.alternativeNames.map((name) => {
                     const isSelected = name === idea.name
 
@@ -166,39 +162,21 @@ export function IdeaCard({
                       </button>
                     )
                   })}
-                </div>
 
-                <div className="flex flex-wrap gap-2">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={onRegenerateTitles}
-                    disabled={isRegeneratingTitles || isRegeneratingIdea}
+                    disabled={isRegeneratingTitles}
                     className="rounded-full"
                   >
                     {isRegeneratingTitles ? (
-                      <LoaderCircle className="animate-spin" />
+                      <RefreshCcw className="animate-spin" />
                     ) : (
-                      <Sparkles />
+                      <RefreshCcw />
                     )}
                     Generate new titles
                   </Button>
-                  {onRegenerateIdea ? (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={onRegenerateIdea}
-                      disabled={isRegeneratingIdea || isRegeneratingTitles}
-                      className="rounded-full"
-                    >
-                      {isRegeneratingIdea ? (
-                        <LoaderCircle className="animate-spin" />
-                      ) : (
-                        <Sparkles />
-                      )}
-                      Regenerate idea
-                    </Button>
-                  ) : null}
                 </div>
               </div>
             </div>

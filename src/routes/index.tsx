@@ -8,22 +8,39 @@ import {
   Lightbulb,
   LineChart,
   SearchCheck,
+  Sparkles,
   Target,
+  Trash2,
 } from "lucide-react"
 import { toast } from "sonner"
 
 import { IdeaBriefForm } from "@/components/idea-brief-form"
 import { IdeaCard } from "@/components/idea-card"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   buildIdeaSharePath,
   buildIdeaShareUrl,
+  clearIdeaLabDraft,
   formatIdeaForClipboard,
   getIdeaLabDraft,
+  getSavedIdeaByIdea,
   getSavedIdeas,
   isIdeaSaved,
+  removeIdeaByIdea,
   saveIdeaLabDraft,
   saveIdea,
 } from "@/lib/idea-storage"
@@ -225,19 +242,18 @@ function IndexPage() {
         description: "Ketch is generating a fresh set of names.",
       })
     },
-    onSuccess: ({ name, alternativeNames }) => {
+    onSuccess: ({ alternativeNames }) => {
       setIdea((currentIdea) =>
         currentIdea
           ? {
               ...currentIdea,
-              name,
               alternativeNames,
             }
           : currentIdea
       )
       toast.success("New titles ready", {
         id: "generate-titles",
-        description: `${name} is now the lead title option.`,
+        description: "A fresh set of title options is ready to review.",
       })
     },
     onError: (error) => {
@@ -310,6 +326,24 @@ function IndexPage() {
 
   function handleGenerateIdea() {
     ideaMutation.mutate(brief)
+  }
+
+  function handleRemoveIdea() {
+    if (!idea) {
+      return
+    }
+
+    const nextIdeas = removeIdeaByIdea(idea)
+    setSavedCount(nextIdeas.length)
+    setIdea(null)
+    setPitch(null)
+    setMarketValidation(null)
+    clearIdeaLabDraft()
+    toast.success("Idea removed", {
+      description: getSavedIdeaByIdea(idea)
+        ? "The current idea and its saved snapshot were removed."
+        : "The current working concept has been cleared from the lab.",
+    })
   }
 
   return (
@@ -520,53 +554,93 @@ function IndexPage() {
         {ideaMutation.isPending ? (
           <IdeaCardSkeleton />
         ) : idea && currentPayload ? (
-          <IdeaCard
-            idea={idea}
-            pitch={pitch}
-            marketValidation={marketValidation}
-            isPitchLoading={pitchMutation.isPending}
-            isMarketValidationLoading={marketValidationMutation.isPending}
-            isRegeneratingIdea={regenerateIdeaMutation.isPending}
-            isRegeneratingTitles={regenerateTitlesMutation.isPending}
-            isSaved={saved}
-            sharePath={currentSharePath}
-            onSelectAlternativeName={(name) => {
-              setIdea((currentIdea) =>
-                currentIdea
-                  ? {
-                      ...currentIdea,
-                      name,
-                    }
-                  : currentIdea
-              )
-              toast.success("Startup name swapped", {
-                description: `${name} is now the active concept name.`,
-              })
-            }}
-            onRegenerateIdea={() => {
-              if (idea) {
-                regenerateIdeaMutation.mutate(idea)
-              }
-            }}
-            onRegenerateTitles={() => {
-              if (idea) {
-                regenerateTitlesMutation.mutate(idea)
-              }
-            }}
-            onGeneratePitch={() => {
-              if (idea) {
-                pitchMutation.mutate(idea)
-              }
-            }}
-            onGenerateMarketValidation={() => {
-              if (idea) {
-                marketValidationMutation.mutate(idea)
-              }
-            }}
-            onCopy={handleCopyIdea}
-            onCopyShareLink={handleCopyShareLink}
-            onSave={handleSaveIdea}
-          />
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-end gap-2 px-1">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => regenerateIdeaMutation.mutate(idea)}
+                disabled={regenerateIdeaMutation.isPending}
+                className="rounded-full"
+              >
+                {regenerateIdeaMutation.isPending ? (
+                  <Sparkles className="animate-pulse" />
+                ) : (
+                  <Sparkles />
+                )}
+                Regenerate idea
+              </Button>
+
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button type="button" variant="destructive">
+                    <Trash2 />
+                    Remove
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Remove current idea?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This clears the current working concept from the Idea Lab. If
+                      it was saved, its saved snapshot will also be removed.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      variant="destructive"
+                      onClick={handleRemoveIdea}
+                    >
+                      Remove idea
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+
+            <IdeaCard
+              idea={idea}
+              pitch={pitch}
+              marketValidation={marketValidation}
+              isPitchLoading={pitchMutation.isPending}
+              isMarketValidationLoading={marketValidationMutation.isPending}
+              isRegeneratingTitles={regenerateTitlesMutation.isPending}
+              isSaved={saved}
+              sharePath={currentSharePath}
+              onSelectAlternativeName={(name) => {
+                setIdea((currentIdea) =>
+                  currentIdea
+                    ? {
+                        ...currentIdea,
+                        name,
+                      }
+                    : currentIdea
+                )
+                toast.success("Startup name swapped", {
+                  description: `${name} is now the active concept name.`,
+                })
+              }}
+              onRegenerateTitles={() => {
+                if (idea) {
+                  regenerateTitlesMutation.mutate(idea)
+                }
+              }}
+              onGeneratePitch={() => {
+                if (idea) {
+                  pitchMutation.mutate(idea)
+                }
+              }}
+              onGenerateMarketValidation={() => {
+                if (idea) {
+                  marketValidationMutation.mutate(idea)
+                }
+              }}
+              onCopy={handleCopyIdea}
+              onCopyShareLink={handleCopyShareLink}
+              onSave={handleSaveIdea}
+            />
+          </div>
         ) : (
           <Card className="rounded-[2rem] border border-dashed border-border/70 bg-card/70 py-0 shadow-sm">
             <CardContent className="space-y-4 px-6 py-8 text-center">

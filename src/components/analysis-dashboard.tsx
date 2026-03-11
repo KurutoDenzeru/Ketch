@@ -6,10 +6,12 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  Legend,
   PolarAngleAxis,
   RadialBar,
   RadialBarChart,
   XAxis,
+  YAxis,
 } from "recharts"
 import {
   BadgeCheck,
@@ -79,6 +81,11 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
     interest: temperInterest(point.interest),
   }))
 
+  const trendChartData = temperedTrendPoints.map((point) => ({
+    ...point,
+    volume: point.interest * 20,
+  }))
+
   const temperedScoreMetrics = idea.analysis.scoreMetrics.map((metric) => ({
     ...metric,
     score: temperScore(metric.score, 1.2),
@@ -107,9 +114,24 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
     10
   )
 
+  const latestTrendVolume =
+    trendChartData[trendChartData.length - 1]?.volume ?? 0
+  const firstTrendVolume = trendChartData[0]?.volume ?? latestTrendVolume
+  const trendGrowth = clamp(
+    Math.round(
+      firstTrendVolume > 0
+        ? ((latestTrendVolume - firstTrendVolume) / firstTrendVolume) * 100
+        : 0
+    ),
+    -95,
+    999
+  )
+  const maxTrendVolume = Math.max(...trendChartData.map((point) => point.volume))
+  const yAxisUpperBound = Math.max(2000, Math.ceil(maxTrendVolume / 500) * 500)
+
   const trendConfig = {
-    interest: {
-      label: "Signal strength",
+    volume: {
+      label: "Search volume",
       color: "var(--chart-1)",
     },
   }
@@ -163,14 +185,29 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
               </h3>
             </div>
 
-            <div className="rounded-2xl border border-border/70 bg-muted/40 px-4 py-3 text-right">
-              <div className="text-xs tracking-[0.18em] text-muted-foreground uppercase">
-                Trend ceiling
+            <div className="grid gap-3 text-right sm:grid-cols-2">
+              <div className="rounded-2xl border border-border/70 bg-muted/40 px-4 py-3">
+                <div className="text-xs tracking-[0.18em] text-muted-foreground uppercase">
+                  Volume
+                </div>
+                <div className="font-display text-3xl leading-none text-primary">
+                  {latestTrendVolume.toLocaleString()}
+                </div>
               </div>
-              <div className="font-display text-3xl leading-none">
-                {Math.max(
-                  ...temperedTrendPoints.map((point) => point.interest)
-                )}
+
+              <div className="rounded-2xl border border-border/70 bg-muted/40 px-4 py-3">
+                <div className="text-xs tracking-[0.18em] text-muted-foreground uppercase">
+                  Growth
+                </div>
+                <div
+                  className={cn(
+                    "font-display text-3xl leading-none",
+                    trendGrowth >= 0 ? "text-emerald-500" : "text-amber-500"
+                  )}
+                >
+                  {trendGrowth >= 0 ? "+" : ""}
+                  {trendGrowth}%
+                </div>
               </div>
             </div>
           </div>
@@ -180,33 +217,64 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
             className="!aspect-auto h-[22rem] min-h-[22rem] w-full"
           >
             <AreaChart
-              data={temperedTrendPoints}
-              margin={{ top: 8, right: 6, left: -12, bottom: 0 }}
+              data={trendChartData}
+              margin={{ top: 24, right: 12, left: 8, bottom: 8 }}
             >
               <defs>
                 <linearGradient id="trendFill" x1="0" x2="0" y1="0" y2="1">
                   <stop
                     offset="5%"
-                    stopColor="var(--color-interest)"
+                    stopColor="var(--color-volume)"
                     stopOpacity={0.32}
                   />
                   <stop
                     offset="95%"
-                    stopColor="var(--color-interest)"
+                    stopColor="var(--color-volume)"
                     stopOpacity={0.02}
                   />
                 </linearGradient>
               </defs>
               <CartesianGrid vertical={false} />
-              <XAxis dataKey="label" tickLine={false} axisLine={false} />
+              <Legend
+                verticalAlign="top"
+                align="left"
+                iconType="plainline"
+                wrapperStyle={{ paddingBottom: "12px" }}
+              />
+              <XAxis
+                dataKey="label"
+                tickLine={false}
+                axisLine={false}
+                label={{
+                  value: "Topic cluster",
+                  position: "insideBottom",
+                  offset: -4,
+                }}
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                width={52}
+                domain={[0, yAxisUpperBound]}
+                tickFormatter={(value) =>
+                  value >= 1000 ? `${Math.round(value / 1000)}k` : `${value}`
+                }
+                label={{
+                  value: "Volume",
+                  angle: -90,
+                  position: "insideLeft",
+                  offset: -2,
+                }}
+              />
               <ChartTooltip
                 cursor={false}
                 content={<ChartTooltipContent indicator="line" />}
               />
               <Area
                 type="monotone"
-                dataKey="interest"
-                stroke="var(--color-interest)"
+                dataKey="volume"
+                name="Search volume"
+                stroke="var(--color-volume)"
                 fill="url(#trendFill)"
                 strokeWidth={2.5}
               />
