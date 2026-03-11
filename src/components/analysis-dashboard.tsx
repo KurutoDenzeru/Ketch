@@ -1,10 +1,11 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import {
   Area,
   AreaChart,
   Bar,
-  BarChart,
+  BarChart as RechartsBarChart,
   CartesianGrid,
   Legend,
   PolarAngleAxis,
@@ -25,7 +26,6 @@ import {
   Sparkles,
   Tag,
   TrendingUp,
-  Users,
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
@@ -35,6 +35,14 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 import { Progress } from "@/components/ui/progress"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectItemText,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { cn } from "@/lib/utils"
 import type { StartupIdea } from "@/types/idea"
 
@@ -75,11 +83,108 @@ function getMetricTone(score: number) {
   return "text-emerald-700 dark:text-emerald-300"
 }
 
+function getVolumeMultiplier(volume: string) {
+  const normalized = volume.toLowerCase()
+  if (normalized.includes("high")) return 1.28
+  if (normalized.includes("med")) return 1
+  if (normalized.includes("low")) return 0.76
+  return 0.92
+}
+
+function getCompetitionPenalty(competition: string) {
+  const normalized = competition.toLowerCase()
+  if (normalized.includes("high")) return 0.92
+  if (normalized.includes("medium")) return 1
+  if (normalized.includes("low")) return 1.08
+  return 1
+}
+
+function formatKeywordLabel(value: string) {
+  return value
+    .replace(/[-_]/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase())
+}
+
+function buildDemandKeywordOptions(idea: StartupIdea) {
+  const candidates = [
+    ...idea.analysis.keywordSignals.map((signal) => signal.term),
+    ...idea.analysis.tags.map((tag) => tag.replace(/-/g, " ")),
+    `${idea.name.toLowerCase()} software`,
+    `${idea.category.toLowerCase()} platform`,
+  ]
+
+  return candidates
+    .map((item) => item.trim())
+    .filter(Boolean)
+    .filter((item, index, array) => array.indexOf(item) === index)
+    .slice(0, 7)
+}
+
+function deriveFallbackSignal(term: string, index: number, idea: StartupIdea) {
+  const seededScore = clamp(
+    Math.round((idea.validationScore + (term.length % 5) + Math.max(index, 0)) / 2.1),
+    3,
+    8
+  )
+
+  return {
+    term,
+    volume: seededScore >= 7 ? "High" : seededScore >= 5 ? "Medium" : "Low",
+    competition:
+      seededScore >= 7 ? "High" : seededScore >= 5 ? "Medium" : "Low",
+    score: seededScore,
+  }
+}
+
+function buildDemandYearLabels(count: number) {
+  const startYear = new Date().getFullYear() - Math.max(count - 1, 0)
+
+  return Array.from({ length: count }, (_, index) => String(startYear + index))
+}
+
 export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
-  const temperedTrendPoints = idea.analysis.trendPoints.map((point) => ({
-    ...point,
-    interest: temperInterest(point.interest),
-  }))
+  const keywordOptions = buildDemandKeywordOptions(idea)
+  const [selectedKeyword, setSelectedKeyword] = useState(keywordOptions[0] ?? "")
+
+  useEffect(() => {
+    setSelectedKeyword(keywordOptions[0] ?? "")
+  }, [idea])
+
+  const activeKeywordSignal =
+    idea.analysis.keywordSignals.find((signal) => signal.term === selectedKeyword) ??
+    deriveFallbackSignal(
+      selectedKeyword || keywordOptions[0] || idea.name,
+      keywordOptions.findIndex((item) => item === selectedKeyword),
+      idea
+    )
+
+  const trendLabels = buildDemandYearLabels(
+    Math.min(7, idea.analysis.trendPoints.length)
+  )
+
+  const temperedTrendPoints = idea.analysis.trendPoints
+    .slice(0, trendLabels.length)
+    .map((point, index) => {
+    const baseInterest = temperInterest(point.interest)
+    const signalScore = activeKeywordSignal?.score ?? 5
+    const signalBoost = 0.78 + signalScore / 10
+    const volumeBoost = getVolumeMultiplier(activeKeywordSignal?.volume ?? "Medium")
+    const competitionPenalty = getCompetitionPenalty(
+      activeKeywordSignal?.competition ?? "Medium"
+    )
+    const lateStageLift =
+      index >= idea.analysis.trendPoints.length - 2 ? 1.12 : 1 + index * 0.025
+
+    return {
+      ...point,
+      label: trendLabels[index] ?? point.label,
+      interest: clamp(
+        Math.round(baseInterest * signalBoost * volumeBoost * competitionPenalty * lateStageLift),
+        12,
+        100
+      ),
+    }
+  })
 
   const trendChartData = temperedTrendPoints.map((point) => ({
     ...point,
@@ -136,13 +241,6 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
     },
   }
 
-  const ladderConfig = {
-    score: {
-      label: "Strength",
-      color: "var(--chart-2)",
-    },
-  }
-
   const validationGaugeData = [
     {
       name: "score",
@@ -150,6 +248,12 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
       fill: "var(--chart-4)",
     },
   ]
+
+  const valueLadderChartData = temperedValueLadder.map((step, index) => ({
+    step: `Step ${index + 1}`,
+    score: step.score,
+    label: step.label,
+  }))
 
   return (
     <div className="space-y-6">
@@ -175,7 +279,7 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
       <div className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
         <div className="grid h-full grid-rows-[auto_1fr] rounded-[1.75rem] border border-border/70 bg-background/80 p-5">
           <div className="mb-4 flex items-center justify-between gap-3">
-            <div>
+            <div className="space-y-3">
               <div className="mb-1 flex items-center gap-2 text-xs font-semibold tracking-[0.22em] text-muted-foreground uppercase">
                 <LineChart className="size-3.5" />
                 Demand Signal
@@ -183,6 +287,25 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
               <h3 className="font-display text-2xl leading-none">
                 Search and interest curve
               </h3>
+
+              {activeKeywordSignal ? (
+                <Select
+                  value={activeKeywordSignal.term}
+                  onValueChange={setSelectedKeyword}
+                >
+                  <SelectTrigger className="h-11 min-w-[16rem] rounded-2xl border-border/70 bg-background/85 px-4">
+                    <span className="text-muted-foreground">Keyword:</span>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent align="start">
+                    {keywordOptions.map((term) => (
+                      <SelectItem key={term} value={term}>
+                        <SelectItemText>{formatKeywordLabel(term)}</SelectItemText>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : null}
             </div>
 
             <div className="grid gap-3 text-right sm:grid-cols-2">
@@ -245,10 +368,17 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
                 dataKey="label"
                 tickLine={false}
                 axisLine={false}
+                tickMargin={12}
                 label={{
-                  value: "Topic cluster",
+                  value: "Year",
                   position: "insideBottom",
-                  offset: -4,
+                  offset: -2,
+                  style: {
+                    fill: "hsl(var(--muted-foreground))",
+                    fontSize: 12,
+                    letterSpacing: "0.18em",
+                    textTransform: "uppercase",
+                  },
                 }}
               />
               <YAxis
@@ -260,10 +390,16 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
                   value >= 1000 ? `${Math.round(value / 1000)}k` : `${value}`
                 }
                 label={{
-                  value: "Volume",
+                  value: "Search Results",
                   angle: -90,
                   position: "insideLeft",
-                  offset: -2,
+                  offset: -6,
+                  style: {
+                    fill: "hsl(var(--muted-foreground))",
+                    fontSize: 12,
+                    letterSpacing: "0.18em",
+                    textTransform: "uppercase",
+                  },
                 }}
               />
               <ChartTooltip
@@ -431,61 +567,76 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
             </div>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-[1.75rem] border border-border/70 bg-background/80 p-5">
-              <div className="mb-4 flex items-center gap-2 text-xs font-semibold tracking-[0.22em] text-muted-foreground uppercase">
-                <Users className="size-3.5" />
-                Keyword Signals
-              </div>
-              <div className="space-y-3">
-                {idea.analysis.keywordSignals.map((signal) => (
-                  <div
-                    key={signal.term}
-                    className="rounded-2xl border border-border/60 bg-muted/30 p-3"
-                  >
-                    <div className="mb-1 flex items-start justify-between gap-3">
-                      <p className="text-sm leading-6 font-medium text-foreground">
-                        {signal.term}
-                      </p>
-                      <span className="text-sm font-semibold text-primary">
-                        {signal.volume}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between gap-3 text-xs tracking-[0.16em] text-muted-foreground uppercase">
-                      <span>{signal.competition}</span>
-                      <span>{signal.score}/10</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
+          <div className="grid gap-4">
             <div className="rounded-[1.75rem] border border-border/70 bg-background/80 p-5">
               <div className="mb-4 flex items-center gap-2 text-xs font-semibold tracking-[0.22em] text-muted-foreground uppercase">
                 <BarChart3 className="size-3.5" />
                 Value Ladder
               </div>
-              <ChartContainer
-                config={ladderConfig}
-                className="!aspect-auto h-[18rem] w-full"
-              >
-                <BarChart
-                  data={temperedValueLadder}
-                  margin={{ top: 8, right: 4, left: -12, bottom: 0 }}
+              <div className="grid grid-cols-[2.5rem_minmax(0,1fr)] grid-rows-[minmax(0,1fr)_auto] gap-x-3 gap-y-3">
+                <div className="flex min-h-[20rem] items-center justify-center pt-2">
+                  <span className="-rotate-90 whitespace-nowrap text-[11px] font-semibold tracking-[0.22em] text-muted-foreground uppercase">
+                    Value Score
+                  </span>
+                </div>
+
+                <ChartContainer
+                  config={{
+                    score: {
+                      label: "Value score",
+                      color: "var(--chart-1)",
+                    },
+                  }}
+                  className="!aspect-auto h-[20rem] min-h-[20rem] w-full"
                 >
-                  <CartesianGrid vertical={false} />
-                  <XAxis dataKey="label" tickLine={false} axisLine={false} />
-                  <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent indicator="line" />}
-                  />
-                  <Bar
-                    dataKey="score"
-                    fill="var(--color-score)"
-                    radius={[10, 10, 0, 0]}
-                  />
-                </BarChart>
-              </ChartContainer>
+                  <RechartsBarChart
+                    data={valueLadderChartData}
+                    margin={{ top: 18, right: 8, left: 4, bottom: 18 }}
+                    barCategoryGap={20}
+                  >
+                    <CartesianGrid vertical={false} />
+                    <XAxis
+                      dataKey="step"
+                      tickLine={false}
+                      axisLine={false}
+                      interval={0}
+                      tickMargin={14}
+                    />
+                    <YAxis
+                      tickLine={false}
+                      axisLine={false}
+                      width={44}
+                      domain={[0, 10]}
+                      ticks={[0, 2, 4, 6, 8, 10]}
+                    />
+                    <ChartTooltip
+                      cursor={{ fill: "hsl(var(--muted) / 0.18)" }}
+                      content={
+                        <ChartTooltipContent
+                          formatter={(value, _name, item) => [
+                            `${value}/10`,
+                            item?.payload?.label ?? "Value score",
+                          ]}
+                          labelFormatter={(_label, payload) =>
+                            payload?.[0]?.payload?.label ?? "Value ladder"
+                          }
+                          indicator="line"
+                        />
+                      }
+                    />
+                    <Bar
+                      dataKey="score"
+                      fill="var(--color-score)"
+                      radius={[18, 18, 6, 6]}
+                    />
+                  </RechartsBarChart>
+                </ChartContainer>
+
+                <div />
+                <div className="pt-1 text-center text-[11px] font-semibold tracking-[0.22em] text-muted-foreground uppercase">
+                  Value Ladder Step
+                </div>
+              </div>
             </div>
           </div>
         </div>
