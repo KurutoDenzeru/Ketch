@@ -13,7 +13,6 @@ import {
 } from "lucide-react"
 
 import { AnalysisDashboard } from "@/components/analysis-dashboard"
-import { NameSuggestions } from "@/components/name-suggestions"
 import { PitchSection } from "@/components/pitch-section"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -135,13 +134,68 @@ export function IdeaCard({
           </div>
 
           <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-            <div className="space-y-3">
+            <div className="space-y-4">
               <CardTitle className="font-display text-4xl leading-none text-balance md:text-5xl">
                 {idea.name}
               </CardTitle>
               <CardDescription className="max-w-2xl text-base leading-7 text-foreground/80">
                 {idea.tagline}
               </CardDescription>
+
+              <div className="space-y-3">
+                <div className="flex flex-wrap gap-2">
+                  {idea.alternativeNames.map((name) => {
+                    const isSelected = name === idea.name
+
+                    return (
+                      <button
+                        key={name}
+                        type="button"
+                        onClick={() => onSelectAlternativeName(name)}
+                        className={cn(
+                          "inline-flex h-auto items-center rounded-full border px-3 py-1.5 text-sm transition-transform hover:-translate-y-0.5",
+                          isSelected
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border/70 bg-background/75 text-foreground hover:bg-muted/60"
+                        )}
+                      >
+                        {name}
+                      </button>
+                    )
+                  })}
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => onRefreshFacet("tagline")}
+                    disabled={refreshingFacet !== null}
+                    className="rounded-full"
+                  >
+                    {refreshingFacet === "tagline" ? (
+                      <LoaderCircle className="animate-spin" />
+                    ) : (
+                      <RefreshCcw />
+                    )}
+                    Refresh tagline
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => onRefreshFacet("twist")}
+                    disabled={refreshingFacet !== null}
+                    className="rounded-full"
+                  >
+                    {refreshingFacet === "twist" ? (
+                      <LoaderCircle className="animate-spin" />
+                    ) : (
+                      <RefreshCcw />
+                    )}
+                    Refresh twist
+                  </Button>
+                </div>
+              </div>
             </div>
 
             <div className="rounded-[1.5rem] border border-border/70 bg-muted/35 p-4">
@@ -190,47 +244,6 @@ export function IdeaCard({
                 </div>
               ))}
             </div>
-          </div>
-
-          <Separator />
-
-          <NameSuggestions
-            names={idea.alternativeNames}
-            selectedName={idea.name}
-            onSelect={onSelectAlternativeName}
-          />
-
-          <Separator />
-
-          <div className="flex flex-wrap gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onRefreshFacet("tagline")}
-              disabled={refreshingFacet !== null}
-              className="rounded-full"
-            >
-              {refreshingFacet === "tagline" ? (
-                <LoaderCircle className="animate-spin" />
-              ) : (
-                <RefreshCcw />
-              )}
-              Refresh tagline
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => onRefreshFacet("twist")}
-              disabled={refreshingFacet !== null}
-              className="rounded-full"
-            >
-              {refreshingFacet === "twist" ? (
-                <LoaderCircle className="animate-spin" />
-              ) : (
-                <RefreshCcw />
-              )}
-              Refresh twist
-            </Button>
           </div>
 
           <Separator />

@@ -143,6 +143,21 @@ function IndexPage() {
     },
   })
 
+  useEffect(() => {
+    if (!ideaMutation.isPending) {
+      return
+    }
+
+    const frameId = window.requestAnimationFrame(() => {
+      generatedIdeaRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      })
+    })
+
+    return () => window.cancelAnimationFrame(frameId)
+  }, [ideaMutation.isPending])
+
   const pitchMutation = useMutation({
     mutationFn: (currentIdea: StartupIdea) =>
       generatePitch({ data: { idea: currentIdea } }),
@@ -271,15 +286,7 @@ function IndexPage() {
     })
   }
 
-  function scrollToGeneratedIdea() {
-    generatedIdeaRef.current?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    })
-  }
-
   function handleGenerateIdea() {
-    scrollToGeneratedIdea()
     ideaMutation.mutate(brief)
   }
 

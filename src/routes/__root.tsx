@@ -61,7 +61,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             <AppFooter />
           </div>
           <Toaster
-            position="top-center"
+            position="bottom-right"
             expand={false}
             richColors
             toastOptions={{

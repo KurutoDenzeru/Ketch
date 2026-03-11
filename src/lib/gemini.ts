@@ -30,8 +30,8 @@ const ideaResponseSchema = {
     alternativeNames: {
       type: "array",
       items: { type: "string" },
-      minItems: 3,
-      maxItems: 3,
+      minItems: 5,
+      maxItems: 5,
     },
     analysis: {
       ...sharedSchemaConfig,
@@ -331,7 +331,7 @@ function normalizeIdea(payload: unknown, category: IdeaCategory): StartupIdea {
     alternativeNames: assertStringArray(
       candidate.alternativeNames,
       "alternativeNames"
-    ).slice(0, 3),
+    ).slice(0, 5),
     category,
     analysis: {
       tags: assertStringArray(analysis.tags, "analysis.tags").slice(0, 6),
@@ -543,7 +543,7 @@ Return ONLY JSON with:
 - twist
 - monetization
 - validationScore
-- alternativeNames (array of 3)
+- alternativeNames (array of 5)
 - analysis
 
 The analysis object must include:

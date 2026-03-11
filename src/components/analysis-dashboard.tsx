@@ -40,6 +40,25 @@ type AnalysisDashboardProps = {
   idea: StartupIdea
 }
 
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value))
+}
+
+function temperScore(score: number, penalty = 1.4) {
+  return clamp(Math.round(score * 0.78 - penalty), 1, 10)
+}
+
+function temperInterest(interest: number) {
+  return clamp(Math.round(interest * 0.72 - 6), 8, 86)
+}
+
+function getValueEquationLabel(score: number) {
+  if (score <= 3) return "Weak pull"
+  if (score <= 5) return "Needs proof"
+  if (score <= 7) return "Promising"
+  return "Strong case"
+}
+
 function getMetricIcon(label: string) {
   if (/timing|now/i.test(label)) return Clock3
   if (/defens|moat|competition/i.test(label)) return Shield
@@ -55,6 +74,39 @@ function getMetricTone(score: number) {
 }
 
 export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
+  const temperedTrendPoints = idea.analysis.trendPoints.map((point) => ({
+    ...point,
+    interest: temperInterest(point.interest),
+  }))
+
+  const temperedScoreMetrics = idea.analysis.scoreMetrics.map((metric) => ({
+    ...metric,
+    score: temperScore(metric.score, 1.2),
+  }))
+
+  const temperedFrameworkFit = {
+    audience: temperScore(idea.analysis.frameworkFit.audience, 1.5),
+    community: temperScore(idea.analysis.frameworkFit.community, 1.8),
+    product: temperScore(idea.analysis.frameworkFit.product, 1.3),
+  }
+
+  const temperedValueLadder = idea.analysis.valueLadder.map((step, index) => ({
+    ...step,
+    score: temperScore(step.score, 1.6 + index * 0.35),
+  }))
+
+  const valueEquationScore = clamp(
+    Math.round(
+      idea.validationScore * 0.45 +
+        temperedFrameworkFit.product * 0.2 +
+        temperedFrameworkFit.audience * 0.2 +
+        Math.max(...temperedTrendPoints.map((point) => point.interest)) / 20 -
+        1.5
+    ),
+    1,
+    10
+  )
+
   const trendConfig = {
     interest: {
       label: "Signal strength",
@@ -72,7 +124,7 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
   const validationGaugeData = [
     {
       name: "score",
-      value: idea.validationScore * 10,
+      value: valueEquationScore * 10,
       fill: "var(--chart-4)",
     },
   ]
@@ -117,7 +169,7 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
               </div>
               <div className="font-display text-3xl leading-none">
                 {Math.max(
-                  ...idea.analysis.trendPoints.map((point) => point.interest)
+                  ...temperedTrendPoints.map((point) => point.interest)
                 )}
               </div>
             </div>
@@ -125,9 +177,12 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
 
           <ChartContainer
             config={trendConfig}
-            className="h-full min-h-[18rem] w-full"
+            className="!aspect-auto h-[22rem] min-h-[22rem] w-full"
           >
-            <AreaChart data={idea.analysis.trendPoints}>
+            <AreaChart
+              data={temperedTrendPoints}
+              margin={{ top: 8, right: 6, left: -12, bottom: 0 }}
+            >
               <defs>
                 <linearGradient id="trendFill" x1="0" x2="0" y1="0" y2="1">
                   <stop
@@ -160,7 +215,7 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
         </div>
 
         <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 xl:grid-cols-2">
-          {idea.analysis.scoreMetrics.map((metric) => {
+          {temperedScoreMetrics.map((metric) => {
             const Icon = getMetricIcon(metric.label)
 
             return (
@@ -243,9 +298,9 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
               </div>
               <div className="space-y-4">
                 {[
-                  ["Audience", idea.analysis.frameworkFit.audience],
-                  ["Community", idea.analysis.frameworkFit.community],
-                  ["Product", idea.analysis.frameworkFit.product],
+                  ["Audience", temperedFrameworkFit.audience],
+                  ["Community", temperedFrameworkFit.community],
+                  ["Product", temperedFrameworkFit.product],
                 ].map(([label, score]) => (
                   <div key={label}>
                     <div className="mb-2 flex items-center justify-between text-sm">
@@ -270,7 +325,7 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
                     color: "var(--chart-4)",
                   },
                 }}
-                className="h-48 w-full"
+                className="!aspect-auto h-48 w-full"
               >
                 <RadialBarChart
                   data={validationGaugeData}
@@ -290,9 +345,9 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
                     y="54%"
                     textAnchor="middle"
                     dominantBaseline="middle"
-                    className="fill-foreground text-4xl font-semibold"
-                  >
-                    {idea.validationScore}
+                  className="fill-foreground text-4xl font-semibold"
+                >
+                    {valueEquationScore}
                   </text>
                   <text
                     x="50%"
@@ -301,7 +356,7 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
                     dominantBaseline="middle"
                     className="fill-muted-foreground text-xs tracking-[0.2em] uppercase"
                   >
-                    Good Fit
+                    {getValueEquationLabel(valueEquationScore)}
                   </text>
                 </RadialBarChart>
               </ChartContainer>
@@ -342,8 +397,14 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
                 <BarChart3 className="size-3.5" />
                 Value Ladder
               </div>
-              <ChartContainer config={ladderConfig} className="h-60 w-full">
-                <BarChart data={idea.analysis.valueLadder}>
+              <ChartContainer
+                config={ladderConfig}
+                className="!aspect-auto h-[18rem] w-full"
+              >
+                <BarChart
+                  data={temperedValueLadder}
+                  margin={{ top: 8, right: 4, left: -12, bottom: 0 }}
+                >
                   <CartesianGrid vertical={false} />
                   <XAxis dataKey="label" tickLine={false} axisLine={false} />
                   <ChartTooltip
