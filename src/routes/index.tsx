@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import {
   ArrowUpRight,
@@ -47,6 +47,7 @@ import {
 import {
   generateIdea,
   generateMarketValidation,
+  getGenerationRateLimitStatus,
   generatePitch,
   regenerateIdea,
   regenerateIdeaTitles,
@@ -58,6 +59,8 @@ import type {
   StartupIdea,
   StartupPitch,
 } from "@/types/idea"
+
+const generationRateLimitQueryKey = ["generation-rate-limit"] as const
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -107,6 +110,7 @@ async function copyText(value: string) {
 }
 
 function IndexPage() {
+  const queryClient = useQueryClient()
   const generatedIdeaRef = useRef<HTMLElement | null>(null)
   const [brief, setBrief] = useState<IdeaBriefInput>(
     () => getIdeaLabDraft()?.brief ?? initialBrief
@@ -117,10 +121,23 @@ function IndexPage() {
   const [pitch, setPitch] = useState<StartupPitch | null>(
     () => getIdeaLabDraft()?.pitch ?? null
   )
-  const [marketValidation, setMarketValidation] = useState<MarketValidation | null>(
-    () => getIdeaLabDraft()?.marketValidation ?? null
-  )
+  const [marketValidation, setMarketValidation] =
+    useState<MarketValidation | null>(
+      () => getIdeaLabDraft()?.marketValidation ?? null
+    )
   const [savedCount, setSavedCount] = useState(0)
+  const generationRateLimitQuery = useQuery({
+    queryKey: generationRateLimitQueryKey,
+    queryFn: () => getGenerationRateLimitStatus(),
+  })
+
+  const generationRateLimit = generationRateLimitQuery.data ?? null
+
+  function refreshGenerationRateLimit() {
+    return queryClient.invalidateQueries({
+      queryKey: generationRateLimitQueryKey,
+    })
+  }
 
   useEffect(() => {
     setSavedCount(getSavedIdeas().length)
@@ -147,12 +164,14 @@ function IndexPage() {
       setIdea(nextIdea)
       setPitch(null)
       setMarketValidation(null)
+      void refreshGenerationRateLimit()
       toast.success("Idea generated", {
         id: "generate-idea",
         description: `${nextIdea.name} is ready to review.`,
       })
     },
     onError: (error) => {
+      void refreshGenerationRateLimit()
       toast.error("Failed to generate idea", {
         id: "generate-idea",
         description: error.message,
@@ -213,19 +232,22 @@ function IndexPage() {
     onMutate: () => {
       toast.loading("Regenerating idea...", {
         id: "regenerate-idea",
-        description: "Ketch is rebuilding this concept from the current snapshot.",
+        description:
+          "Ketch is rebuilding this concept from the current snapshot.",
       })
     },
     onSuccess: (nextIdea) => {
       setIdea(nextIdea)
       setPitch(null)
       setMarketValidation(null)
+      void refreshGenerationRateLimit()
       toast.success("Idea regenerated", {
         id: "regenerate-idea",
         description: `${nextIdea.name} is the new working concept.`,
       })
     },
     onError: (error) => {
+      void refreshGenerationRateLimit()
       toast.error("Failed to regenerate idea", {
         id: "regenerate-idea",
         description: error.message,
@@ -251,12 +273,14 @@ function IndexPage() {
             }
           : currentIdea
       )
+      void refreshGenerationRateLimit()
       toast.success("New titles ready", {
         id: "generate-titles",
         description: "A fresh set of title options is ready to review.",
       })
     },
     onError: (error) => {
+      void refreshGenerationRateLimit()
       toast.error("Failed to generate new titles", {
         id: "generate-titles",
         description: error.message,
@@ -421,6 +445,7 @@ function IndexPage() {
         }
         onSubmit={handleGenerateIdea}
         isLoading={ideaMutation.isPending}
+        generationRateLimit={generationRateLimit}
       />
 
       <section className="grid gap-4 md:grid-cols-3 md:gap-5">
@@ -560,7 +585,10 @@ function IndexPage() {
                 type="button"
                 variant="outline"
                 onClick={() => regenerateIdeaMutation.mutate(idea)}
-                disabled={regenerateIdeaMutation.isPending}
+                disabled={
+                  regenerateIdeaMutation.isPending ||
+                  Boolean(generationRateLimit?.isExhausted)
+                }
                 className="rounded-full"
               >
                 {regenerateIdeaMutation.isPending ? (
@@ -582,8 +610,8 @@ function IndexPage() {
                   <AlertDialogHeader>
                     <AlertDialogTitle>Remove current idea?</AlertDialogTitle>
                     <AlertDialogDescription>
-                      This clears the current working concept from the Idea Lab. If
-                      it was saved, its saved snapshot will also be removed.
+                      This clears the current working concept from the Idea Lab.
+                      If it was saved, its saved snapshot will also be removed.
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
@@ -606,6 +634,7 @@ function IndexPage() {
               isPitchLoading={pitchMutation.isPending}
               isMarketValidationLoading={marketValidationMutation.isPending}
               isRegeneratingTitles={regenerateTitlesMutation.isPending}
+              generationRateLimit={generationRateLimit}
               isSaved={saved}
               sharePath={currentSharePath}
               onSelectAlternativeName={(name) => {

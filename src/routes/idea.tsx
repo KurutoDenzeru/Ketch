@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { Link2, Share2 } from "lucide-react"
 import { toast } from "sonner"
@@ -19,6 +19,7 @@ import {
 import {
   generateMarketValidation,
   generatePitch,
+  getGenerationRateLimitStatus,
   regenerateIdeaTitles,
 } from "@/lib/gemini"
 import type {
@@ -27,6 +28,8 @@ import type {
   StartupIdea,
   StartupPitch,
 } from "@/types/idea"
+
+const generationRateLimitQueryKey = ["generation-rate-limit"] as const
 
 export const Route = createFileRoute("/idea")({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -47,6 +50,7 @@ async function copyText(value: string) {
 }
 
 function SharedIdeaPage() {
+  const queryClient = useQueryClient()
   const navigate = useNavigate()
   const { data } = Route.useSearch()
   const decodedPayload = useMemo(
@@ -62,6 +66,17 @@ function SharedIdeaPage() {
   )
   const [marketValidation, setMarketValidation] =
     useState<MarketValidation | null>(decodedPayload?.marketValidation ?? null)
+  const generationRateLimitQuery = useQuery({
+    queryKey: generationRateLimitQueryKey,
+    queryFn: () => getGenerationRateLimitStatus(),
+  })
+  const generationRateLimit = generationRateLimitQuery.data ?? null
+
+  function refreshGenerationRateLimit() {
+    return queryClient.invalidateQueries({
+      queryKey: generationRateLimitQueryKey,
+    })
+  }
 
   useEffect(() => {
     setIdea(decodedPayload?.idea ?? null)
@@ -119,12 +134,14 @@ function SharedIdeaPage() {
             }
           : currentIdea
       )
+      void refreshGenerationRateLimit()
       toast.success("New titles ready", {
         id: "generate-shared-titles",
         description: "A fresh set of title options is ready to review.",
       })
     },
     onError: (error) => {
+      void refreshGenerationRateLimit()
       toast.error("Failed to generate new titles", {
         id: "generate-shared-titles",
         description: error.message,
@@ -223,6 +240,7 @@ function SharedIdeaPage() {
         isPitchLoading={pitchMutation.isPending}
         isMarketValidationLoading={marketValidationMutation.isPending}
         isRegeneratingTitles={regenerateTitlesMutation.isPending}
+        generationRateLimit={generationRateLimit}
         isSaved={isIdeaSaved(idea)}
         sharePath={currentSharePath}
         onSelectAlternativeName={(name) => {
@@ -251,7 +269,8 @@ function SharedIdeaPage() {
           try {
             await copyText(formatIdeaForClipboard(currentPayload))
             toast.success("Idea copied", {
-              description: "The full startup idea summary is in your clipboard.",
+              description:
+                "The full startup idea summary is in your clipboard.",
             })
           } catch {
             toast.error("Clipboard unavailable", {

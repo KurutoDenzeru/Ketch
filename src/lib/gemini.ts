@@ -1,6 +1,10 @@
 import { GoogleGenAI, ThinkingLevel } from "@google/genai"
 import { createServerFn } from "@tanstack/react-start"
 
+import {
+  consumeGenerationRateLimitCredit,
+  getGenerationRateLimitStatus as readGenerationRateLimitStatus,
+} from "@/lib/generation-rate-limit"
 import type {
   IdeaBriefInput,
   IdeaCategory,
@@ -8,6 +12,7 @@ import type {
   StartupIdea,
   StartupPitch,
 } from "@/types/idea"
+import type { GenerationRateLimitStatus } from "@/types/rate-limit"
 
 const GEMINI_MODEL = "gemini-3-flash-preview"
 
@@ -521,9 +526,17 @@ function normalizeMarketValidation(payload: unknown): MarketValidation {
   }
 }
 
+export const getGenerationRateLimitStatus = createServerFn({
+  method: "GET",
+}).handler(async (): Promise<GenerationRateLimitStatus> => {
+  return readGenerationRateLimitStatus()
+})
+
 export const generateIdea = createServerFn({ method: "POST" })
   .inputValidator((input: IdeaBriefInput) => input)
   .handler(async ({ data }) => {
+    await consumeGenerationRateLimitCredit("generateIdea")
+
     const prompt = `You are helping a founder sharpen and evaluate a startup idea.
 
 Founder input:
@@ -601,6 +614,8 @@ Keep each field specific and practical.`
 export const regenerateIdea = createServerFn({ method: "POST" })
   .inputValidator((input: { idea: StartupIdea }) => input)
   .handler(async ({ data }) => {
+    await consumeGenerationRateLimitCredit("regenerateIdea")
+
     const prompt = `Create a fresh but related startup idea using this saved snapshot as the source material.
 
 Startup JSON:
@@ -635,6 +650,8 @@ Requirements:
 export const regenerateIdeaTitles = createServerFn({ method: "POST" })
   .inputValidator((input: { idea: StartupIdea }) => input)
   .handler(async ({ data }) => {
+    await consumeGenerationRateLimitCredit("regenerateTitles")
+
     const prompt = `Generate a stronger set of startup titles for this idea.
 
 Startup JSON:
