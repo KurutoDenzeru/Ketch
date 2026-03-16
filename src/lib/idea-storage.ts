@@ -14,6 +14,7 @@ import {
 
 const STORAGE_KEY = "ai-startup-idea-lab:saved-ideas"
 const DRAFT_STORAGE_KEY = "ai-startup-idea-lab:current-draft"
+const SHARED_IDEA_STORAGE_KEY = "ai-startup-idea-lab:shared-idea"
 
 function isBrowser() {
   return typeof window !== "undefined"
@@ -29,6 +30,10 @@ function slugify(value: string) {
     .replace(/-+/g, "-")
 
   return normalized || "shared-idea"
+}
+
+export function createIdeaShareSlug(idea: StartupIdea) {
+  return `${slugify(idea.name)}-${slugify(idea.category)}`
 }
 
 function getIdeaFingerprint(idea: StartupIdea) {
@@ -344,6 +349,73 @@ export function clearIdeaLabDraft() {
   window.localStorage.removeItem(DRAFT_STORAGE_KEY)
 }
 
+type SharedIdeaState = {
+  shareId: string
+  payload: ShareableIdeaPayload
+  viewedAt: string
+}
+
+function isSharedIdeaState(value: unknown): value is SharedIdeaState {
+  if (!value || typeof value !== "object") {
+    return false
+  }
+
+  const candidate = value as Record<string, unknown>
+
+  return (
+    isString(candidate.shareId) &&
+    isString(candidate.viewedAt) &&
+    isShareableIdeaPayload(candidate.payload)
+  )
+}
+
+export function getRecentSharedIdea() {
+  if (!isBrowser()) {
+    return null
+  }
+
+  const raw = window.localStorage.getItem(SHARED_IDEA_STORAGE_KEY)
+
+  if (!raw) {
+    return null
+  }
+
+  try {
+    const parsed = JSON.parse(raw)
+
+    return isSharedIdeaState(parsed) ? parsed : null
+  } catch {
+    return null
+  }
+}
+
+export function saveRecentSharedIdea(
+  shareId: string,
+  payload: ShareableIdeaPayload
+) {
+  if (!isBrowser()) {
+    return null
+  }
+
+  const state: SharedIdeaState = {
+    shareId,
+    payload,
+    viewedAt: new Date().toISOString(),
+  }
+
+  window.localStorage.setItem(SHARED_IDEA_STORAGE_KEY, JSON.stringify(state))
+
+  return state
+}
+
+export function clearRecentSharedIdea() {
+  if (!isBrowser()) {
+    return
+  }
+
+  window.localStorage.removeItem(SHARED_IDEA_STORAGE_KEY)
+}
+
 export function encodeIdeaForUrl(payload: ShareableIdeaPayload) {
   return compressToEncodedURIComponent(JSON.stringify(payload))
 }
@@ -365,9 +437,23 @@ export function decodeIdeaFromUrl(data: string) {
 }
 
 export function buildIdeaSharePath(payload: ShareableIdeaPayload) {
-  const shareSlug = `${slugify(payload.idea.name)}-${slugify(payload.idea.category)}`
+  const shareSlug = createIdeaShareSlug(payload.idea)
 
   return `/idea/${shareSlug}?data=${encodeIdeaForUrl(payload)}`
+}
+
+export function buildSharedIdeaPath(shareId: string) {
+  return `/idea/${shareId}`
+}
+
+export function buildSharedIdeaUrl(shareId: string) {
+  const sharePath = buildSharedIdeaPath(shareId)
+
+  if (!isBrowser()) {
+    return sharePath
+  }
+
+  return `${window.location.origin}${sharePath}`
 }
 
 export function buildIdeaShareUrl(payload: ShareableIdeaPayload) {

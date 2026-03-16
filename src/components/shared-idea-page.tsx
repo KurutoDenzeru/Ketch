@@ -1,3 +1,5 @@
+"use client"
+
 import { useEffect, useMemo, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
@@ -9,11 +11,13 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
-  buildIdeaSharePath,
-  buildIdeaShareUrl,
+  buildSharedIdeaPath,
+  buildSharedIdeaUrl,
+  getRecentSharedIdea,
   decodeIdeaFromUrl,
   formatIdeaForClipboard,
   isIdeaSaved,
+  saveRecentSharedIdea,
   saveIdea,
 } from "@/lib/idea-storage"
 import {
@@ -22,6 +26,10 @@ import {
   getGenerationRateLimitStatus,
   regenerateIdeaTitles,
 } from "@/lib/gemini"
+import {
+  createSharedIdeaLink,
+  getSharedIdeaLink,
+} from "@/lib/shared-idea-store"
 import type {
   MarketValidation,
   ShareableIdeaPayload,
@@ -32,29 +40,47 @@ import type {
 const generationRateLimitQueryKey = ["generation-rate-limit"] as const
 
 type SharedIdeaPageProps = {
-  data: string
+  data?: string
+  shareId?: string
 }
 
 async function copyText(value: string) {
   await navigator.clipboard.writeText(value)
 }
 
-export function SharedIdeaPage({ data }: SharedIdeaPageProps) {
+export function SharedIdeaPage({ data = "", shareId }: SharedIdeaPageProps) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
+  const [isSharing, setIsSharing] = useState(false)
+  const recentSharedIdea = getRecentSharedIdea()
   const decodedPayload = useMemo(
     () => (data ? decodeIdeaFromUrl(data) : null),
     [data]
   )
+  const sharedIdeaQuery = useQuery({
+    queryKey: ["shared-idea", shareId],
+    queryFn: () => getSharedIdeaLink({ data: { shareId: shareId ?? "" } }),
+    enabled: Boolean(shareId) && !decodedPayload,
+  })
+  const resolvedShareId =
+    shareId ??
+    sharedIdeaQuery.data?.shareId ??
+    recentSharedIdea?.shareId ??
+    null
+  const resolvedPayload =
+    decodedPayload ??
+    sharedIdeaQuery.data?.payload ??
+    recentSharedIdea?.payload ??
+    null
 
   const [idea, setIdea] = useState<StartupIdea | null>(
-    decodedPayload?.idea ?? null
+    resolvedPayload?.idea ?? null
   )
   const [pitch, setPitch] = useState<StartupPitch | null>(
-    decodedPayload?.pitch ?? null
+    resolvedPayload?.pitch ?? null
   )
   const [marketValidation, setMarketValidation] =
-    useState<MarketValidation | null>(decodedPayload?.marketValidation ?? null)
+    useState<MarketValidation | null>(resolvedPayload?.marketValidation ?? null)
   const generationRateLimitQuery = useQuery({
     queryKey: generationRateLimitQueryKey,
     queryFn: () => getGenerationRateLimitStatus(),
@@ -68,10 +94,16 @@ export function SharedIdeaPage({ data }: SharedIdeaPageProps) {
   }
 
   useEffect(() => {
-    setIdea(decodedPayload?.idea ?? null)
-    setPitch(decodedPayload?.pitch ?? null)
-    setMarketValidation(decodedPayload?.marketValidation ?? null)
-  }, [decodedPayload])
+    setIdea(resolvedPayload?.idea ?? null)
+    setPitch(resolvedPayload?.pitch ?? null)
+    setMarketValidation(resolvedPayload?.marketValidation ?? null)
+  }, [resolvedPayload])
+
+  useEffect(() => {
+    if (resolvedShareId && resolvedPayload) {
+      saveRecentSharedIdea(resolvedShareId, resolvedPayload)
+    }
+  }, [resolvedPayload, resolvedShareId])
 
   const pitchMutation = useMutation({
     mutationFn: (currentIdea: StartupIdea) =>
@@ -146,21 +178,48 @@ export function SharedIdeaPage({ data }: SharedIdeaPageProps) {
       }
     : null
 
-  const currentSharePath = currentPayload
-    ? buildIdeaSharePath(currentPayload)
+  const currentSharePath = resolvedShareId
+    ? buildSharedIdeaPath(resolvedShareId)
     : "/idea"
 
-  if (!decodedPayload || !idea || !currentPayload) {
+  async function createShareLink(payload: ShareableIdeaPayload) {
+    const sharedIdea = await createSharedIdeaLink({ data: { payload } })
+
+    saveRecentSharedIdea(sharedIdea.shareId, sharedIdea.payload)
+
+    return {
+      shareUrl: buildSharedIdeaUrl(sharedIdea.shareId),
+    }
+  }
+
+  if (shareId && sharedIdeaQuery.isPending && !decodedPayload) {
+    return (
+      <main className="mx-auto flex min-h-svh w-full max-w-7xl flex-col gap-8 px-4 py-8 md:px-6 md:py-10">
+        <Card className="rounded-[2rem] border border-border/70 py-0 shadow-sm">
+          <CardContent className="space-y-4 px-6 py-8 text-center">
+            <h1 className="font-display text-4xl leading-none">
+              Loading shared idea
+            </h1>
+            <p className="mx-auto max-w-2xl text-sm leading-7 text-muted-foreground">
+              Ketch is restoring the shared startup snapshot now.
+            </p>
+          </CardContent>
+        </Card>
+      </main>
+    )
+  }
+
+  if (!resolvedPayload || !idea || !currentPayload) {
     return (
       <main className="mx-auto flex min-h-svh w-full max-w-7xl flex-col gap-8 px-4 py-8 md:px-6 md:py-10">
         <Card className="rounded-[2rem] border border-dashed border-border/70 py-0 shadow-sm">
           <CardContent className="space-y-4 px-6 py-8 text-center">
             <h1 className="font-display text-4xl leading-none">
-              Shared idea unavailable
+              No shared idea yet
             </h1>
             <p className="mx-auto max-w-2xl text-sm leading-7 text-muted-foreground">
-              This link does not contain a readable idea payload. Generate a new
-              concept from the lab and create a fresh share link.
+              Open a shared link once and Ketch will keep the latest shared
+              startup snapshot available on this device.
             </p>
             <div>
               <Button
@@ -209,8 +268,8 @@ export function SharedIdeaPage({ data }: SharedIdeaPageProps) {
               Share behavior
             </div>
             <p className="text-sm leading-7 text-muted-foreground">
-              The link contains encoded idea data, so teammates can open the
-              exact concept without needing a backend database.
+              Shared ideas are restored from saved snapshots, and the latest one
+              stays available on this device under the Shared tab.
             </p>
             <Button variant="outline" className="rounded-full" asChild>
               <a href={currentSharePath}>
@@ -229,9 +288,9 @@ export function SharedIdeaPage({ data }: SharedIdeaPageProps) {
         isPitchLoading={pitchMutation.isPending}
         isMarketValidationLoading={marketValidationMutation.isPending}
         isRegeneratingTitles={regenerateTitlesMutation.isPending}
+        isSharing={isSharing}
         generationRateLimit={generationRateLimit}
         isSaved={isIdeaSaved(idea)}
-        sharePath={currentSharePath}
         onSelectAlternativeName={(name) => {
           setIdea((currentIdea) =>
             currentIdea
@@ -269,7 +328,9 @@ export function SharedIdeaPage({ data }: SharedIdeaPageProps) {
         }}
         onCopyShareLink={async () => {
           try {
-            await copyText(buildIdeaShareUrl(currentPayload))
+            setIsSharing(true)
+            const { shareUrl } = await createShareLink(currentPayload)
+            await copyText(shareUrl)
             toast.success("Share link copied", {
               description: "You can paste the shared idea URL anywhere.",
             })
@@ -277,6 +338,22 @@ export function SharedIdeaPage({ data }: SharedIdeaPageProps) {
             toast.error("Clipboard unavailable", {
               description: "This browser blocked clipboard access.",
             })
+          } finally {
+            setIsSharing(false)
+          }
+        }}
+        onOpenSharedView={async () => {
+          try {
+            setIsSharing(true)
+            const { shareUrl } = await createShareLink(currentPayload)
+            window.location.assign(shareUrl)
+          } catch {
+            toast.error("Unable to open shared view", {
+              description:
+                "Ketch could not create a shared snapshot right now.",
+            })
+          } finally {
+            setIsSharing(false)
           }
         }}
         onSave={() => {

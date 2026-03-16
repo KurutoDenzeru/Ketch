@@ -44,15 +44,16 @@ type IdeaCardProps = {
   isPitchLoading: boolean
   isMarketValidationLoading: boolean
   isRegeneratingTitles?: boolean
+  isSharing?: boolean
   generationRateLimit: GenerationRateLimitStatus | null
   isSaved: boolean
-  sharePath: string
   onSelectAlternativeName: (name: string) => void
   onRegenerateTitles: () => void
   onGeneratePitch: () => void
   onGenerateMarketValidation: () => void
   onCopy: () => void
   onCopyShareLink: () => void
+  onOpenSharedView: () => void
   onSave: () => void
 }
 
@@ -89,15 +90,16 @@ export function IdeaCard({
   isPitchLoading,
   isMarketValidationLoading,
   isRegeneratingTitles = false,
+  isSharing = false,
   generationRateLimit,
   isSaved,
-  sharePath,
   onSelectAlternativeName,
   onRegenerateTitles,
   onGeneratePitch,
   onGenerateMarketValidation,
   onCopy,
   onCopyShareLink,
+  onOpenSharedView,
   onSave,
 }: IdeaCardProps) {
   const [isValidationOpen, setIsValidationOpen] = useState(
@@ -364,15 +366,23 @@ export function IdeaCard({
               <Copy />
               Copy idea
             </Button>
-            <Button type="button" variant="outline" onClick={onCopyShareLink}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCopyShareLink}
+              disabled={isSharing}
+            >
               <Send />
               Copy share link
             </Button>
-            <Button type="button" variant="outline" asChild>
-              <a href={sharePath}>
-                <Rocket />
-                Open shared view
-              </a>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onOpenSharedView}
+              disabled={isSharing}
+            >
+              <Rocket />
+              Open shared view
             </Button>
           </div>
 

@@ -17,7 +17,8 @@ export const Route = createFileRoute("/idea/$slug")({
 })
 
 function SharedIdeaSlugRoute() {
+  const { slug } = Route.useParams()
   const { data } = Route.useSearch()
 
-  return <SharedIdeaPage data={data} />
+  return <SharedIdeaPage data={data} shareId={slug} />
 }

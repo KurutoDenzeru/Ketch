@@ -68,7 +68,7 @@ export function AppNavbar() {
 
       <div className="fixed inset-x-0 bottom-4 z-40 px-4 md:hidden">
         <div className="mx-auto flex max-w-sm justify-center">
-          <div className="grid w-full grid-cols-5 items-center rounded-[1.6rem] border border-white/35 bg-background/74 px-2 py-2 shadow-sm backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
+          <div className="grid w-full grid-cols-4 items-center rounded-[1.6rem] border border-white/35 bg-background/74 px-2 py-2 shadow-sm backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
             <Link
               to="/"
               aria-label="Ketch icon"
@@ -77,14 +77,6 @@ export function AppNavbar() {
               <span className="inline-flex size-10 items-center justify-center rounded-[1rem] border border-border/70 bg-background/85">
                 <Waves className="size-4" />
               </span>
-            </Link>
-
-            <Link
-              to="/"
-              aria-label="Ketch home"
-              className="inline-flex min-h-14 items-center justify-center px-2 py-2 text-center transition-colors hover:bg-white/6"
-            >
-              <span className="font-display text-xl leading-none">Ketch</span>
             </Link>
 
             {navItems.map(({ to, label, icon: Icon, active }) => (
