@@ -9,10 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SharedRouteImport } from './routes/shared'
 import { Route as SavedRouteImport } from './routes/saved'
 import { Route as IdeaRouteImport } from './routes/idea'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as IdeaSlugRouteImport } from './routes/idea.$slug'
 
+const SharedRoute = SharedRouteImport.update({
+  id: '/shared',
+  path: '/shared',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SavedRoute = SavedRouteImport.update({
   id: '/saved',
   path: '/saved',
@@ -28,39 +35,58 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IdeaSlugRoute = IdeaSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => IdeaRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/idea': typeof IdeaRoute
+  '/idea': typeof IdeaRouteWithChildren
   '/saved': typeof SavedRoute
+  '/shared': typeof SharedRoute
+  '/idea/$slug': typeof IdeaSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/idea': typeof IdeaRoute
+  '/idea': typeof IdeaRouteWithChildren
   '/saved': typeof SavedRoute
+  '/shared': typeof SharedRoute
+  '/idea/$slug': typeof IdeaSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/idea': typeof IdeaRoute
+  '/idea': typeof IdeaRouteWithChildren
   '/saved': typeof SavedRoute
+  '/shared': typeof SharedRoute
+  '/idea/$slug': typeof IdeaSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/idea' | '/saved'
+  fullPaths: '/' | '/idea' | '/saved' | '/shared' | '/idea/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/idea' | '/saved'
-  id: '__root__' | '/' | '/idea' | '/saved'
+  to: '/' | '/idea' | '/saved' | '/shared' | '/idea/$slug'
+  id: '__root__' | '/' | '/idea' | '/saved' | '/shared' | '/idea/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  IdeaRoute: typeof IdeaRoute
+  IdeaRoute: typeof IdeaRouteWithChildren
   SavedRoute: typeof SavedRoute
+  SharedRoute: typeof SharedRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/shared': {
+      id: '/shared'
+      path: '/shared'
+      fullPath: '/shared'
+      preLoaderRoute: typeof SharedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/saved': {
       id: '/saved'
       path: '/saved'
@@ -82,13 +108,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/idea/$slug': {
+      id: '/idea/$slug'
+      path: '/$slug'
+      fullPath: '/idea/$slug'
+      preLoaderRoute: typeof IdeaSlugRouteImport
+      parentRoute: typeof IdeaRoute
+    }
   }
 }
 
+interface IdeaRouteChildren {
+  IdeaSlugRoute: typeof IdeaSlugRoute
+}
+
+const IdeaRouteChildren: IdeaRouteChildren = {
+  IdeaSlugRoute: IdeaSlugRoute,
+}
+
+const IdeaRouteWithChildren = IdeaRoute._addFileChildren(IdeaRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  IdeaRoute: IdeaRoute,
+  IdeaRoute: IdeaRouteWithChildren,
   SavedRoute: SavedRoute,
+  SharedRoute: SharedRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

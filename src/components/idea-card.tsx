@@ -3,13 +3,13 @@
 import { useEffect, useState } from "react"
 import {
   BadgeCheck,
+  Check,
   Copy,
   Gauge,
   LoaderCircle,
   RefreshCcw,
   Rocket,
   Save,
-  Send,
   ShieldCheck,
 } from "lucide-react"
 
@@ -44,15 +44,17 @@ type IdeaCardProps = {
   isPitchLoading: boolean
   isMarketValidationLoading: boolean
   isRegeneratingTitles?: boolean
+  isSharing?: boolean
+  isShareLinkCopied?: boolean
   generationRateLimit: GenerationRateLimitStatus | null
   isSaved: boolean
-  sharePath: string
   onSelectAlternativeName: (name: string) => void
   onRegenerateTitles: () => void
   onGeneratePitch: () => void
   onGenerateMarketValidation: () => void
   onCopy: () => void
   onCopyShareLink: () => void
+  onOpenSharedView: () => void
   onSave: () => void
 }
 
@@ -89,15 +91,17 @@ export function IdeaCard({
   isPitchLoading,
   isMarketValidationLoading,
   isRegeneratingTitles = false,
+  isSharing = false,
+  isShareLinkCopied = false,
   generationRateLimit,
   isSaved,
-  sharePath,
   onSelectAlternativeName,
   onRegenerateTitles,
   onGeneratePitch,
   onGenerateMarketValidation,
   onCopy,
   onCopyShareLink,
+  onOpenSharedView,
   onSave,
 }: IdeaCardProps) {
   const [isValidationOpen, setIsValidationOpen] = useState(
@@ -364,15 +368,23 @@ export function IdeaCard({
               <Copy />
               Copy idea
             </Button>
-            <Button type="button" variant="outline" onClick={onCopyShareLink}>
-              <Send />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCopyShareLink}
+              disabled={isSharing}
+            >
+              {isShareLinkCopied ? <Check /> : <Copy />}
               Copy share link
             </Button>
-            <Button type="button" variant="outline" asChild>
-              <a href={sharePath}>
-                <Rocket />
-                Open shared view
-              </a>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onOpenSharedView}
+              disabled={isSharing}
+            >
+              <Rocket />
+              Open shared view
             </Button>
           </div>
 

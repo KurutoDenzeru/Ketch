@@ -20,11 +20,11 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
-  buildIdeaSharePath,
-  buildIdeaShareUrl,
+  buildSharedIdeaUrl,
   formatIdeaForClipboard,
   getSavedIdeas,
   removeIdea,
+  saveRecentSharedIdea,
   updateSavedIdea,
 } from "@/lib/idea-storage"
 import {
@@ -34,6 +34,7 @@ import {
   regenerateIdea,
   regenerateIdeaTitles,
 } from "@/lib/gemini"
+import { createSharedIdeaLink } from "@/lib/shared-idea-store"
 import type {
   MarketValidation,
   SavedIdea,
@@ -79,6 +80,8 @@ function SavedIdeaCard({
   const [pitch, setPitch] = useState<StartupPitch | null>(
     savedIdea.pitch ?? null
   )
+  const [isSharing, setIsSharing] = useState(false)
+  const [isShareLinkCopied, setIsShareLinkCopied] = useState(false)
   const [marketValidation, setMarketValidation] =
     useState<MarketValidation | null>(savedIdea.marketValidation ?? null)
 
@@ -211,6 +214,16 @@ function SavedIdeaCard({
     marketValidation,
   }
 
+  async function createShareLink(payload: ShareableIdeaPayload) {
+    const sharedIdea = await createSharedIdeaLink({ data: { payload } })
+
+    saveRecentSharedIdea(sharedIdea.shareId, sharedIdea.payload)
+
+    return {
+      shareUrl: buildSharedIdeaUrl(sharedIdea.shareId),
+    }
+  }
+
   return (
     <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3 px-1">
@@ -288,9 +301,10 @@ function SavedIdeaCard({
         isPitchLoading={pitchMutation.isPending}
         isMarketValidationLoading={marketValidationMutation.isPending}
         isRegeneratingTitles={regenerateTitlesMutation.isPending}
+        isSharing={isSharing}
+        isShareLinkCopied={isShareLinkCopied}
         generationRateLimit={generationRateLimit}
         isSaved
-        sharePath={buildIdeaSharePath(currentPayload)}
         onSelectAlternativeName={(name) => {
           const nextIdea = {
             ...idea,
@@ -331,7 +345,11 @@ function SavedIdeaCard({
         }}
         onCopyShareLink={async () => {
           try {
-            await copyText(buildIdeaShareUrl(currentPayload))
+            setIsSharing(true)
+            const { shareUrl } = await createShareLink(currentPayload)
+            await copyText(shareUrl)
+            setIsShareLinkCopied(true)
+            window.setTimeout(() => setIsShareLinkCopied(false), 2000)
             toast.success("Share link copied", {
               description: "You can paste the shared idea URL anywhere.",
             })
@@ -339,6 +357,22 @@ function SavedIdeaCard({
             toast.error("Clipboard unavailable", {
               description: "This browser blocked clipboard access.",
             })
+          } finally {
+            setIsSharing(false)
+          }
+        }}
+        onOpenSharedView={async () => {
+          try {
+            setIsSharing(true)
+            const { shareUrl } = await createShareLink(currentPayload)
+            window.location.assign(shareUrl)
+          } catch {
+            toast.error("Unable to open shared view", {
+              description:
+                "Ketch could not create a shared snapshot right now.",
+            })
+          } finally {
+            setIsSharing(false)
           }
         }}
         onSave={() => {

@@ -33,8 +33,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
-  buildIdeaSharePath,
-  buildIdeaShareUrl,
+  buildSharedIdeaUrl,
   clearIdeaLabDraft,
   formatIdeaForClipboard,
   getIdeaLabDraft,
@@ -42,6 +41,7 @@ import {
   getSavedIdeas,
   isIdeaSaved,
   removeIdeaByIdea,
+  saveRecentSharedIdea,
   saveIdeaLabDraft,
   saveIdea,
 } from "@/lib/idea-storage"
@@ -53,6 +53,7 @@ import {
   regenerateIdea,
   regenerateIdeaTitles,
 } from "@/lib/gemini"
+import { createSharedIdeaLink } from "@/lib/shared-idea-store"
 import type {
   IdeaBriefInput,
   MarketValidation,
@@ -122,6 +123,8 @@ function IndexPage() {
   const [pitch, setPitch] = useState<StartupPitch | null>(
     () => getIdeaLabDraft()?.pitch ?? null
   )
+  const [isSharing, setIsSharing] = useState(false)
+  const [isShareLinkCopied, setIsShareLinkCopied] = useState(false)
   const [marketValidation, setMarketValidation] =
     useState<MarketValidation | null>(
       () => getIdeaLabDraft()?.marketValidation ?? null
@@ -297,11 +300,18 @@ function IndexPage() {
       }
     : null
 
-  const currentSharePath = currentPayload
-    ? buildIdeaSharePath(currentPayload)
-    : "/idea"
-
   const saved = idea ? isIdeaSaved(idea) : false
+
+  async function createShareLink(payload: ShareableIdeaPayload) {
+    const sharedIdea = await createSharedIdeaLink({ data: { payload } })
+
+    saveRecentSharedIdea(sharedIdea.shareId, sharedIdea.payload)
+
+    return {
+      shareId: sharedIdea.shareId,
+      shareUrl: buildSharedIdeaUrl(sharedIdea.shareId),
+    }
+  }
 
   async function handleCopyIdea() {
     if (!currentPayload) {
@@ -326,7 +336,11 @@ function IndexPage() {
     }
 
     try {
-      await copyText(buildIdeaShareUrl(currentPayload))
+      setIsSharing(true)
+      const { shareUrl } = await createShareLink(currentPayload)
+      await copyText(shareUrl)
+      setIsShareLinkCopied(true)
+      window.setTimeout(() => setIsShareLinkCopied(false), 2000)
       toast.success("Share link copied", {
         description: "You can paste the shared idea URL anywhere.",
       })
@@ -334,6 +348,26 @@ function IndexPage() {
       toast.error("Clipboard unavailable", {
         description: "This browser blocked clipboard access.",
       })
+    } finally {
+      setIsSharing(false)
+    }
+  }
+
+  async function handleOpenSharedView() {
+    if (!currentPayload) {
+      return
+    }
+
+    try {
+      setIsSharing(true)
+      const { shareUrl } = await createShareLink(currentPayload)
+      window.location.assign(shareUrl)
+    } catch {
+      toast.error("Unable to open shared view", {
+        description: "Ketch could not create a shared snapshot right now.",
+      })
+    } finally {
+      setIsSharing(false)
     }
   }
 
@@ -646,9 +680,10 @@ function IndexPage() {
               isPitchLoading={pitchMutation.isPending}
               isMarketValidationLoading={marketValidationMutation.isPending}
               isRegeneratingTitles={regenerateTitlesMutation.isPending}
+              isSharing={isSharing}
+              isShareLinkCopied={isShareLinkCopied}
               generationRateLimit={generationRateLimit}
               isSaved={saved}
-              sharePath={currentSharePath}
               onSelectAlternativeName={(name) => {
                 setIdea((currentIdea) =>
                   currentIdea
@@ -679,6 +714,7 @@ function IndexPage() {
               }}
               onCopy={handleCopyIdea}
               onCopyShareLink={handleCopyShareLink}
+              onOpenSharedView={handleOpenSharedView}
               onSave={handleSaveIdea}
             />
           </div>

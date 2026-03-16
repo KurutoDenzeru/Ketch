@@ -1,7 +1,7 @@
 "use client"
 
 import { Link, useRouterState } from "@tanstack/react-router"
-import { Bookmark, FlaskConical, Waves } from "lucide-react"
+import { Bookmark, FlaskConical, Share2, Waves } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -22,6 +22,12 @@ export function AppNavbar() {
       label: "Saved Ideas",
       icon: Bookmark,
       active: pathname === "/saved",
+    },
+    {
+      to: "/shared",
+      label: "Shared Idea",
+      icon: Share2,
+      active: pathname === "/shared" || pathname.startsWith("/idea/"),
     },
   ] as const
 
@@ -73,14 +79,6 @@ export function AppNavbar() {
               </span>
             </Link>
 
-            <Link
-              to="/"
-              aria-label="Ketch home"
-              className="inline-flex min-h-14 items-center justify-center px-2 py-2 text-center transition-colors hover:bg-white/6"
-            >
-              <span className="font-display text-xl leading-none">Ketch</span>
-            </Link>
-
             {navItems.map(({ to, label, icon: Icon, active }) => (
               <Link
                 key={to}
@@ -96,7 +94,11 @@ export function AppNavbar() {
               >
                 <Icon className="size-4" />
                 <span className="leading-none">
-                  {label === "Saved Ideas" ? "Saved" : "Idea Lab"}
+                  {label === "Saved Ideas"
+                    ? "Saved"
+                    : label === "Shared Idea"
+                      ? "Shared"
+                      : "Idea Lab"}
                 </span>
               </Link>
             ))}
