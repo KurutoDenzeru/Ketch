@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { useMutation } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { CalendarDays, Sparkles, Trash2 } from "lucide-react"
 import { toast } from "sonner"
@@ -29,6 +29,7 @@ import {
 } from "@/lib/idea-storage"
 import {
   generateMarketValidation,
+  getGenerationRateLimitStatus,
   generatePitch,
   regenerateIdea,
   regenerateIdeaTitles,
@@ -40,6 +41,9 @@ import type {
   StartupIdea,
   StartupPitch,
 } from "@/types/idea"
+import type { GenerationRateLimitStatus } from "@/types/rate-limit"
+
+const generationRateLimitQueryKey = ["generation-rate-limit"] as const
 
 export const Route = createFileRoute("/saved")({
   head: () => ({
@@ -58,16 +62,25 @@ async function copyText(value: string) {
 
 type SavedIdeaCardProps = {
   savedIdea: SavedIdea
+  generationRateLimit: GenerationRateLimitStatus | null
+  refreshGenerationRateLimit: () => Promise<unknown>
   onRemove: (id: string) => void
   onUpdate: (nextIdea: SavedIdea) => void
 }
 
-function SavedIdeaCard({ savedIdea, onRemove, onUpdate }: SavedIdeaCardProps) {
+function SavedIdeaCard({
+  savedIdea,
+  generationRateLimit,
+  refreshGenerationRateLimit,
+  onRemove,
+  onUpdate,
+}: SavedIdeaCardProps) {
   const [idea, setIdea] = useState<StartupIdea>(savedIdea.idea)
-  const [pitch, setPitch] = useState<StartupPitch | null>(savedIdea.pitch ?? null)
-  const [marketValidation, setMarketValidation] = useState<MarketValidation | null>(
-    savedIdea.marketValidation ?? null
+  const [pitch, setPitch] = useState<StartupPitch | null>(
+    savedIdea.pitch ?? null
   )
+  const [marketValidation, setMarketValidation] =
+    useState<MarketValidation | null>(savedIdea.marketValidation ?? null)
 
   useEffect(() => {
     setIdea(savedIdea.idea)
@@ -136,6 +149,7 @@ function SavedIdeaCard({ savedIdea, onRemove, onUpdate }: SavedIdeaCardProps) {
       setIdea(nextIdea)
       setPitch(null)
       setMarketValidation(null)
+      void refreshGenerationRateLimit()
       persistPayload({
         idea: nextIdea,
         pitch: null,
@@ -147,6 +161,7 @@ function SavedIdeaCard({ savedIdea, onRemove, onUpdate }: SavedIdeaCardProps) {
       })
     },
     onError: (error) => {
+      void refreshGenerationRateLimit()
       toast.error("Failed to regenerate idea", {
         id: `regenerate-saved-idea-${savedIdea.id}`,
         description: error.message,
@@ -170,6 +185,7 @@ function SavedIdeaCard({ savedIdea, onRemove, onUpdate }: SavedIdeaCardProps) {
       }
 
       setIdea(nextIdea)
+      void refreshGenerationRateLimit()
       persistPayload({
         idea: nextIdea,
         pitch,
@@ -181,6 +197,7 @@ function SavedIdeaCard({ savedIdea, onRemove, onUpdate }: SavedIdeaCardProps) {
       })
     },
     onError: (error) => {
+      void refreshGenerationRateLimit()
       toast.error("Failed to generate new titles", {
         id: `generate-saved-titles-${savedIdea.id}`,
         description: error.message,
@@ -212,7 +229,10 @@ function SavedIdeaCard({ savedIdea, onRemove, onUpdate }: SavedIdeaCardProps) {
             type="button"
             variant="outline"
             onClick={() => regenerateIdeaMutation.mutate(idea)}
-            disabled={regenerateIdeaMutation.isPending}
+            disabled={
+              regenerateIdeaMutation.isPending ||
+              Boolean(generationRateLimit?.isExhausted)
+            }
             className="rounded-full"
           >
             {regenerateIdeaMutation.isPending ? (
@@ -236,8 +256,9 @@ function SavedIdeaCard({ savedIdea, onRemove, onUpdate }: SavedIdeaCardProps) {
               <AlertDialogHeader>
                 <AlertDialogTitle>Remove saved idea?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This deletes the saved snapshot from local storage, including its
-                  generated pitch and validation data. This action cannot be undone.
+                  This deletes the saved snapshot from local storage, including
+                  its generated pitch and validation data. This action cannot be
+                  undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -247,7 +268,8 @@ function SavedIdeaCard({ savedIdea, onRemove, onUpdate }: SavedIdeaCardProps) {
                   onClick={() => {
                     onRemove(savedIdea.id)
                     toast.success("Saved idea removed", {
-                      description: "The local copy has been deleted from this browser.",
+                      description:
+                        "The local copy has been deleted from this browser.",
                     })
                   }}
                 >
@@ -266,6 +288,7 @@ function SavedIdeaCard({ savedIdea, onRemove, onUpdate }: SavedIdeaCardProps) {
         isPitchLoading={pitchMutation.isPending}
         isMarketValidationLoading={marketValidationMutation.isPending}
         isRegeneratingTitles={regenerateTitlesMutation.isPending}
+        generationRateLimit={generationRateLimit}
         isSaved
         sharePath={buildIdeaSharePath(currentPayload)}
         onSelectAlternativeName={(name) => {
@@ -297,7 +320,8 @@ function SavedIdeaCard({ savedIdea, onRemove, onUpdate }: SavedIdeaCardProps) {
           try {
             await copyText(formatIdeaForClipboard(currentPayload))
             toast.success("Idea copied", {
-              description: "The full startup idea summary is in your clipboard.",
+              description:
+                "The full startup idea summary is in your clipboard.",
             })
           } catch {
             toast.error("Clipboard unavailable", {
@@ -329,8 +353,20 @@ function SavedIdeaCard({ savedIdea, onRemove, onUpdate }: SavedIdeaCardProps) {
 }
 
 function SavedIdeasPage() {
+  const queryClient = useQueryClient()
   const navigate = useNavigate()
   const [ideas, setIdeas] = useState<SavedIdea[]>([])
+  const generationRateLimitQuery = useQuery({
+    queryKey: generationRateLimitQueryKey,
+    queryFn: () => getGenerationRateLimitStatus(),
+  })
+  const generationRateLimit = generationRateLimitQuery.data ?? null
+
+  function refreshGenerationRateLimit() {
+    return queryClient.invalidateQueries({
+      queryKey: generationRateLimitQueryKey,
+    })
+  }
 
   useEffect(() => {
     setIdeas(getSavedIdeas())
@@ -347,6 +383,13 @@ function SavedIdeasPage() {
               </Badge>
               <Badge variant="outline" className="rounded-full px-3 py-1">
                 {ideas.length} saved {ideas.length === 1 ? "idea" : "ideas"}
+              </Badge>
+              <Badge variant="outline" className="rounded-full px-3 py-1">
+                {generationRateLimit
+                  ? generationRateLimit.isExhausted
+                    ? "Weekly cooldown active"
+                    : `${generationRateLimit.remaining}/${generationRateLimit.limit} generations left`
+                  : "Checking cooldown"}
               </Badge>
             </div>
             <div className="space-y-3">
@@ -369,8 +412,13 @@ function SavedIdeasPage() {
           </CardHeader>
           <CardContent className="space-y-3 px-6 pb-6 text-sm text-muted-foreground">
             <p>Startup idea details stay in localStorage between sessions.</p>
-            <p>Generated pitches, charts, and AI market validation persist too.</p>
-            <p>You can reopen, refresh, rename, share, or remove each saved idea here.</p>
+            <p>
+              Generated pitches, charts, and AI market validation persist too.
+            </p>
+            <p>
+              You can reopen, refresh, rename, share, or remove each saved idea
+              here.
+            </p>
           </CardContent>
         </Card>
       </section>
@@ -401,6 +449,8 @@ function SavedIdeasPage() {
             <SavedIdeaCard
               key={savedIdea.id}
               savedIdea={savedIdea}
+              generationRateLimit={generationRateLimit}
+              refreshGenerationRateLimit={refreshGenerationRateLimit}
               onRemove={(id) => {
                 const nextIdeas = removeIdea(id)
                 setIdeas(nextIdeas)

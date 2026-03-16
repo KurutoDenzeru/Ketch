@@ -63,6 +63,7 @@ import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import type { FeaturePreference, IdeaBriefInput } from "@/types/idea"
+import type { GenerationRateLimitStatus } from "@/types/rate-limit"
 import {
   categoryFocusOptions,
   featurePreferences,
@@ -74,6 +75,7 @@ type IdeaBriefFormProps = {
   onChange: (patch: Partial<IdeaBriefInput>) => void
   onSubmit: () => void
   isLoading: boolean
+  generationRateLimit: GenerationRateLimitStatus | null
 }
 
 export function IdeaBriefForm({
@@ -81,9 +83,11 @@ export function IdeaBriefForm({
   onChange,
   onSubmit,
   isLoading,
+  generationRateLimit,
 }: IdeaBriefFormProps) {
   const availableFocuses = categoryFocusOptions[brief.category]
   const ActiveFocusIcon = getFocusIcon(brief.categoryFocus)
+  const hasGenerationCredits = (generationRateLimit?.remaining ?? 1) > 0
 
   function toggleFeature(feature: FeaturePreference) {
     const nextPreferences = brief.featurePreferences.includes(feature)
@@ -247,15 +251,24 @@ export function IdeaBriefForm({
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <p className="text-xs leading-6 text-muted-foreground">
-            Tip: three inputs is enough. Use the toggles to steer the type of
-            startup you want without turning the form into work.
-          </p>
+          <div className="space-y-1">
+            <p className="text-xs leading-6 text-muted-foreground">
+              Tip: three inputs is enough. Use the toggles to steer the type of
+              startup you want without turning the form into work.
+            </p>
+            <p className="text-xs leading-6 text-muted-foreground">
+              {generationRateLimit
+                ? generationRateLimit.isExhausted
+                  ? `Weekly generation cooldown active. ${generationRateLimit.limit}/${generationRateLimit.limit} used.${generationRateLimit.resetsAt ? ` Resets ${new Date(generationRateLimit.resetsAt).toLocaleString()}.` : ""}`
+                  : `${generationRateLimit.remaining} of ${generationRateLimit.limit} weekly generation credits left.`
+                : "Checking generation cooldown..."}
+            </p>
+          </div>
           <Button
             type="button"
             size="lg"
             onClick={onSubmit}
-            disabled={isLoading}
+            disabled={isLoading || !hasGenerationCredits}
             className="rounded-full px-5"
           >
             {isLoading ? (

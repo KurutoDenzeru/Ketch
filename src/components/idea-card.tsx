@@ -33,11 +33,8 @@ import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { cn } from "@/lib/utils"
-import type {
-  MarketValidation,
-  StartupIdea,
-  StartupPitch,
-} from "@/types/idea"
+import type { MarketValidation, StartupIdea, StartupPitch } from "@/types/idea"
+import type { GenerationRateLimitStatus } from "@/types/rate-limit"
 
 type IdeaCardProps = {
   idea: StartupIdea
@@ -46,6 +43,7 @@ type IdeaCardProps = {
   isPitchLoading: boolean
   isMarketValidationLoading: boolean
   isRegeneratingTitles?: boolean
+  generationRateLimit: GenerationRateLimitStatus | null
   isSaved: boolean
   sharePath: string
   onSelectAlternativeName: (name: string) => void
@@ -90,6 +88,7 @@ export function IdeaCard({
   isPitchLoading,
   isMarketValidationLoading,
   isRegeneratingTitles = false,
+  generationRateLimit,
   isSaved,
   sharePath,
   onSelectAlternativeName,
@@ -111,6 +110,8 @@ export function IdeaCard({
   }, [marketValidation])
 
   const validationTone = getValidationTone(idea.validationScore)
+  const titlesDisabled =
+    isRegeneratingTitles || Boolean(generationRateLimit?.isExhausted)
 
   return (
     <div className="space-y-6">
@@ -167,7 +168,7 @@ export function IdeaCard({
                     type="button"
                     variant="outline"
                     onClick={onRegenerateTitles}
-                    disabled={isRegeneratingTitles}
+                    disabled={titlesDisabled}
                     className="rounded-full"
                   >
                     {isRegeneratingTitles ? (
@@ -178,6 +179,13 @@ export function IdeaCard({
                     Generate new titles
                   </Button>
                 </div>
+                <p className="text-xs leading-6 text-muted-foreground">
+                  {generationRateLimit
+                    ? generationRateLimit.isExhausted
+                      ? `Generation cooldown active until ${generationRateLimit.resetsAt ? new Date(generationRateLimit.resetsAt).toLocaleString() : "later this week"}.`
+                      : `${generationRateLimit.remaining} weekly generation credits remaining for fresh ideas and title refreshes.`
+                    : "Checking generation cooldown..."}
+                </p>
               </div>
             </div>
 
