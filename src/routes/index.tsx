@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute } from "@tanstack/react-router"
 import {
   ArrowUpRight,
+  BadgeCheck,
   Bookmark,
   Compass,
   Lightbulb,
@@ -374,10 +375,21 @@ function IndexPage() {
     <main className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-8 md:gap-14 md:px-6 md:py-10">
       <section className="space-y-10 px-2 py-6 md:px-8 md:py-10">
         <div className="flex flex-wrap items-center justify-center gap-3">
-          <Badge variant="outline" className="rounded-full px-4 py-1.5">
+          <Badge
+            variant="secondary"
+            className="h-auto gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-[0.14em] uppercase"
+          >
+            <BadgeCheck className="size-3.5" />
             Founder-first evaluator
           </Badge>
-          <Badge variant="outline" className="rounded-full px-4 py-1.5">
+          <Badge
+            variant="outline"
+            className="h-auto gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-[0.14em] uppercase"
+          >
+            <span className="relative flex size-2.5">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex size-2.5 rounded-full bg-emerald-500" />
+            </span>
             Gemini powered
           </Badge>
         </div>

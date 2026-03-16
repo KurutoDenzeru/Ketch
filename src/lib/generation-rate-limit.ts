@@ -1,4 +1,5 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises"
+import { homedir, tmpdir } from "node:os"
 import path from "node:path"
 
 import type {
@@ -9,11 +10,43 @@ import type {
 const RATE_LIMIT_WINDOW_DAYS = 7
 const RATE_LIMIT_WINDOW_MS = RATE_LIMIT_WINDOW_DAYS * 24 * 60 * 60 * 1000
 const RATE_LIMIT_MAX_REQUESTS = 3
-const STORE_FILE_PATH = path.join(
-  process.cwd(),
-  ".ketch",
-  "generation-rate-limit.json"
-)
+const STORE_FILE_NAME = "generation-rate-limit.json"
+
+function getDataDirectory() {
+  const configuredDirectory = process.env.KETCH_DATA_DIR?.trim()
+
+  if (configuredDirectory) {
+    return configuredDirectory
+  }
+
+  const homeDirectory = homedir()
+
+  if (process.platform === "darwin" && homeDirectory) {
+    return path.join(homeDirectory, "Library", "Application Support", "Ketch")
+  }
+
+  if (process.platform === "win32") {
+    const appDataDirectory = process.env.APPDATA?.trim()
+
+    if (appDataDirectory) {
+      return path.join(appDataDirectory, "Ketch")
+    }
+  }
+
+  const xdgDataDirectory = process.env.XDG_DATA_HOME?.trim()
+
+  if (xdgDataDirectory) {
+    return path.join(xdgDataDirectory, "Ketch")
+  }
+
+  if (homeDirectory) {
+    return path.join(homeDirectory, ".local", "share", "Ketch")
+  }
+
+  return path.join(tmpdir(), "ketch")
+}
+
+const STORE_FILE_PATH = path.join(getDataDirectory(), STORE_FILE_NAME)
 
 type GenerationEvent = {
   action: GenerationRateLimitedAction

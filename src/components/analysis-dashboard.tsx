@@ -122,7 +122,9 @@ function buildDemandKeywordOptions(idea: StartupIdea) {
 
 function deriveFallbackSignal(term: string, index: number, idea: StartupIdea) {
   const seededScore = clamp(
-    Math.round((idea.validationScore + (term.length % 5) + Math.max(index, 0)) / 2.1),
+    Math.round(
+      (idea.validationScore + (term.length % 5) + Math.max(index, 0)) / 2.1
+    ),
     3,
     8
   )
@@ -136,59 +138,134 @@ function deriveFallbackSignal(term: string, index: number, idea: StartupIdea) {
   }
 }
 
-function buildDemandYearLabels(count: number) {
-  const startYear = new Date().getFullYear() - Math.max(count - 1, 0)
+function buildDemandPeriodLabels(count: number) {
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    year: "2-digit",
+  })
+  const now = new Date()
 
-  return Array.from({ length: count }, (_, index) => String(startYear + index))
+  return Array.from({ length: count }, (_, index) => {
+    const date = new Date(
+      now.getFullYear(),
+      now.getMonth() - (count - 1 - index),
+      1
+    )
+
+    return formatter.format(date)
+  })
+}
+
+function getDemandVolumeRange(volume: string) {
+  const normalized = volume.toLowerCase()
+
+  if (normalized.includes("high")) {
+    return { min: 5000, max: 18000 }
+  }
+
+  if (normalized.includes("low")) {
+    return { min: 250, max: 2200 }
+  }
+
+  return { min: 1500, max: 8000 }
+}
+
+function roundDemandVolume(value: number) {
+  if (value >= 10000) return Math.round(value / 500) * 500
+  if (value >= 5000) return Math.round(value / 250) * 250
+  if (value >= 1000) return Math.round(value / 100) * 100
+  return Math.round(value / 50) * 50
+}
+
+function getDemandAxisUpperBound(maxValue: number) {
+  if (maxValue <= 2500) return Math.ceil(maxValue / 250) * 250
+  if (maxValue <= 10000) return Math.ceil(maxValue / 1000) * 1000
+
+  return Math.ceil(maxValue / 2000) * 2000
+}
+
+function buildDemandTicks(maxValue: number) {
+  const upperBound = getDemandAxisUpperBound(maxValue)
+  const step = upperBound / 4
+
+  return Array.from({ length: 5 }, (_, index) => Math.round(step * index))
 }
 
 export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
   const keywordOptions = buildDemandKeywordOptions(idea)
-  const [selectedKeyword, setSelectedKeyword] = useState(keywordOptions[0] ?? "")
+  const [selectedKeyword, setSelectedKeyword] = useState(
+    keywordOptions[0] ?? ""
+  )
 
   useEffect(() => {
     setSelectedKeyword(keywordOptions[0] ?? "")
-  }, [idea])
+  }, [keywordOptions])
 
   const activeKeywordSignal =
-    idea.analysis.keywordSignals.find((signal) => signal.term === selectedKeyword) ??
+    idea.analysis.keywordSignals.find(
+      (signal) => signal.term === selectedKeyword
+    ) ??
     deriveFallbackSignal(
       selectedKeyword || keywordOptions[0] || idea.name,
       keywordOptions.findIndex((item) => item === selectedKeyword),
       idea
     )
 
-  const trendLabels = buildDemandYearLabels(
+  const trendLabels = buildDemandPeriodLabels(
     Math.min(7, idea.analysis.trendPoints.length)
   )
 
-  const temperedTrendPoints = idea.analysis.trendPoints
+  const rawTrendPoints = idea.analysis.trendPoints
     .slice(0, trendLabels.length)
     .map((point, index) => {
-    const baseInterest = temperInterest(point.interest)
-    const signalScore = activeKeywordSignal?.score ?? 5
-    const signalBoost = 0.78 + signalScore / 10
-    const volumeBoost = getVolumeMultiplier(activeKeywordSignal?.volume ?? "Medium")
-    const competitionPenalty = getCompetitionPenalty(
-      activeKeywordSignal?.competition ?? "Medium"
+      const baseInterest = temperInterest(point.interest)
+      const signalScore = activeKeywordSignal?.score ?? 5
+      const signalBoost = 0.78 + signalScore / 10
+      const volumeBoost = getVolumeMultiplier(
+        activeKeywordSignal?.volume ?? "Medium"
+      )
+      const competitionPenalty = getCompetitionPenalty(
+        activeKeywordSignal?.competition ?? "Medium"
+      )
+      const directionalMomentum =
+        (index - (trendLabels.length - 1) / 2) * (1.6 + signalScore * 0.18)
+
+      return {
+        ...point,
+        label: trendLabels[index] ?? point.label,
+        interest: clamp(
+          Math.round(
+            baseInterest * signalBoost * volumeBoost * competitionPenalty +
+              directionalMomentum
+          ),
+          12,
+          100
+        ),
+      }
+    })
+
+  const trendPointsAreFlat =
+    rawTrendPoints.length > 1 &&
+    rawTrendPoints.every(
+      (point) => point.interest === rawTrendPoints[0]?.interest
     )
-    const lateStageLift =
-      index >= idea.analysis.trendPoints.length - 2 ? 1.12 : 1 + index * 0.025
 
-    return {
-      ...point,
-      label: trendLabels[index] ?? point.label,
-      interest: clamp(
-        Math.round(baseInterest * signalBoost * volumeBoost * competitionPenalty * lateStageLift),
-        12,
-        100
-      ),
-    }
-  })
+  const temperedTrendPoints = trendPointsAreFlat
+    ? rawTrendPoints.map((point, index) => ({
+        ...point,
+        interest: clamp(point.interest + index * 3 - 6, 12, 100),
+      }))
+    : rawTrendPoints
 
+  const demandVolumeRange = getDemandVolumeRange(
+    activeKeywordSignal?.volume ?? "Medium"
+  )
   const trendChartData = temperedTrendPoints.map((point) => ({
     ...point,
-    volume: point.interest * 20,
+    volume: roundDemandVolume(
+      demandVolumeRange.min +
+        ((demandVolumeRange.max - demandVolumeRange.min) * point.interest) / 100
+    ),
   }))
 
   const temperedScoreMetrics = idea.analysis.scoreMetrics.map((metric) => ({
@@ -231,8 +308,11 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
     -95,
     999
   )
-  const maxTrendVolume = Math.max(...trendChartData.map((point) => point.volume))
-  const yAxisUpperBound = Math.max(2000, Math.ceil(maxTrendVolume / 500) * 500)
+  const maxTrendVolume = Math.max(
+    ...trendChartData.map((point) => point.volume)
+  )
+  const yAxisUpperBound = getDemandAxisUpperBound(maxTrendVolume)
+  const yAxisTicks = buildDemandTicks(maxTrendVolume)
 
   const trendConfig = {
     volume: {
@@ -267,7 +347,7 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
             <Badge
               key={tag}
               variant="outline"
-              className="h-auto rounded-full px-3 py-1.5"
+              className="h-auto gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-[0.14em] uppercase"
             >
               <BadgeCheck className="size-3.5" />
               {tag}
@@ -300,7 +380,9 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
                   <SelectContent align="start">
                     {keywordOptions.map((term) => (
                       <SelectItem key={term} value={term}>
-                        <SelectItemText>{formatKeywordLabel(term)}</SelectItemText>
+                        <SelectItemText>
+                          {formatKeywordLabel(term)}
+                        </SelectItemText>
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -311,7 +393,7 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
             <div className="grid gap-3 text-right sm:grid-cols-2">
               <div className="rounded-2xl border border-border/70 bg-muted/40 px-4 py-3">
                 <div className="text-xs tracking-[0.18em] text-muted-foreground uppercase">
-                  Volume
+                  Current
                 </div>
                 <div className="font-display text-3xl leading-none text-primary">
                   {latestTrendVolume.toLocaleString()}
@@ -335,87 +417,94 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
             </div>
           </div>
 
-          <ChartContainer
-            config={trendConfig}
-            className="!aspect-auto h-[22rem] min-h-[22rem] w-full"
-          >
-            <AreaChart
-              data={trendChartData}
-              margin={{ top: 24, right: 12, left: 8, bottom: 8 }}
+          <div className="grid grid-cols-[2.75rem_minmax(0,1fr)] grid-rows-[minmax(0,1fr)_auto] gap-x-3 gap-y-3">
+            <div className="flex min-h-[22rem] items-center justify-center pt-2">
+              <span className="-rotate-90 text-[11px] font-semibold tracking-[0.22em] whitespace-nowrap text-muted-foreground uppercase">
+                Search Results
+              </span>
+            </div>
+
+            <ChartContainer
+              config={trendConfig}
+              className="!aspect-auto h-[22rem] min-h-[22rem] w-full"
             >
-              <defs>
-                <linearGradient id="trendFill" x1="0" x2="0" y1="0" y2="1">
-                  <stop
-                    offset="5%"
-                    stopColor="var(--color-volume)"
-                    stopOpacity={0.32}
-                  />
-                  <stop
-                    offset="95%"
-                    stopColor="var(--color-volume)"
-                    stopOpacity={0.02}
-                  />
-                </linearGradient>
-              </defs>
-              <CartesianGrid vertical={false} />
-              <Legend
-                verticalAlign="top"
-                align="left"
-                iconType="plainline"
-                wrapperStyle={{ paddingBottom: "12px" }}
-              />
-              <XAxis
-                dataKey="label"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={12}
-                label={{
-                  value: "Year",
-                  position: "insideBottom",
-                  offset: -2,
-                  style: {
-                    fill: "hsl(var(--muted-foreground))",
-                    fontSize: 12,
-                    letterSpacing: "0.18em",
-                    textTransform: "uppercase",
-                  },
-                }}
-              />
-              <YAxis
-                tickLine={false}
-                axisLine={false}
-                width={52}
-                domain={[0, yAxisUpperBound]}
-                tickFormatter={(value) =>
-                  value >= 1000 ? `${Math.round(value / 1000)}k` : `${value}`
-                }
-                label={{
-                  value: "Search Results",
-                  angle: -90,
-                  position: "insideLeft",
-                  offset: -6,
-                  style: {
-                    fill: "hsl(var(--muted-foreground))",
-                    fontSize: 12,
-                    letterSpacing: "0.18em",
-                    textTransform: "uppercase",
-                  },
-                }}
-              />
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent indicator="line" />}
-              />
-              <Area
-                type="monotone"
-                dataKey="volume"
-                name="Search volume"
-                stroke="var(--color-volume)"
-                fill="url(#trendFill)"
-                strokeWidth={2.5}
-              />
-            </AreaChart>
-          </ChartContainer>
+              <AreaChart
+                data={trendChartData}
+                margin={{ top: 24, right: 12, left: 8, bottom: 8 }}
+              >
+                <defs>
+                  <linearGradient id="trendFill" x1="0" x2="0" y1="0" y2="1">
+                    <stop
+                      offset="5%"
+                      stopColor="var(--color-volume)"
+                      stopOpacity={0.32}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="var(--color-volume)"
+                      stopOpacity={0.02}
+                    />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid vertical={false} />
+                <Legend
+                  verticalAlign="top"
+                  align="left"
+                  iconType="plainline"
+                  wrapperStyle={{ paddingBottom: "12px" }}
+                />
+                <XAxis
+                  dataKey="label"
+                  tickLine={false}
+                  axisLine={false}
+                  interval={0}
+                  minTickGap={0}
+                  tickMargin={12}
+                  tick={{ fontSize: 12 }}
+                />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  width={52}
+                  domain={[0, yAxisUpperBound]}
+                  ticks={yAxisTicks}
+                  tickFormatter={(value) =>
+                    value >= 1000
+                      ? `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 1)}k`
+                      : `${value}`
+                  }
+                  tick={{ fontSize: 12 }}
+                />
+                <ChartTooltip
+                  cursor={false}
+                  content={
+                    <ChartTooltipContent
+                      indicator="line"
+                      formatter={(value) => [
+                        typeof value === "number"
+                          ? value.toLocaleString()
+                          : value,
+                        "Search volume",
+                      ]}
+                    />
+                  }
+                />
+                <Area
+                  type="monotone"
+                  dataKey="volume"
+                  name="Search volume"
+                  stroke="var(--color-volume)"
+                  fill="url(#trendFill)"
+                  strokeWidth={2.5}
+                />
+              </AreaChart>
+            </ChartContainer>
+
+            <div />
+            <div className="pt-1 text-center text-[11px] font-semibold tracking-[0.22em] text-muted-foreground uppercase">
+              Recent Months
+            </div>
+          </div>
         </div>
 
         <div className="grid auto-rows-fr gap-4 sm:grid-cols-2 xl:grid-cols-2">
@@ -549,8 +638,8 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
                     y="54%"
                     textAnchor="middle"
                     dominantBaseline="middle"
-                  className="fill-foreground text-4xl font-semibold"
-                >
+                    className="fill-foreground text-4xl font-semibold"
+                  >
                     {valueEquationScore}
                   </text>
                   <text
@@ -575,7 +664,7 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
               </div>
               <div className="grid grid-cols-[2.5rem_minmax(0,1fr)] grid-rows-[minmax(0,1fr)_auto] gap-x-3 gap-y-3">
                 <div className="flex min-h-[20rem] items-center justify-center pt-2">
-                  <span className="-rotate-90 whitespace-nowrap text-[11px] font-semibold tracking-[0.22em] text-muted-foreground uppercase">
+                  <span className="-rotate-90 text-[11px] font-semibold tracking-[0.22em] whitespace-nowrap text-muted-foreground uppercase">
                     Value Score
                   </span>
                 </div>
@@ -662,7 +751,10 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
                     {step.phase}
                   </h4>
                 </div>
-                <Badge variant="outline" className="rounded-full px-3 py-1">
+                <Badge
+                  variant="outline"
+                  className="h-auto rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-[0.14em] uppercase"
+                >
                   Step {index + 1}
                 </Badge>
               </div>

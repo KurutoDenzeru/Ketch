@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import {
+  BadgeCheck,
   Copy,
   Gauge,
   LoaderCircle,
@@ -76,7 +77,7 @@ function getValidationTone(score: number) {
   return {
     label: "Strong idea",
     badgeClassName:
-      "border-emerald-200 bg-emerald-100 text-emerald-900 hover:bg-emerald-100",
+      "border-emerald-200 bg-emerald-100 text-emerald-900 hover:bg-emerald-100 dark:border-emerald-800/70 dark:bg-emerald-950/60 dark:text-emerald-200",
     progressClassName: "[&_[data-slot=progress-indicator]]:bg-emerald-500",
   }
 }
@@ -118,13 +119,17 @@ export function IdeaCard({
       <Card className="overflow-hidden rounded-[2rem] border border-border/70 bg-card/90 py-0 shadow-sm">
         <CardHeader className="gap-5 border-b border-border/70 px-6 py-6">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="outline" className="rounded-full px-3 py-1">
+            <Badge
+              variant="outline"
+              className="h-auto gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-[0.14em] uppercase"
+            >
+              <BadgeCheck className="size-3.5" />
               {idea.category}
             </Badge>
             <Badge
               variant="outline"
               className={cn(
-                "rounded-full px-3 py-1",
+                "h-auto gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-[0.14em] uppercase",
                 validationTone.badgeClassName
               )}
             >
