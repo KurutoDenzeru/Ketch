@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute, useNavigate } from "@tanstack/react-router"
-import { CalendarDays, Sparkles, Trash2 } from "lucide-react"
+import { CalendarDays, Gauge, HardDrive, Sparkles, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 
 import { IdeaCard } from "@/components/idea-card"
@@ -18,9 +18,10 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import {
   buildSharedIdeaUrl,
+  formatIdeaAsMarkdown,
   formatIdeaForClipboard,
   getSavedIdeas,
   removeIdea,
@@ -81,6 +82,9 @@ function SavedIdeaCard({
     savedIdea.pitch ?? null
   )
   const [isSharing, setIsSharing] = useState(false)
+  const [copiedIdeaFormat, setCopiedIdeaFormat] = useState<
+    "text" | "markdown" | null
+  >(null)
   const [isShareLinkCopied, setIsShareLinkCopied] = useState(false)
   const [marketValidation, setMarketValidation] =
     useState<MarketValidation | null>(savedIdea.marketValidation ?? null)
@@ -95,6 +99,11 @@ function SavedIdeaCard({
     const nextIdea = updateSavedIdea(savedIdea.id, payload)
     onUpdate(nextIdea)
     return nextIdea
+  }
+
+  function setTemporaryCopyState(format: "text" | "markdown") {
+    setCopiedIdeaFormat(format)
+    window.setTimeout(() => setCopiedIdeaFormat(null), 2000)
   }
 
   const pitchMutation = useMutation({
@@ -228,7 +237,11 @@ function SavedIdeaCard({
     <section className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3 px-1">
         <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-          <Badge variant="outline" className="rounded-full px-3 py-1">
+          <Badge
+            variant="outline"
+            className="h-auto gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-[0.14em] uppercase"
+          >
+            <CalendarDays className="size-3.5" />
             Saved snapshot
           </Badge>
           <span className="inline-flex items-center gap-2">
@@ -302,6 +315,7 @@ function SavedIdeaCard({
         isMarketValidationLoading={marketValidationMutation.isPending}
         isRegeneratingTitles={regenerateTitlesMutation.isPending}
         isSharing={isSharing}
+        copiedIdeaFormat={copiedIdeaFormat}
         isShareLinkCopied={isShareLinkCopied}
         generationRateLimit={generationRateLimit}
         isSaved
@@ -330,12 +344,26 @@ function SavedIdeaCard({
         onGenerateMarketValidation={() => {
           marketValidationMutation.mutate(idea)
         }}
-        onCopy={async () => {
+        onCopyText={async () => {
           try {
             await copyText(formatIdeaForClipboard(currentPayload))
+            setTemporaryCopyState("text")
             toast.success("Idea copied", {
               description:
                 "The full startup idea summary is in your clipboard.",
+            })
+          } catch {
+            toast.error("Clipboard unavailable", {
+              description: "This browser blocked clipboard access.",
+            })
+          }
+        }}
+        onCopyMarkdown={async () => {
+          try {
+            await copyText(formatIdeaAsMarkdown(currentPayload))
+            setTemporaryCopyState("markdown")
+            toast.success("Markdown copied", {
+              description: "The startup idea markdown is in your clipboard.",
             })
           } catch {
             toast.error("Clipboard unavailable", {
@@ -412,18 +440,30 @@ function SavedIdeasPage() {
         <Card className="rounded-[2rem] border border-border/70 py-0 shadow-sm">
           <CardContent className="space-y-5 px-6 py-8 md:px-8">
             <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className="rounded-full px-3 py-1">
-                Local storage archive
+              <Badge
+                variant="outline"
+                className="h-auto gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-[0.14em] uppercase"
+              >
+                <HardDrive className="size-3.5" />
+                Local storage
               </Badge>
-              <Badge variant="outline" className="rounded-full px-3 py-1">
+              <Badge
+                variant="outline"
+                className="h-auto gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-[0.14em] uppercase"
+              >
+                <CalendarDays className="size-3.5" />
                 {ideas.length} saved {ideas.length === 1 ? "idea" : "ideas"}
               </Badge>
-              <Badge variant="outline" className="rounded-full px-3 py-1">
+              <Badge
+                variant="outline"
+                className="h-auto gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-[0.14em] uppercase"
+              >
+                <Gauge className="size-3.5" />
                 {generationRateLimit
                   ? generationRateLimit.isExhausted
-                    ? "Weekly cooldown active"
-                    : `${generationRateLimit.remaining}/${generationRateLimit.limit} generations left`
-                  : "Checking cooldown"}
+                    ? "Weekly cooldown"
+                    : `${generationRateLimit.remaining}/${generationRateLimit.limit} left`
+                  : "Checking"}
               </Badge>
             </div>
             <div className="space-y-3">
@@ -435,24 +475,6 @@ function SavedIdeasPage() {
                 pitch, validation, and the detailed execution plan from the lab.
               </p>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-[2rem] border border-border/70 py-0 shadow-sm">
-          <CardHeader className="gap-2 px-6 py-6">
-            <CardTitle className="font-display text-3xl leading-none">
-              What persists
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 px-6 pb-6 text-sm text-muted-foreground">
-            <p>Startup idea details stay in localStorage between sessions.</p>
-            <p>
-              Generated pitches, charts, and AI market validation persist too.
-            </p>
-            <p>
-              You can reopen, refresh, rename, share, or remove each saved idea
-              here.
-            </p>
           </CardContent>
         </Card>
       </section>

@@ -9,7 +9,6 @@ import {
   BriefcaseBusiness,
   GraduationCap,
   HeartPulse,
-  Link2,
   type LucideIcon,
   ShieldCheck,
   Share2,
@@ -26,10 +25,10 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
-  buildSharedIdeaPath,
   buildSharedIdeaUrl,
   getRecentSharedIdea,
   decodeIdeaFromUrl,
+  formatIdeaAsMarkdown,
   formatIdeaForClipboard,
   isIdeaSaved,
   saveRecentSharedIdea,
@@ -97,6 +96,9 @@ export function SharedIdeaPage({ data = "", shareId }: SharedIdeaPageProps) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const [isSharing, setIsSharing] = useState(false)
+  const [copiedIdeaFormat, setCopiedIdeaFormat] = useState<
+    "text" | "markdown" | null
+  >(null)
   const [isShareLinkCopied, setIsShareLinkCopied] = useState(false)
   const [recentSharedIdea, setRecentSharedIdea] =
     useState<ReturnType<typeof getRecentSharedIdea>>(null)
@@ -142,6 +144,11 @@ export function SharedIdeaPage({ data = "", shareId }: SharedIdeaPageProps) {
     return queryClient.invalidateQueries({
       queryKey: generationRateLimitQueryKey,
     })
+  }
+
+  function setTemporaryCopyState(format: "text" | "markdown") {
+    setCopiedIdeaFormat(format)
+    window.setTimeout(() => setCopiedIdeaFormat(null), 2000)
   }
 
   useEffect(() => {
@@ -234,10 +241,6 @@ export function SharedIdeaPage({ data = "", shareId }: SharedIdeaPageProps) {
       }
     : null
 
-  const currentSharePath = resolvedShareId
-    ? buildSharedIdeaPath(resolvedShareId)
-    : "/idea"
-
   async function createShareLink(payload: ShareableIdeaPayload) {
     const sharedIdea = await createSharedIdeaLink({ data: { payload } })
 
@@ -326,25 +329,6 @@ export function SharedIdeaPage({ data = "", shareId }: SharedIdeaPageProps) {
             </div>
           </CardContent>
         </Card>
-
-        <Card className="rounded-[2rem] border border-border/70 py-0 shadow-sm">
-          <CardContent className="space-y-4 px-6 py-8">
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <Share2 className="size-4" />
-              Share behavior
-            </div>
-            <p className="text-sm leading-7 text-muted-foreground">
-              Shared ideas are restored from saved snapshots, and the latest one
-              stays available on this device under the Shared tab.
-            </p>
-            <Button variant="outline" className="rounded-full" asChild>
-              <a href={currentSharePath}>
-                <Link2 />
-                Reload this snapshot
-              </a>
-            </Button>
-          </CardContent>
-        </Card>
       </section>
 
       <IdeaCard
@@ -355,6 +339,7 @@ export function SharedIdeaPage({ data = "", shareId }: SharedIdeaPageProps) {
         isMarketValidationLoading={marketValidationMutation.isPending}
         isRegeneratingTitles={regenerateTitlesMutation.isPending}
         isSharing={isSharing}
+        copiedIdeaFormat={copiedIdeaFormat}
         isShareLinkCopied={isShareLinkCopied}
         generationRateLimit={generationRateLimit}
         isSaved={isIdeaSaved(idea)}
@@ -380,12 +365,26 @@ export function SharedIdeaPage({ data = "", shareId }: SharedIdeaPageProps) {
         onGenerateMarketValidation={() => {
           marketValidationMutation.mutate(idea)
         }}
-        onCopy={async () => {
+        onCopyText={async () => {
           try {
             await copyText(formatIdeaForClipboard(currentPayload))
+            setTemporaryCopyState("text")
             toast.success("Idea copied", {
               description:
                 "The full startup idea summary is in your clipboard.",
+            })
+          } catch {
+            toast.error("Clipboard unavailable", {
+              description: "This browser blocked clipboard access.",
+            })
+          }
+        }}
+        onCopyMarkdown={async () => {
+          try {
+            await copyText(formatIdeaAsMarkdown(currentPayload))
+            setTemporaryCopyState("markdown")
+            toast.success("Markdown copied", {
+              description: "The startup idea markdown is in your clipboard.",
             })
           } catch {
             toast.error("Clipboard unavailable", {
