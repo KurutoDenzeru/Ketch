@@ -22,6 +22,10 @@
 - NO Co-Authored-By lines
 - NO --no-verify flag
 
+## Branch naming rules
+- Use: `<prefix>/<short-description>`
+- Prefix must be one of: `feat/`, `fix/`, `hotfix/`, `chore/`, `docs/`, `refactor/`, `test/`, `ci/`
+
 ## Safety
 - NEVER force push
 - NEVER delete branches without confirmation
