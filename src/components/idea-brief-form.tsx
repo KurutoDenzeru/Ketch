@@ -2,6 +2,7 @@
 
 import {
   Activity,
+  BadgeCheck,
   BrainCircuit,
   BriefcaseBusiness,
   BriefcaseConveyorBelt,
@@ -101,10 +102,18 @@ export function IdeaBriefForm({
     <Card className="rounded-[2rem] border border-border/70 py-0 shadow-sm">
       <CardHeader className="gap-3 px-6 py-7 md:px-8 md:py-8">
         <div className="flex flex-wrap gap-2">
-          <Badge variant="outline" className="rounded-full px-3 py-1">
+          <Badge
+            variant="outline"
+            className="h-auto gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-[0.14em] uppercase"
+          >
+            <BadgeCheck className="size-3.5" />
             Founder brief
           </Badge>
-          <Badge variant="outline" className="rounded-full px-3 py-1">
+          <Badge
+            variant="outline"
+            className="h-auto gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-[0.14em] uppercase"
+          >
+            <Gauge className="size-3.5" />
             Idea evaluator
           </Badge>
         </div>
