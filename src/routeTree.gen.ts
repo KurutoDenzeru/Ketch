@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SavedRouteImport } from './routes/saved'
 import { Route as IdeaRouteImport } from './routes/idea'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as IdeaSlugRouteImport } from './routes/idea.$slug'
 
 const SavedRoute = SavedRouteImport.update({
   id: '/saved',
@@ -28,34 +29,42 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IdeaSlugRoute = IdeaSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => IdeaRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/idea': typeof IdeaRoute
+  '/idea': typeof IdeaRouteWithChildren
   '/saved': typeof SavedRoute
+  '/idea/$slug': typeof IdeaSlugRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/idea': typeof IdeaRoute
+  '/idea': typeof IdeaRouteWithChildren
   '/saved': typeof SavedRoute
+  '/idea/$slug': typeof IdeaSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/idea': typeof IdeaRoute
+  '/idea': typeof IdeaRouteWithChildren
   '/saved': typeof SavedRoute
+  '/idea/$slug': typeof IdeaSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/idea' | '/saved'
+  fullPaths: '/' | '/idea' | '/saved' | '/idea/$slug'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/idea' | '/saved'
-  id: '__root__' | '/' | '/idea' | '/saved'
+  to: '/' | '/idea' | '/saved' | '/idea/$slug'
+  id: '__root__' | '/' | '/idea' | '/saved' | '/idea/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  IdeaRoute: typeof IdeaRoute
+  IdeaRoute: typeof IdeaRouteWithChildren
   SavedRoute: typeof SavedRoute
 }
 
@@ -82,12 +91,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/idea/$slug': {
+      id: '/idea/$slug'
+      path: '/$slug'
+      fullPath: '/idea/$slug'
+      preLoaderRoute: typeof IdeaSlugRouteImport
+      parentRoute: typeof IdeaRoute
+    }
   }
 }
 
+interface IdeaRouteChildren {
+  IdeaSlugRoute: typeof IdeaSlugRoute
+}
+
+const IdeaRouteChildren: IdeaRouteChildren = {
+  IdeaSlugRoute: IdeaSlugRoute,
+}
+
+const IdeaRouteWithChildren = IdeaRoute._addFileChildren(IdeaRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  IdeaRoute: IdeaRoute,
+  IdeaRoute: IdeaRouteWithChildren,
   SavedRoute: SavedRoute,
 }
 export const routeTree = rootRouteImport

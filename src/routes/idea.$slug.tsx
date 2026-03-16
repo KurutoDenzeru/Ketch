@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 
 import { SharedIdeaPage } from "@/components/shared-idea-page"
 
-export const Route = createFileRoute("/idea")({
+export const Route = createFileRoute("/idea/$slug")({
   validateSearch: (search: Record<string, unknown>) => ({
     data: typeof search.data === "string" ? search.data : "",
   }),
@@ -13,10 +13,10 @@ export const Route = createFileRoute("/idea")({
       },
     ],
   }),
-  component: SharedIdeaRoute,
+  component: SharedIdeaSlugRoute,
 })
 
-function SharedIdeaRoute() {
+function SharedIdeaSlugRoute() {
   const { data } = Route.useSearch()
 
   return <SharedIdeaPage data={data} />

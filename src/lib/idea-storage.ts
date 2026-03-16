@@ -1,4 +1,9 @@
 import {
+  compressToEncodedURIComponent,
+  decompressFromEncodedURIComponent,
+} from "lz-string"
+
+import {
   ideaCategories,
   type IdeaBriefInput,
   type IdeaLabDraft,
@@ -12,6 +17,18 @@ const DRAFT_STORAGE_KEY = "ai-startup-idea-lab:current-draft"
 
 function isBrowser() {
   return typeof window !== "undefined"
+}
+
+function slugify(value: string) {
+  const normalized = value
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+
+  return normalized || "shared-idea"
 }
 
 function getIdeaFingerprint(idea: StartupIdea) {
@@ -49,7 +66,9 @@ function isIdeaBriefInput(value: unknown): value is IdeaBriefInput {
 
   return (
     typeof candidate.category === "string" &&
-    ideaCategories.includes(candidate.category as (typeof ideaCategories)[number]) &&
+    ideaCategories.includes(
+      candidate.category as (typeof ideaCategories)[number]
+    ) &&
     typeof candidate.concept === "string" &&
     typeof candidate.problem === "string" &&
     typeof candidate.audience === "string" &&
@@ -250,7 +269,9 @@ export function updateSavedIdea(id: string, payload: ShareableIdeaPayload) {
     ...payload,
   }
 
-  const nextIdeas = existingIdeas.map((idea) => (idea.id === id ? nextIdea : idea))
+  const nextIdeas = existingIdeas.map((idea) =>
+    idea.id === id ? nextIdea : idea
+  )
   writeSavedIdeas(nextIdeas)
 
   return nextIdea
@@ -324,12 +345,15 @@ export function clearIdeaLabDraft() {
 }
 
 export function encodeIdeaForUrl(payload: ShareableIdeaPayload) {
-  return encodeURIComponent(JSON.stringify(payload))
+  return compressToEncodedURIComponent(JSON.stringify(payload))
 }
 
 export function decodeIdeaFromUrl(data: string) {
   try {
-    const parsed = JSON.parse(decodeURIComponent(data))
+    const decompressed = decompressFromEncodedURIComponent(data)
+    const rawPayload = decompressed ?? decodeURIComponent(data)
+    const parsed = JSON.parse(rawPayload)
+
     if (!isShareableIdeaPayload(parsed)) {
       return null
     }
@@ -341,7 +365,9 @@ export function decodeIdeaFromUrl(data: string) {
 }
 
 export function buildIdeaSharePath(payload: ShareableIdeaPayload) {
-  return `/idea?data=${encodeIdeaForUrl(payload)}`
+  const shareSlug = `${slugify(payload.idea.name)}-${slugify(payload.idea.category)}`
+
+  return `/idea/${shareSlug}?data=${encodeIdeaForUrl(payload)}`
 }
 
 export function buildIdeaShareUrl(payload: ShareableIdeaPayload) {
