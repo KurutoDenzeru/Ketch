@@ -463,51 +463,224 @@ export function buildIdeaShareUrl(payload: ShareableIdeaPayload) {
   return `${window.location.origin}${sharePath}`
 }
 
+function appendSection(
+  lines: string[],
+  title: string,
+  body: string | string[]
+) {
+  lines.push("", title)
+
+  if (Array.isArray(body)) {
+    lines.push(...body)
+    return
+  }
+
+  lines.push(body)
+}
+
 export function formatIdeaForClipboard(payload: ShareableIdeaPayload) {
+  const { idea } = payload
   const lines = [
-    payload.idea.name,
-    payload.idea.tagline,
+    idea.name,
+    idea.tagline,
     "",
-    `Description: ${payload.idea.description}`,
-    `Audience: ${payload.idea.audience}`,
-    `Unique twist: ${payload.idea.twist}`,
-    `Monetization: ${payload.idea.monetization}`,
-    `Validation score: ${payload.idea.validationScore}/10`,
-    `Alternative names: ${payload.idea.alternativeNames.join(", ")}`,
-    `Tags: ${payload.idea.analysis.tags.join(", ")}`,
-    "",
-    "Why Now",
-    payload.idea.analysis.whyNow,
-    "",
+    `Category: ${idea.category}`,
+    `Description: ${idea.description}`,
+    `Audience: ${idea.audience}`,
+    `Unique twist: ${idea.twist}`,
+    `Monetization: ${idea.monetization}`,
+    `Validation score: ${idea.validationScore}/10`,
+    `Alternative names: ${idea.alternativeNames.join(", ")}`,
+    `Tags: ${idea.analysis.tags.join(", ")}`,
+  ]
+
+  appendSection(lines, "Why Now", idea.analysis.whyNow)
+  appendSection(
+    lines,
     "Proof & Signals",
-    ...payload.idea.analysis.proofSignals.map((item) => `- ${item}`),
+    idea.analysis.proofSignals.map((item) => `- ${item}`)
+  )
+  appendSection(lines, "Market Gap", idea.analysis.marketGap)
+  appendSection(lines, "Execution Plan", idea.analysis.executionPlan)
+  appendSection(
+    lines,
+    "Score Metrics",
+    idea.analysis.scoreMetrics.map(
+      (metric) => `- ${metric.label}: ${metric.score}/10 - ${metric.insight}`
+    )
+  )
+  appendSection(
+    lines,
+    "Demand Signal",
+    idea.analysis.trendPoints.map(
+      (point) => `- ${point.label}: ${point.interest}/100 interest`
+    )
+  )
+  appendSection(lines, "Framework Fit", [
+    `- Audience: ${idea.analysis.frameworkFit.audience}/10`,
+    `- Community: ${idea.analysis.frameworkFit.community}/10`,
+    `- Product: ${idea.analysis.frameworkFit.product}/10`,
+  ])
+  appendSection(
+    lines,
+    "Value Ladder",
+    idea.analysis.valueLadder.map(
+      (step, index) => `- Step ${index + 1}: ${step.label} (${step.score}/10)`
+    )
+  )
+  appendSection(
+    lines,
+    "Keyword Signals",
+    idea.analysis.keywordSignals.map(
+      (signal) =>
+        `- ${signal.term}: volume ${signal.volume}, competition ${signal.competition}, score ${signal.score}/10`
+    )
+  )
+  appendSection(
+    lines,
+    "Detailed Plan",
+    idea.analysis.detailedPlan.flatMap((step, index) => [
+      `- Step ${index + 1}: ${step.phase} (${step.timeframe})`,
+      `  Objective: ${step.objective}`,
+      ...step.actions.map((action) => `  * ${action}`),
+      `  Outcome: ${step.outcome}`,
+    ])
+  )
+
+  if (payload.pitch) {
+    appendSection(lines, "Pitch", [
+      `Problem: ${payload.pitch.problem}`,
+      `Solution: ${payload.pitch.solution}`,
+      `Market: ${payload.pitch.market}`,
+      `Business model: ${payload.pitch.businessModel}`,
+    ])
+  }
+
+  if (payload.marketValidation) {
+    appendSection(lines, "AI Market Validation", [
+      `Competition: ${payload.marketValidation.competition.join(", ")}`,
+      `Risks: ${payload.marketValidation.risks.join(", ")}`,
+      `Potential users: ${payload.marketValidation.potentialUsers.join(", ")}`,
+      `Verdict: ${payload.marketValidation.verdict}`,
+    ])
+  }
+
+  return lines.join("\n")
+}
+
+function escapeMarkdown(value: string) {
+  return value.replace(/[\\`*_{}\[\]()#+\-.!|>]/g, "\\$&")
+}
+
+export function formatIdeaAsMarkdown(payload: ShareableIdeaPayload) {
+  const { idea } = payload
+  const lines = [
+    `# ${idea.name}`,
     "",
-    "Market Gap",
-    payload.idea.analysis.marketGap,
+    `> ${idea.tagline}`,
     "",
-    "Execution Plan",
-    payload.idea.analysis.executionPlan,
+    `- **Category:** ${escapeMarkdown(idea.category)}`,
+    `- **Validation Score:** ${idea.validationScore}/10`,
+    `- **Audience:** ${escapeMarkdown(idea.audience)}`,
+    `- **Unique Twist:** ${escapeMarkdown(idea.twist)}`,
+    `- **Monetization:** ${escapeMarkdown(idea.monetization)}`,
+    "",
+    "## Description",
+    "",
+    idea.description,
+    "",
+    "## Tags",
+    "",
+    ...idea.analysis.tags.map((tag) => `- ${escapeMarkdown(tag)}`),
+    "",
+    "## Alternative Names",
+    "",
+    ...idea.alternativeNames.map((name) => `- ${escapeMarkdown(name)}`),
+    "",
+    "## Why Now",
+    "",
+    idea.analysis.whyNow,
+    "",
+    "## Proof & Signals",
+    "",
+    ...idea.analysis.proofSignals.map((item) => `- ${escapeMarkdown(item)}`),
+    "",
+    "## Market Gap",
+    "",
+    idea.analysis.marketGap,
+    "",
+    "## Execution Plan",
+    "",
+    idea.analysis.executionPlan,
+    "",
+    "## Score Metrics",
+    "",
+    ...idea.analysis.scoreMetrics.map(
+      (metric) =>
+        `- **${escapeMarkdown(metric.label)}:** ${metric.score}/10 - ${escapeMarkdown(metric.insight)}`
+    ),
+    "",
+    "## Demand Signal",
+    "",
+    ...idea.analysis.trendPoints.map(
+      (point) =>
+        `- **${escapeMarkdown(point.label)}:** ${point.interest}/100 interest`
+    ),
+    "",
+    "## Framework Fit",
+    "",
+    `- **Audience:** ${idea.analysis.frameworkFit.audience}/10`,
+    `- **Community:** ${idea.analysis.frameworkFit.community}/10`,
+    `- **Product:** ${idea.analysis.frameworkFit.product}/10`,
+    "",
+    "## Value Ladder",
+    "",
+    ...idea.analysis.valueLadder.map(
+      (step, index) =>
+        `- **Step ${index + 1}:** ${escapeMarkdown(step.label)} (${step.score}/10)`
+    ),
+    "",
+    "## Keyword Signals",
+    "",
+    ...idea.analysis.keywordSignals.map(
+      (signal) =>
+        `- **${escapeMarkdown(signal.term)}:** volume ${escapeMarkdown(signal.volume)}, competition ${escapeMarkdown(signal.competition)}, score ${signal.score}/10`
+    ),
+    "",
+    "## Detailed Plan",
+    "",
+    ...idea.analysis.detailedPlan.flatMap((step, index) => [
+      `### Step ${index + 1}: ${escapeMarkdown(step.phase)}`,
+      "",
+      `- **Timeframe:** ${escapeMarkdown(step.timeframe)}`,
+      `- **Objective:** ${escapeMarkdown(step.objective)}`,
+      `- **Actions:**`,
+      ...step.actions.map((action) => `  - ${escapeMarkdown(action)}`),
+      `- **Outcome:** ${escapeMarkdown(step.outcome)}`,
+      "",
+    ]),
   ]
 
   if (payload.pitch) {
     lines.push(
+      "## Pitch",
       "",
-      "Pitch",
-      `Problem: ${payload.pitch.problem}`,
-      `Solution: ${payload.pitch.solution}`,
-      `Market: ${payload.pitch.market}`,
-      `Business model: ${payload.pitch.businessModel}`
+      `- **Problem:** ${escapeMarkdown(payload.pitch.problem)}`,
+      `- **Solution:** ${escapeMarkdown(payload.pitch.solution)}`,
+      `- **Market:** ${escapeMarkdown(payload.pitch.market)}`,
+      `- **Business Model:** ${escapeMarkdown(payload.pitch.businessModel)}`,
+      ""
     )
   }
 
   if (payload.marketValidation) {
     lines.push(
+      "## AI Market Validation",
       "",
-      "AI Market Validation",
-      `Competition: ${payload.marketValidation.competition.join(", ")}`,
-      `Risks: ${payload.marketValidation.risks.join(", ")}`,
-      `Potential users: ${payload.marketValidation.potentialUsers.join(", ")}`,
-      `Verdict: ${payload.marketValidation.verdict}`
+      `- **Competition:** ${payload.marketValidation.competition.map(escapeMarkdown).join(", ")}`,
+      `- **Risks:** ${payload.marketValidation.risks.map(escapeMarkdown).join(", ")}`,
+      `- **Potential Users:** ${payload.marketValidation.potentialUsers.map(escapeMarkdown).join(", ")}`,
+      `- **Verdict:** ${escapeMarkdown(payload.marketValidation.verdict)}`
     )
   }
 

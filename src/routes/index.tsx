@@ -35,6 +35,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import {
   buildSharedIdeaUrl,
   clearIdeaLabDraft,
+  formatIdeaAsMarkdown,
   formatIdeaForClipboard,
   getIdeaLabDraft,
   getSavedIdeaByIdea,
@@ -124,6 +125,9 @@ function IndexPage() {
     () => getIdeaLabDraft()?.pitch ?? null
   )
   const [isSharing, setIsSharing] = useState(false)
+  const [copiedIdeaFormat, setCopiedIdeaFormat] = useState<
+    "text" | "markdown" | null
+  >(null)
   const [isShareLinkCopied, setIsShareLinkCopied] = useState(false)
   const [marketValidation, setMarketValidation] =
     useState<MarketValidation | null>(
@@ -313,15 +317,39 @@ function IndexPage() {
     }
   }
 
-  async function handleCopyIdea() {
+  function setTemporaryCopyState(format: "text" | "markdown") {
+    setCopiedIdeaFormat(format)
+    window.setTimeout(() => setCopiedIdeaFormat(null), 2000)
+  }
+
+  async function handleCopyText() {
     if (!currentPayload) {
       return
     }
 
     try {
       await copyText(formatIdeaForClipboard(currentPayload))
+      setTemporaryCopyState("text")
       toast.success("Idea copied", {
         description: "The full startup idea summary is in your clipboard.",
+      })
+    } catch {
+      toast.error("Clipboard unavailable", {
+        description: "This browser blocked clipboard access.",
+      })
+    }
+  }
+
+  async function handleCopyMarkdown() {
+    if (!currentPayload) {
+      return
+    }
+
+    try {
+      await copyText(formatIdeaAsMarkdown(currentPayload))
+      setTemporaryCopyState("markdown")
+      toast.success("Markdown copied", {
+        description: "The startup idea markdown is in your clipboard.",
       })
     } catch {
       toast.error("Clipboard unavailable", {
@@ -681,6 +709,7 @@ function IndexPage() {
               isMarketValidationLoading={marketValidationMutation.isPending}
               isRegeneratingTitles={regenerateTitlesMutation.isPending}
               isSharing={isSharing}
+              copiedIdeaFormat={copiedIdeaFormat}
               isShareLinkCopied={isShareLinkCopied}
               generationRateLimit={generationRateLimit}
               isSaved={saved}
@@ -712,7 +741,8 @@ function IndexPage() {
                   marketValidationMutation.mutate(idea)
                 }
               }}
-              onCopy={handleCopyIdea}
+              onCopyText={handleCopyText}
+              onCopyMarkdown={handleCopyMarkdown}
               onCopyShareLink={handleCopyShareLink}
               onOpenSharedView={handleOpenSharedView}
               onSave={handleSaveIdea}

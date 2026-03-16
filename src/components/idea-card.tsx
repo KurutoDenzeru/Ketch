@@ -5,6 +5,7 @@ import {
   BadgeCheck,
   Check,
   Copy,
+  FileCode2,
   Gauge,
   LoaderCircle,
   RefreshCcw,
@@ -30,6 +31,12 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -45,6 +52,7 @@ type IdeaCardProps = {
   isMarketValidationLoading: boolean
   isRegeneratingTitles?: boolean
   isSharing?: boolean
+  copiedIdeaFormat?: "text" | "markdown" | null
   isShareLinkCopied?: boolean
   generationRateLimit: GenerationRateLimitStatus | null
   isSaved: boolean
@@ -52,7 +60,8 @@ type IdeaCardProps = {
   onRegenerateTitles: () => void
   onGeneratePitch: () => void
   onGenerateMarketValidation: () => void
-  onCopy: () => void
+  onCopyText: () => void
+  onCopyMarkdown: () => void
   onCopyShareLink: () => void
   onOpenSharedView: () => void
   onSave: () => void
@@ -92,6 +101,7 @@ export function IdeaCard({
   isMarketValidationLoading,
   isRegeneratingTitles = false,
   isSharing = false,
+  copiedIdeaFormat = null,
   isShareLinkCopied = false,
   generationRateLimit,
   isSaved,
@@ -99,7 +109,8 @@ export function IdeaCard({
   onRegenerateTitles,
   onGeneratePitch,
   onGenerateMarketValidation,
-  onCopy,
+  onCopyText,
+  onCopyMarkdown,
   onCopyShareLink,
   onOpenSharedView,
   onSave,
@@ -364,10 +375,28 @@ export function IdeaCard({
 
         <CardFooter className="flex flex-wrap justify-between gap-3 border-t border-border/70 bg-muted/35 px-6 py-4">
           <div className="flex flex-wrap gap-2">
-            <Button type="button" variant="outline" onClick={onCopy}>
-              <Copy />
-              Copy idea
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button type="button" variant="outline">
+                  {copiedIdeaFormat ? <Check /> : <Copy />}
+                  {copiedIdeaFormat === "text"
+                    ? "Copied text!"
+                    : copiedIdeaFormat === "markdown"
+                      ? "Copied markdown!"
+                      : "Copy idea"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                <DropdownMenuItem onClick={onCopyText}>
+                  <Copy />
+                  Copy idea as text
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onCopyMarkdown}>
+                  <FileCode2 />
+                  Copy idea as markdown
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button
               type="button"
               variant="outline"
@@ -375,7 +404,7 @@ export function IdeaCard({
               disabled={isSharing}
             >
               {isShareLinkCopied ? <Check /> : <Copy />}
-              Copy share link
+              {isShareLinkCopied ? "Copied!" : "Copy share link"}
             </Button>
             <Button
               type="button"
