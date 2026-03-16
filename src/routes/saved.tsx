@@ -81,6 +81,7 @@ function SavedIdeaCard({
     savedIdea.pitch ?? null
   )
   const [isSharing, setIsSharing] = useState(false)
+  const [isShareLinkCopied, setIsShareLinkCopied] = useState(false)
   const [marketValidation, setMarketValidation] =
     useState<MarketValidation | null>(savedIdea.marketValidation ?? null)
 
@@ -301,6 +302,7 @@ function SavedIdeaCard({
         isMarketValidationLoading={marketValidationMutation.isPending}
         isRegeneratingTitles={regenerateTitlesMutation.isPending}
         isSharing={isSharing}
+        isShareLinkCopied={isShareLinkCopied}
         generationRateLimit={generationRateLimit}
         isSaved
         onSelectAlternativeName={(name) => {
@@ -346,6 +348,8 @@ function SavedIdeaCard({
             setIsSharing(true)
             const { shareUrl } = await createShareLink(currentPayload)
             await copyText(shareUrl)
+            setIsShareLinkCopied(true)
+            window.setTimeout(() => setIsShareLinkCopied(false), 2000)
             toast.success("Share link copied", {
               description: "You can paste the shared idea URL anywhere.",
             })

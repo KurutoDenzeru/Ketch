@@ -24,10 +24,10 @@ export function AppNavbar() {
       active: pathname === "/saved",
     },
     {
-      to: "/idea",
+      to: "/shared",
       label: "Shared Idea",
       icon: Share2,
-      active: pathname.startsWith("/idea"),
+      active: pathname === "/shared" || pathname.startsWith("/idea/"),
     },
   ] as const
 

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 
 import { SharedIdeaPage } from "@/components/shared-idea-page"
 
-export const Route = createFileRoute("/idea/$slug")({
+export const Route = createFileRoute("/shared")({
   head: () => ({
     meta: [
       {
@@ -10,11 +10,9 @@ export const Route = createFileRoute("/idea/$slug")({
       },
     ],
   }),
-  component: SharedIdeaSlugRoute,
+  component: SharedTabRoute,
 })
 
-function SharedIdeaSlugRoute() {
-  const { slug } = Route.useParams()
-
-  return <SharedIdeaPage shareId={slug} />
+function SharedTabRoute() {
+  return <SharedIdeaPage />
 }

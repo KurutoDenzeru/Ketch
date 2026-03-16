@@ -1,11 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router"
-
-import { SharedIdeaPage } from "@/components/shared-idea-page"
+import { Outlet, createFileRoute } from "@tanstack/react-router"
 
 export const Route = createFileRoute("/idea")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    data: typeof search.data === "string" ? search.data : "",
-  }),
   head: () => ({
     meta: [
       {
@@ -13,11 +8,9 @@ export const Route = createFileRoute("/idea")({
       },
     ],
   }),
-  component: SharedIdeaRoute,
+  component: IdeaRouteShell,
 })
 
-function SharedIdeaRoute() {
-  const { data } = Route.useSearch()
-
-  return <SharedIdeaPage data={data} />
+function IdeaRouteShell() {
+  return <Outlet />
 }

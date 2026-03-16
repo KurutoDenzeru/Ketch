@@ -1,7 +1,4 @@
-import {
-  compressToEncodedURIComponent,
-  decompressFromEncodedURIComponent,
-} from "lz-string"
+import LZString from "lz-string"
 
 import {
   ideaCategories,
@@ -417,12 +414,12 @@ export function clearRecentSharedIdea() {
 }
 
 export function encodeIdeaForUrl(payload: ShareableIdeaPayload) {
-  return compressToEncodedURIComponent(JSON.stringify(payload))
+  return LZString.compressToEncodedURIComponent(JSON.stringify(payload))
 }
 
 export function decodeIdeaFromUrl(data: string) {
   try {
-    const decompressed = decompressFromEncodedURIComponent(data)
+    const decompressed = LZString.decompressFromEncodedURIComponent(data)
     const rawPayload = decompressed ?? decodeURIComponent(data)
     const parsed = JSON.parse(rawPayload)
 

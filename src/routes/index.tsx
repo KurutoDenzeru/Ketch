@@ -124,6 +124,7 @@ function IndexPage() {
     () => getIdeaLabDraft()?.pitch ?? null
   )
   const [isSharing, setIsSharing] = useState(false)
+  const [isShareLinkCopied, setIsShareLinkCopied] = useState(false)
   const [marketValidation, setMarketValidation] =
     useState<MarketValidation | null>(
       () => getIdeaLabDraft()?.marketValidation ?? null
@@ -338,6 +339,8 @@ function IndexPage() {
       setIsSharing(true)
       const { shareUrl } = await createShareLink(currentPayload)
       await copyText(shareUrl)
+      setIsShareLinkCopied(true)
+      window.setTimeout(() => setIsShareLinkCopied(false), 2000)
       toast.success("Share link copied", {
         description: "You can paste the shared idea URL anywhere.",
       })
@@ -678,6 +681,7 @@ function IndexPage() {
               isMarketValidationLoading={marketValidationMutation.isPending}
               isRegeneratingTitles={regenerateTitlesMutation.isPending}
               isSharing={isSharing}
+              isShareLinkCopied={isShareLinkCopied}
               generationRateLimit={generationRateLimit}
               isSaved={saved}
               onSelectAlternativeName={(name) => {

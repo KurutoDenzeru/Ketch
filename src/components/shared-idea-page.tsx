@@ -3,7 +3,22 @@
 import { useEffect, useMemo, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useNavigate } from "@tanstack/react-router"
-import { Link2, Share2 } from "lucide-react"
+import {
+  BadgeCheck,
+  BrainCircuit,
+  BriefcaseBusiness,
+  GraduationCap,
+  HeartPulse,
+  Link2,
+  type LucideIcon,
+  ShieldCheck,
+  Share2,
+  ShoppingBag,
+  Smartphone,
+  Store,
+  Wallet,
+  Wrench,
+} from "lucide-react"
 import { toast } from "sonner"
 
 import { IdeaCard } from "@/components/idea-card"
@@ -31,6 +46,7 @@ import {
   getSharedIdeaLink,
 } from "@/lib/shared-idea-store"
 import type {
+  IdeaCategory,
   MarketValidation,
   ShareableIdeaPayload,
   StartupIdea,
@@ -38,6 +54,35 @@ import type {
 } from "@/types/idea"
 
 const generationRateLimitQueryKey = ["generation-rate-limit"] as const
+
+function getCategoryBadgeIcon(category: IdeaCategory): LucideIcon {
+  switch (category) {
+    case "SaaS":
+    case "Operations":
+      return BriefcaseBusiness
+    case "AI Tool":
+      return BrainCircuit
+    case "Dev Tool":
+      return Wrench
+    case "Mobile App":
+      return Smartphone
+    case "Marketplace":
+      return Store
+    case "Fintech":
+      return Wallet
+    case "Healthcare":
+      return HeartPulse
+    case "Creator Tool":
+    case "E-commerce":
+      return ShoppingBag
+    case "Education":
+      return GraduationCap
+    case "Cybersecurity":
+      return ShieldCheck
+    default:
+      return BadgeCheck
+  }
+}
 
 type SharedIdeaPageProps = {
   data?: string
@@ -52,7 +97,9 @@ export function SharedIdeaPage({ data = "", shareId }: SharedIdeaPageProps) {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const [isSharing, setIsSharing] = useState(false)
-  const recentSharedIdea = getRecentSharedIdea()
+  const [isShareLinkCopied, setIsShareLinkCopied] = useState(false)
+  const [recentSharedIdea, setRecentSharedIdea] =
+    useState<ReturnType<typeof getRecentSharedIdea>>(null)
   const decodedPayload = useMemo(
     () => (data ? decodeIdeaFromUrl(data) : null),
     [data]
@@ -87,6 +134,10 @@ export function SharedIdeaPage({ data = "", shareId }: SharedIdeaPageProps) {
   })
   const generationRateLimit = generationRateLimitQuery.data ?? null
 
+  useEffect(() => {
+    setRecentSharedIdea(getRecentSharedIdea())
+  }, [])
+
   function refreshGenerationRateLimit() {
     return queryClient.invalidateQueries({
       queryKey: generationRateLimitQueryKey,
@@ -102,6 +153,11 @@ export function SharedIdeaPage({ data = "", shareId }: SharedIdeaPageProps) {
   useEffect(() => {
     if (resolvedShareId && resolvedPayload) {
       saveRecentSharedIdea(resolvedShareId, resolvedPayload)
+      setRecentSharedIdea({
+        shareId: resolvedShareId,
+        payload: resolvedPayload,
+        viewedAt: new Date().toISOString(),
+      })
     }
   }, [resolvedPayload, resolvedShareId])
 
@@ -235,16 +291,26 @@ export function SharedIdeaPage({ data = "", shareId }: SharedIdeaPageProps) {
     )
   }
 
+  const CategoryIcon = getCategoryBadgeIcon(idea.category)
+
   return (
     <main className="mx-auto flex min-h-svh w-full max-w-7xl flex-col gap-8 px-4 py-8 md:px-6 md:py-10">
       <section className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
         <Card className="rounded-[2rem] border border-border/70 py-0 shadow-sm">
           <CardContent className="space-y-5 px-6 py-8 md:px-8">
             <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className="rounded-full px-3 py-1">
+              <Badge
+                variant="outline"
+                className="h-auto gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-[0.14em] uppercase"
+              >
+                <Share2 className="size-3.5" />
                 Shared snapshot
               </Badge>
-              <Badge variant="outline" className="rounded-full px-3 py-1">
+              <Badge
+                variant="outline"
+                className="h-auto gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-[0.14em] uppercase"
+              >
+                <CategoryIcon className="size-3.5" />
                 {idea.category}
               </Badge>
             </div>
@@ -289,6 +355,7 @@ export function SharedIdeaPage({ data = "", shareId }: SharedIdeaPageProps) {
         isMarketValidationLoading={marketValidationMutation.isPending}
         isRegeneratingTitles={regenerateTitlesMutation.isPending}
         isSharing={isSharing}
+        isShareLinkCopied={isShareLinkCopied}
         generationRateLimit={generationRateLimit}
         isSaved={isIdeaSaved(idea)}
         onSelectAlternativeName={(name) => {
@@ -331,6 +398,8 @@ export function SharedIdeaPage({ data = "", shareId }: SharedIdeaPageProps) {
             setIsSharing(true)
             const { shareUrl } = await createShareLink(currentPayload)
             await copyText(shareUrl)
+            setIsShareLinkCopied(true)
+            window.setTimeout(() => setIsShareLinkCopied(false), 2000)
             toast.success("Share link copied", {
               description: "You can paste the shared idea URL anywhere.",
             })

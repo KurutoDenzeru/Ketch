@@ -3,13 +3,13 @@
 import { useEffect, useState } from "react"
 import {
   BadgeCheck,
+  Check,
   Copy,
   Gauge,
   LoaderCircle,
   RefreshCcw,
   Rocket,
   Save,
-  Send,
   ShieldCheck,
 } from "lucide-react"
 
@@ -45,6 +45,7 @@ type IdeaCardProps = {
   isMarketValidationLoading: boolean
   isRegeneratingTitles?: boolean
   isSharing?: boolean
+  isShareLinkCopied?: boolean
   generationRateLimit: GenerationRateLimitStatus | null
   isSaved: boolean
   onSelectAlternativeName: (name: string) => void
@@ -91,6 +92,7 @@ export function IdeaCard({
   isMarketValidationLoading,
   isRegeneratingTitles = false,
   isSharing = false,
+  isShareLinkCopied = false,
   generationRateLimit,
   isSaved,
   onSelectAlternativeName,
@@ -372,7 +374,7 @@ export function IdeaCard({
               onClick={onCopyShareLink}
               disabled={isSharing}
             >
-              <Send />
+              {isShareLinkCopied ? <Check /> : <Copy />}
               Copy share link
             </Button>
             <Button
