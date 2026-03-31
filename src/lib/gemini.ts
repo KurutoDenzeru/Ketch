@@ -14,7 +14,7 @@ import type {
 } from "@/types/idea"
 import type { GenerationRateLimitStatus } from "@/types/rate-limit"
 
-const GEMINI_MODEL = "gemini-3-flash-preview"
+const GEMINI_MODEL = "gemini-3.1-flash-lite-preview"
 
 const sharedSchemaConfig = {
   type: "object",
