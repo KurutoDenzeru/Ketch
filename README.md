@@ -1,6 +1,6 @@
 ![Ketch](public/OpenGraph.webp)
 
-✨ Idea workshop for instant brainstorming, local save/slug sharing, powered by React + TypeScript + Tailwind + TanStack Router + shadcn/ui.
+✨ Idea workshop for instant brainstorming, local save/slug sharing, powered by React, TypeScript, Tailwind, TanStack Router, and shadcn/ui.
 
 ## ☁️ Deploy your own
 

@@ -6,30 +6,15 @@ import { AppFooter } from "@/components/app-footer"
 import { AppNavbar } from "@/components/app-navbar"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
+import { defaultSeo, getCanonicalUrl, getOgImageUrl } from "@/lib/seo"
 import appCss from "../styles.css?url"
 
-const siteUrl = (process.env.VITE_PUBLIC_SITE_URL ?? "http://localhost:3000").replace(
-  /\/$/,
-  ""
-)
-const metadataBase = new URL(siteUrl)
 const siteName = "Ketch"
-const pageTitle = "Ketch | AI Startup Idea Lab"
-const description =
-  "Ketch helps founders generate startup ideas, investor-ready pitches, market validation snapshots, and structured execution plans in one focused workspace."
-const canonicalUrl = new URL("/", metadataBase).toString()
-const brandImageUrl = new URL("/Sparkle.webp", metadataBase).toString()
-const ogImageUrl = brandImageUrl
-const keywords = [
-  "startup idea generator",
-  "AI startup ideas",
-  "startup validation tool",
-  "founder pitch generator",
-  "market validation app",
-  "Gemini startup app",
-  "idea lab",
-  "Ketch",
-].join(", ")
+const pageTitle = defaultSeo.title
+const description = defaultSeo.description
+const canonicalUrl = getCanonicalUrl("/")
+const brandImageUrl = getOgImageUrl("/Sparkle.webp")
+const ogImageUrl = getOgImageUrl()
 const structuredData = {
   "@context": "https://schema.org",
   "@graph": [
@@ -103,14 +88,6 @@ export const Route = createRootRoute({
         title: pageTitle,
       },
       {
-        name: "description",
-        content: description,
-      },
-      {
-        name: "keywords",
-        content: keywords,
-      },
-      {
         name: "author",
         content: "Kurt Calacday",
       },
@@ -127,77 +104,11 @@ export const Route = createRootRoute({
         content: siteName,
       },
       {
-        name: "robots",
-        content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
-      },
-      {
-        name: "googlebot",
-        content: "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
-      },
-      {
-        name: "twitter:card",
-        content: "summary_large_image",
-      },
-      {
-        name: "twitter:title",
-        content: pageTitle,
-      },
-      {
-        name: "twitter:description",
-        content: description,
-      },
-      {
-        name: "twitter:image",
-        content: ogImageUrl,
-      },
-      {
-        property: "og:type",
-        content: "website",
-      },
-      {
-        property: "og:site_name",
-        content: siteName,
-      },
-      {
-        property: "og:title",
-        content: pageTitle,
-      },
-      {
-        property: "og:description",
-        content: description,
-      },
-      {
-        property: "og:url",
-        content: canonicalUrl,
-      },
-      {
-        property: "og:image",
-        content: ogImageUrl,
-      },
-      {
-        property: "og:image:alt",
-        content: "Ketch brand artwork",
-      },
-      {
-        property: "og:locale",
-        content: "en_US",
+        name: "theme-color",
+        content: "#111111",
       },
     ],
     links: [
-      {
-        rel: "canonical",
-        href: canonicalUrl,
-      },
-      {
-        rel: "alternate",
-        hrefLang: "en-US",
-        href: canonicalUrl,
-      },
-      {
-        rel: "alternate",
-        hrefLang: "x-default",
-        href: canonicalUrl,
-      },
       {
         rel: "icon",
         type: "image/webp",
@@ -210,6 +121,11 @@ export const Route = createRootRoute({
       {
         rel: "manifest",
         href: "/manifest.json",
+      },
+      {
+        rel: "sitemap",
+        type: "application/xml",
+        href: "/sitemap.xml",
       },
       {
         rel: "stylesheet",

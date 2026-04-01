@@ -32,6 +32,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { buildSeoHead, defaultSeo } from "@/lib/seo"
 import {
   buildSharedIdeaUrl,
   clearIdeaLabDraft,
@@ -66,13 +67,14 @@ import type {
 const generationRateLimitQueryKey = ["generation-rate-limit"] as const
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      {
-        title: "Ketch | AI Startup Idea Lab",
-      },
-    ],
-  }),
+  head: () =>
+    buildSeoHead({
+      path: "/",
+      title: defaultSeo.title,
+      description: defaultSeo.description,
+      keywords: defaultSeo.keywords,
+      imageAlt: "Ketch AI Startup Idea Lab social preview",
+    }),
   component: IndexPage,
 })
 

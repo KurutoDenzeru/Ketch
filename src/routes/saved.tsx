@@ -19,6 +19,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { buildSeoHead } from "@/lib/seo"
 import {
   buildSharedIdeaUrl,
   formatIdeaAsMarkdown,
@@ -48,13 +49,16 @@ import type { GenerationRateLimitStatus } from "@/types/rate-limit"
 const generationRateLimitQueryKey = ["generation-rate-limit"] as const
 
 export const Route = createFileRoute("/saved")({
-  head: () => ({
-    meta: [
-      {
-        title: "Saved Ideas | Ketch",
-      },
-    ],
-  }),
+  head: () =>
+    buildSeoHead({
+      path: "/saved",
+      title: "Saved Ideas | Ketch",
+      description:
+        "Revisit saved startup ideas, pitches, and validation notes inside Ketch.",
+      keywords:
+        "saved startup ideas, founder idea vault, startup pitch drafts, Ketch saved ideas",
+      imageAlt: "Ketch saved ideas social preview",
+    }),
   component: SavedIdeasPage,
 })
 
