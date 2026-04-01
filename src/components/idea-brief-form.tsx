@@ -120,7 +120,7 @@ export function IdeaBriefForm({
         <CardTitle className="font-display text-3xl leading-none">
           Tell the lab what you want to build
         </CardTitle>
-        <p className="max-w-3xl text-sm leading-7 text-muted-foreground">
+        <p className="text-sm leading-7 text-muted-foreground">
           Keep it quick. Founders should only need a rough concept, the problem,
           and who it is for. Everything else is guided with toggles.
         </p>
@@ -144,10 +144,10 @@ export function IdeaBriefForm({
                   })
                 }
                 className={cn(
-                  "rounded-full border px-4 py-2 text-sm transition-transform hover:-translate-y-0.5",
+                  "cursor-pointer rounded-full border px-4 py-2 text-sm transition-transform hover:-translate-y-0.5",
                   brief.category === option
                     ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-background text-foreground"
+                    : "border-dashed border-white/18 bg-transparent text-foreground hover:border-white/28 hover:bg-white/3"
                 )}
               >
                 {option}
@@ -246,10 +246,10 @@ export function IdeaBriefForm({
                   type="button"
                   onClick={() => toggleFeature(feature)}
                   className={cn(
-                    "rounded-full border px-3 py-2 text-sm transition-transform hover:-translate-y-0.5",
+                    "cursor-pointer rounded-full border px-3 py-2 text-sm transition-transform hover:-translate-y-0.5",
                     active
                       ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-background text-foreground"
+                      : "border-dashed border-white/18 bg-transparent text-foreground hover:border-white/28 hover:bg-white/3"
                   )}
                 >
                   {feature}

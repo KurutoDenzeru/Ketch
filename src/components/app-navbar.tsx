@@ -1,7 +1,7 @@
 "use client"
 
 import { Link, useRouterState } from "@tanstack/react-router"
-import { Bookmark, FlaskConical, Share2, Waves } from "lucide-react"
+import { Bookmark, FlaskConical, Share2 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -40,8 +40,14 @@ export function AppNavbar() {
               to="/"
               className="inline-flex items-center gap-3 px-2 py-1.5 transition-colors hover:bg-white/10"
             >
-              <span className="inline-flex size-9 items-center justify-center rounded-full border border-border/70 bg-background/85">
-                <Waves className="size-4" />
+              <span className="inline-flex size-10 items-center justify-center overflow-hidden ">
+                <img
+                  src="/Sparkle.webp"
+                  alt="Ketch"
+                  width={40}
+                  height={40}
+                  className="size-full object-cover"
+                />
               </span>
               <span className="font-display text-2xl leading-none">Ketch</span>
             </Link>
@@ -71,11 +77,17 @@ export function AppNavbar() {
           <div className="grid w-full grid-cols-4 items-center rounded-[1.6rem] border border-white/35 bg-background/74 px-2 py-2 shadow-sm backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
             <Link
               to="/"
-              aria-label="Ketch icon"
+              aria-label="Ketch home"
               className="inline-flex min-h-14 items-center justify-center px-2 py-2 text-foreground/80 transition-colors hover:text-foreground"
             >
-              <span className="inline-flex size-10 items-center justify-center rounded-[1rem] border border-border/70 bg-background/85">
-                <Waves className="size-4" />
+              <span className="inline-flex size-10 items-center justify-center overflow-hidden">
+                <img
+                  src="/Sparkle.webp"
+                  alt="Ketch"
+                  width={40}
+                  height={40}
+                  className="size-full object-cover"
+                />
               </span>
             </Link>
 
@@ -92,7 +104,7 @@ export function AppNavbar() {
                     : "text-foreground/72 hover:bg-white/6 hover:text-foreground rounded-md"
                 )}
               >
-                <Icon className="size-4" />
+                <Icon className="size-4" aria-hidden="true" />
                 <span className="leading-none">
                   {label === "Saved Ideas"
                     ? "Saved"

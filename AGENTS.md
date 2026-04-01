@@ -2,7 +2,6 @@
 - Install deps: `bun install`
 - Start dev server: `bun run dev`
 - Run tests: `bun run build`
-- Do not run npm run build automatically; I will handle verification myself.
 
 ## Code style
 - TypeScript strict mode (Type safety)

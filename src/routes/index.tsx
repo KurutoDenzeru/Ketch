@@ -69,7 +69,7 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       {
-        title: "AI Startup Idea Lab",
+        title: "Ketch | AI Startup Idea Lab",
       },
     ],
   }),
@@ -435,7 +435,7 @@ function IndexPage() {
 
   return (
     <main className="mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 py-8 md:gap-14 md:px-6 md:py-10">
-      <section className="space-y-10 px-2 py-6 md:px-8 md:py-10">
+      <section className="space-y-10 px-2 py-8 md:px-8 md:py-12">
         <div className="flex flex-wrap items-center justify-center gap-3">
           <Badge
             variant="secondary"

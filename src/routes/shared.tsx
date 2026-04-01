@@ -6,7 +6,7 @@ export const Route = createFileRoute("/shared")({
   head: () => ({
     meta: [
       {
-        title: "Shared Idea | AI Startup Idea Lab",
+        title: "Shared Idea | Ketch",
       },
     ],
   }),

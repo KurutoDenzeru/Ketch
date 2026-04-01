@@ -51,7 +51,7 @@ export const Route = createFileRoute("/saved")({
   head: () => ({
     meta: [
       {
-        title: "Saved Ideas | AI Startup Idea Lab",
+        title: "Saved Ideas | Ketch",
       },
     ],
   }),
