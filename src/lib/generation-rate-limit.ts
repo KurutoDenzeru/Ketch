@@ -9,7 +9,7 @@ import type {
 
 const RATE_LIMIT_WINDOW_DAYS = 7
 const RATE_LIMIT_WINDOW_MS = RATE_LIMIT_WINDOW_DAYS * 24 * 60 * 60 * 1000
-const RATE_LIMIT_MAX_REQUESTS = 3
+const RATE_LIMIT_MAX_REQUESTS = 2
 const STORE_FILE_NAME = "generation-rate-limit.json"
 
 function getDataDirectory() {
