@@ -357,14 +357,14 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
       </div>
 
       <div className="grid items-stretch gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
-        <div className="grid h-full grid-rows-[auto_1fr] rounded-[1.75rem] border border-border/70 bg-background/80 p-5">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <div className="space-y-3">
+        <div className="grid h-full grid-rows-[auto_1fr] overflow-hidden rounded-[1.75rem] border border-border/70 bg-background/80 p-4 sm:p-5">
+          <div className="mb-4 flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+            <div className="min-w-0 space-y-3">
               <div className="mb-1 flex items-center gap-2 text-xs font-semibold tracking-[0.22em] text-muted-foreground uppercase">
                 <LineChart className="size-3.5" />
                 Demand Signal
               </div>
-              <h3 className="font-display text-2xl leading-none">
+              <h3 className="font-display text-[1.75rem] leading-none sm:text-2xl">
                 Search and interest curve
               </h3>
 
@@ -373,7 +373,7 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
                   value={activeKeywordSignal.term}
                   onValueChange={setSelectedKeyword}
                 >
-                  <SelectTrigger className="h-11 min-w-[16rem] rounded-2xl border-border/70 bg-background/85 px-4">
+                  <SelectTrigger className="h-11 w-full min-w-0 max-w-full rounded-2xl border-border/70 bg-background/85 px-4 sm:min-w-[16rem]">
                     <span className="text-muted-foreground">Keyword:</span>
                     <SelectValue />
                   </SelectTrigger>
@@ -390,23 +390,23 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
               ) : null}
             </div>
 
-            <div className="grid gap-3 text-right sm:grid-cols-2">
-              <div className="rounded-2xl border border-border/70 bg-muted/40 px-4 py-3">
+            <div className="grid w-full gap-3 sm:grid-cols-2 xl:w-auto">
+              <div className="rounded-2xl border border-border/70 bg-muted/40 px-4 py-3 text-left sm:text-right">
                 <div className="text-xs tracking-[0.18em] text-muted-foreground uppercase">
                   Current
                 </div>
-                <div className="font-display text-3xl leading-none text-primary">
+                <div className="font-display text-3xl leading-none text-primary sm:text-[2rem]">
                   {latestTrendVolume.toLocaleString()}
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-border/70 bg-muted/40 px-4 py-3">
+              <div className="rounded-2xl border border-border/70 bg-muted/40 px-4 py-3 text-left sm:text-right">
                 <div className="text-xs tracking-[0.18em] text-muted-foreground uppercase">
                   Growth
                 </div>
                 <div
                   className={cn(
-                    "font-display text-3xl leading-none",
+                    "font-display text-3xl leading-none sm:text-[2rem]",
                     trendGrowth >= 0 ? "text-emerald-500" : "text-amber-500"
                   )}
                 >
@@ -417,8 +417,8 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-[2.75rem_minmax(0,1fr)] grid-rows-[minmax(0,1fr)_auto] gap-x-3 gap-y-3">
-            <div className="flex min-h-[22rem] items-center justify-center pt-2">
+          <div className="grid grid-cols-1 gap-y-3 sm:grid-cols-[2.75rem_minmax(0,1fr)] sm:grid-rows-[minmax(0,1fr)_auto] sm:gap-x-3">
+            <div className="hidden min-h-[20rem] items-center justify-center pt-2 sm:flex sm:min-h-[22rem]">
               <span className="-rotate-90 text-[11px] font-semibold tracking-[0.22em] whitespace-nowrap text-muted-foreground uppercase">
                 Search Results
               </span>
@@ -426,11 +426,11 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
 
             <ChartContainer
               config={trendConfig}
-              className="!aspect-auto h-[22rem] min-h-[22rem] w-full"
+              className="!aspect-auto h-[18rem] min-h-[18rem] w-full sm:h-[22rem] sm:min-h-[22rem]"
             >
               <AreaChart
                 data={trendChartData}
-                margin={{ top: 24, right: 12, left: 8, bottom: 8 }}
+                margin={{ top: 24, right: 8, left: 0, bottom: 8 }}
               >
                 <defs>
                   <linearGradient id="trendFill" x1="0" x2="0" y1="0" y2="1">
@@ -459,13 +459,13 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
                   axisLine={false}
                   interval={0}
                   minTickGap={0}
-                  tickMargin={12}
-                  tick={{ fontSize: 12 }}
+                  tickMargin={10}
+                  tick={{ fontSize: 11 }}
                 />
                 <YAxis
                   tickLine={false}
                   axisLine={false}
-                  width={52}
+                  width={40}
                   domain={[0, yAxisUpperBound]}
                   ticks={yAxisTicks}
                   tickFormatter={(value) =>
@@ -473,7 +473,7 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
                       ? `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 1)}k`
                       : `${value}`
                   }
-                  tick={{ fontSize: 12 }}
+                  tick={{ fontSize: 11 }}
                 />
                 <ChartTooltip
                   cursor={false}
@@ -500,7 +500,7 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
               </AreaChart>
             </ChartContainer>
 
-            <div />
+            <div className="hidden sm:block" />
             <div className="pt-1 text-center text-[11px] font-semibold tracking-[0.22em] text-muted-foreground uppercase">
               Recent Months
             </div>
@@ -514,10 +514,10 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
             return (
               <div
                 key={metric.label}
-                className="flex h-full flex-col rounded-[1.75rem] border border-border/70 bg-muted/25 p-4"
+                className="flex h-full min-w-0 flex-col overflow-hidden rounded-[1.75rem] border border-border/70 bg-muted/25 p-4"
               >
                 <div className="mb-4 flex items-start justify-between gap-3">
-                  <div>
+                  <div className="min-w-0">
                     <div className="mb-1 text-xs font-semibold tracking-[0.18em] text-muted-foreground uppercase">
                       {metric.label}
                     </div>
@@ -536,7 +536,7 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
                   </div>
                 </div>
                 <Progress value={metric.score * 10} className="mb-3 h-2.5" />
-                <p className="text-sm leading-6 text-muted-foreground">
+                <p className="break-words text-sm leading-6 text-muted-foreground">
                   {metric.insight}
                 </p>
               </div>

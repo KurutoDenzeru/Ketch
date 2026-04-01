@@ -88,8 +88,8 @@ export function AppNavbar() {
                 className={cn(
                   "inline-flex min-h-14 flex-col items-center justify-center gap-1 px-2 py-2 text-[11px] font-medium transition-all",
                   active
-                    ? "bg-white/10 text-foreground"
-                    : "text-foreground/72 hover:bg-white/6 hover:text-foreground"
+                    ? "bg-white/10 text-foreground rounded-md"
+                    : "text-foreground/72 hover:bg-white/6 hover:text-foreground rounded-md"
                 )}
               >
                 <Icon className="size-4" />
