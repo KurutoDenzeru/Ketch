@@ -35,8 +35,24 @@ export function getCanonicalUrl(path: string) {
   return new URL(path, metadataBase).toString()
 }
 
-export function getOgImageUrl(imagePath = "/OpenGraph.webp") {
+export function getOgImageUrl(imagePath = "/OpenGraph.png") {
   return new URL(imagePath, metadataBase).toString()
+}
+
+function getImageMimeType(imagePath: string) {
+  if (imagePath.endsWith(".png")) {
+    return "image/png"
+  }
+
+  if (imagePath.endsWith(".jpg") || imagePath.endsWith(".jpeg")) {
+    return "image/jpeg"
+  }
+
+  if (imagePath.endsWith(".webp")) {
+    return "image/webp"
+  }
+
+  return "image/png"
 }
 
 export function buildSeoHead({
@@ -45,12 +61,13 @@ export function buildSeoHead({
   description = defaultDescription,
   keywords = defaultKeywords,
   type = "website",
-  imagePath = "/OpenGraph.webp",
+  imagePath = "/OpenGraph.png",
   imageAlt = "Ketch Open Graph preview",
   robots = "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1",
 }: SeoConfig) {
   const canonicalUrl = getCanonicalUrl(path)
   const ogImageUrl = getOgImageUrl(imagePath)
+  const imageMimeType = getImageMimeType(imagePath)
 
   return {
     meta: [
@@ -135,7 +152,7 @@ export function buildSeoHead({
       },
       {
         property: "og:image:type",
-        content: "image/webp",
+        content: imageMimeType,
       },
       {
         property: "og:image:width",
