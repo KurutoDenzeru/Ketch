@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import {
   BadgeCheck,
   Check,
+  Bot,
   Copy,
   FileCode2,
   Gauge,
@@ -48,11 +49,12 @@ type IdeaCardProps = {
   idea: StartupIdea
   pitch: StartupPitch | null
   marketValidation: MarketValidation | null
+  headerActions?: React.ReactNode
   isPitchLoading: boolean
   isMarketValidationLoading: boolean
   isRegeneratingTitles?: boolean
   isSharing?: boolean
-  copiedIdeaFormat?: "text" | "markdown" | null
+  copiedIdeaFormat?: "text" | "markdown" | "agent-prompt" | null
   isShareLinkCopied?: boolean
   generationRateLimit: GenerationRateLimitStatus | null
   isSaved: boolean
@@ -62,6 +64,7 @@ type IdeaCardProps = {
   onGenerateMarketValidation: () => void
   onCopyText: () => void
   onCopyMarkdown: () => void
+  onCopyAgentPrompt: () => void
   onCopyShareLink: () => void
   onOpenSharedView: () => void
   onSave: () => void
@@ -97,6 +100,7 @@ export function IdeaCard({
   idea,
   pitch,
   marketValidation,
+  headerActions,
   isPitchLoading,
   isMarketValidationLoading,
   isRegeneratingTitles = false,
@@ -111,6 +115,7 @@ export function IdeaCard({
   onGenerateMarketValidation,
   onCopyText,
   onCopyMarkdown,
+  onCopyAgentPrompt,
   onCopyShareLink,
   onOpenSharedView,
   onSave,
@@ -133,24 +138,31 @@ export function IdeaCard({
     <div className="space-y-6">
       <Card className="overflow-hidden rounded-[2rem] border border-border/70 bg-card/90 py-0 shadow-sm">
         <CardHeader className="gap-5 border-b border-border/70 px-6 py-6">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge
-              variant="outline"
-              className="h-auto gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-[0.14em] uppercase"
-            >
-              <BadgeCheck className="size-3.5" />
-              {idea.category}
-            </Badge>
-            <Badge
-              variant="outline"
-              className={cn(
-                "h-auto gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-[0.14em] uppercase",
-                validationTone.badgeClassName
-              )}
-            >
-              <Gauge className="size-3.5" />
-              {validationTone.label}
-            </Badge>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge
+                variant="outline"
+                className="h-auto gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-[0.14em] uppercase"
+              >
+                <BadgeCheck className="size-3.5" />
+                {idea.category}
+              </Badge>
+              <Badge
+                variant="outline"
+                className={cn(
+                  "h-auto gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-[0.14em] uppercase",
+                  validationTone.badgeClassName
+                )}
+              >
+                <Gauge className="size-3.5" />
+                {validationTone.label}
+              </Badge>
+            </div>
+            {headerActions ? (
+              <div className="flex flex-wrap items-center justify-end gap-2">
+                {headerActions}
+              </div>
+            ) : null}
           </div>
 
           <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
@@ -383,6 +395,8 @@ export function IdeaCard({
                     ? "Copied text!"
                     : copiedIdeaFormat === "markdown"
                       ? "Copied markdown!"
+                      : copiedIdeaFormat === "agent-prompt"
+                        ? "Copied AI prompt!"
                       : "Copy idea"}
                 </Button>
               </DropdownMenuTrigger>
@@ -394,6 +408,10 @@ export function IdeaCard({
                 <DropdownMenuItem onClick={onCopyMarkdown}>
                   <FileCode2 />
                   Copy idea as markdown
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onCopyAgentPrompt}>
+                  <Bot />
+                  Copy idea as AI prompt
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

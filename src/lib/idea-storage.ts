@@ -686,3 +686,117 @@ export function formatIdeaAsMarkdown(payload: ShareableIdeaPayload) {
 
   return lines.join("\n")
 }
+
+export function formatIdeaAsAgentPrompt(payload: ShareableIdeaPayload) {
+  const { idea } = payload
+  const lines = [
+    "You are an autonomous AI agent helping build a generated startup idea.",
+    "Turn the idea below into the most useful implementation-ready plan possible.",
+    "Be practical, specific, and conservative with assumptions.",
+    "",
+    "# Generated Idea",
+    "",
+    `Name: ${idea.name}`,
+    `Tagline: ${idea.tagline}`,
+    `Category: ${idea.category}`,
+    `Description: ${idea.description}`,
+    `Audience: ${idea.audience}`,
+    `Unique twist: ${idea.twist}`,
+    `Monetization: ${idea.monetization}`,
+    `Validation score: ${idea.validationScore}/10`,
+    `Alternative names: ${idea.alternativeNames.join(", ")}`,
+    `Tags: ${idea.analysis.tags.join(", ")}`,
+    "",
+    "## What to build",
+    "- Use the generated idea as the source of truth.",
+    "- Make the smallest valuable product that proves demand quickly.",
+    "- Prefer clear user flows, strong positioning, and a realistic MVP.",
+    "- Call out any risky assumptions or missing details explicitly.",
+    "",
+  ]
+
+  appendSection(lines, "Why Now", idea.analysis.whyNow)
+  appendSection(
+    lines,
+    "Proof & Signals",
+    idea.analysis.proofSignals.map((item) => `- ${item}`)
+  )
+  appendSection(lines, "Market Gap", idea.analysis.marketGap)
+  appendSection(lines, "Execution Plan", idea.analysis.executionPlan)
+  appendSection(
+    lines,
+    "Score Metrics",
+    idea.analysis.scoreMetrics.map(
+      (metric) => `- ${metric.label}: ${metric.score}/10 - ${metric.insight}`
+    )
+  )
+  appendSection(
+    lines,
+    "Demand Signal",
+    idea.analysis.trendPoints.map(
+      (point) => `- ${point.label}: ${point.interest}/100 interest`
+    )
+  )
+  appendSection(lines, "Framework Fit", [
+    `- Audience: ${idea.analysis.frameworkFit.audience}/10`,
+    `- Community: ${idea.analysis.frameworkFit.community}/10`,
+    `- Product: ${idea.analysis.frameworkFit.product}/10`,
+  ])
+  appendSection(
+    lines,
+    "Value Ladder",
+    idea.analysis.valueLadder.map(
+      (step, index) => `- Step ${index + 1}: ${step.label} (${step.score}/10)`
+    )
+  )
+  appendSection(
+    lines,
+    "Keyword Signals",
+    idea.analysis.keywordSignals.map(
+      (signal) =>
+        `- ${signal.term}: volume ${signal.volume}, competition ${signal.competition}, score ${signal.score}/10`
+    )
+  )
+  appendSection(
+    lines,
+    "Detailed Plan",
+    idea.analysis.detailedPlan.flatMap((step, index) => [
+      `- Step ${index + 1}: ${step.phase} (${step.timeframe})`,
+      `  Objective: ${step.objective}`,
+      ...step.actions.map((action) => `  * ${action}`),
+      `  Outcome: ${step.outcome}`,
+    ])
+  )
+
+  if (payload.pitch) {
+    appendSection(lines, "Pitch", [
+      `Problem: ${payload.pitch.problem}`,
+      `Solution: ${payload.pitch.solution}`,
+      `Market: ${payload.pitch.market}`,
+      `Business model: ${payload.pitch.businessModel}`,
+    ])
+  }
+
+  if (payload.marketValidation) {
+    appendSection(lines, "AI Market Validation", [
+      `Competition: ${payload.marketValidation.competition.join(", ")}`,
+      `Risks: ${payload.marketValidation.risks.join(", ")}`,
+      `Potential users: ${payload.marketValidation.potentialUsers.join(", ")}`,
+      `Verdict: ${payload.marketValidation.verdict}`,
+    ])
+  }
+
+  lines.push(
+    "",
+    "## Output format",
+    "Return:",
+    "- A concise product summary",
+    "- The recommended MVP",
+    "- Core user flows",
+    "- Feature priorities",
+    "- Key risks and assumptions",
+    "- The first sprint checklist"
+  )
+
+  return lines.join("\n")
+}

@@ -147,7 +147,7 @@ export function IdeaBriefForm({
                   "cursor-pointer rounded-full border px-4 py-2 text-sm transition-transform hover:-translate-y-0.5",
                   brief.category === option
                     ? "border-primary bg-primary text-primary-foreground"
-                    : "border-dashed border-white/18 bg-transparent text-foreground hover:border-white/28 hover:bg-white/3"
+                    : "border-[1.5px] border-dashed border-border/90 bg-transparent text-foreground hover:border-border hover:bg-muted/30"
                 )}
               >
                 {option}
@@ -249,7 +249,7 @@ export function IdeaBriefForm({
                     "cursor-pointer rounded-full border px-3 py-2 text-sm transition-transform hover:-translate-y-0.5",
                     active
                       ? "border-primary bg-primary text-primary-foreground"
-                      : "border-dashed border-white/18 bg-transparent text-foreground hover:border-white/28 hover:bg-white/3"
+                      : "border-[1.5px] border-dashed border-border/90 bg-transparent text-foreground hover:border-border hover:bg-muted/30"
                   )}
                 >
                   {feature}

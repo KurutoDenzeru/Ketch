@@ -36,6 +36,7 @@ import { buildSeoHead, defaultSeo } from "@/lib/seo"
 import {
   buildSharedIdeaUrl,
   clearIdeaLabDraft,
+  formatIdeaAsAgentPrompt,
   formatIdeaAsMarkdown,
   formatIdeaForClipboard,
   getIdeaLabDraft,
@@ -128,7 +129,7 @@ function IndexPage() {
   )
   const [isSharing, setIsSharing] = useState(false)
   const [copiedIdeaFormat, setCopiedIdeaFormat] = useState<
-    "text" | "markdown" | null
+    "text" | "markdown" | "agent-prompt" | null
   >(null)
   const [isShareLinkCopied, setIsShareLinkCopied] = useState(false)
   const [marketValidation, setMarketValidation] =
@@ -319,7 +320,9 @@ function IndexPage() {
     }
   }
 
-  function setTemporaryCopyState(format: "text" | "markdown") {
+  function setTemporaryCopyState(
+    format: "text" | "markdown" | "agent-prompt"
+  ) {
     setCopiedIdeaFormat(format)
     window.setTimeout(() => setCopiedIdeaFormat(null), 2000)
   }
@@ -352,6 +355,24 @@ function IndexPage() {
       setTemporaryCopyState("markdown")
       toast.success("Markdown copied", {
         description: "The startup idea markdown is in your clipboard.",
+      })
+    } catch {
+      toast.error("Clipboard unavailable", {
+        description: "This browser blocked clipboard access.",
+      })
+    }
+  }
+
+  async function handleCopyAgentPrompt() {
+    if (!currentPayload) {
+      return
+    }
+
+    try {
+      await copyText(formatIdeaAsAgentPrompt(currentPayload))
+      setTemporaryCopyState("agent-prompt")
+      toast.success("AI prompt copied", {
+        description: "The agent-ready startup brief is in your clipboard.",
       })
     } catch {
       toast.error("Clipboard unavailable", {
@@ -656,57 +677,59 @@ function IndexPage() {
           <IdeaCardSkeleton />
         ) : idea && currentPayload ? (
           <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-end gap-2 px-1">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => regenerateIdeaMutation.mutate(idea)}
-                disabled={
-                  regenerateIdeaMutation.isPending ||
-                  Boolean(generationRateLimit?.isExhausted)
-                }
-                className="rounded-full"
-              >
-                {regenerateIdeaMutation.isPending ? (
-                  <Sparkles className="animate-pulse" />
-                ) : (
-                  <Sparkles />
-                )}
-                Regenerate idea
-              </Button>
-
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button type="button" variant="destructive">
-                    <Trash2 />
-                    Remove
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Remove current idea?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This clears the current working concept from the Idea Lab.
-                      If it was saved, its saved snapshot will also be removed.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      variant="destructive"
-                      onClick={handleRemoveIdea}
-                    >
-                      Remove idea
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-
             <IdeaCard
               idea={idea}
               pitch={pitch}
               marketValidation={marketValidation}
+              headerActions={
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => regenerateIdeaMutation.mutate(idea)}
+                    disabled={
+                      regenerateIdeaMutation.isPending ||
+                      Boolean(generationRateLimit?.isExhausted)
+                    }
+                    className="rounded-full"
+                  >
+                    {regenerateIdeaMutation.isPending ? (
+                      <Sparkles className="animate-pulse" />
+                    ) : (
+                      <Sparkles />
+                    )}
+                    Regenerate idea
+                  </Button>
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button type="button" variant="destructive">
+                        <Trash2 />
+                        Remove
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Remove current idea?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This clears the current working concept from the Idea
+                          Lab. If it was saved, its saved snapshot will also be
+                          removed.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          variant="destructive"
+                          onClick={handleRemoveIdea}
+                        >
+                          Remove idea
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </>
+              }
               isPitchLoading={pitchMutation.isPending}
               isMarketValidationLoading={marketValidationMutation.isPending}
               isRegeneratingTitles={regenerateTitlesMutation.isPending}
@@ -745,6 +768,7 @@ function IndexPage() {
               }}
               onCopyText={handleCopyText}
               onCopyMarkdown={handleCopyMarkdown}
+              onCopyAgentPrompt={handleCopyAgentPrompt}
               onCopyShareLink={handleCopyShareLink}
               onOpenSharedView={handleOpenSharedView}
               onSave={handleSaveIdea}

@@ -22,6 +22,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { buildSeoHead } from "@/lib/seo"
 import {
   buildSharedIdeaUrl,
+  formatIdeaAsAgentPrompt,
   formatIdeaAsMarkdown,
   formatIdeaForClipboard,
   getSavedIdeas,
@@ -87,7 +88,7 @@ function SavedIdeaCard({
   )
   const [isSharing, setIsSharing] = useState(false)
   const [copiedIdeaFormat, setCopiedIdeaFormat] = useState<
-    "text" | "markdown" | null
+    "text" | "markdown" | "agent-prompt" | null
   >(null)
   const [isShareLinkCopied, setIsShareLinkCopied] = useState(false)
   const [marketValidation, setMarketValidation] =
@@ -105,7 +106,9 @@ function SavedIdeaCard({
     return nextIdea
   }
 
-  function setTemporaryCopyState(format: "text" | "markdown") {
+  function setTemporaryCopyState(
+    format: "text" | "markdown" | "agent-prompt"
+  ) {
     setCopiedIdeaFormat(format)
     window.setTimeout(() => setCopiedIdeaFormat(null), 2000)
   }
@@ -234,6 +237,20 @@ function SavedIdeaCard({
 
     return {
       shareUrl: buildSharedIdeaUrl(sharedIdea.shareId),
+    }
+  }
+
+  async function handleCopyAgentPrompt() {
+    try {
+      await copyText(formatIdeaAsAgentPrompt(currentPayload))
+      setTemporaryCopyState("agent-prompt")
+      toast.success("AI prompt copied", {
+        description: "The agent-ready startup brief is in your clipboard.",
+      })
+    } catch {
+      toast.error("Clipboard unavailable", {
+        description: "This browser blocked clipboard access.",
+      })
     }
   }
 
@@ -375,6 +392,7 @@ function SavedIdeaCard({
             })
           }
         }}
+        onCopyAgentPrompt={handleCopyAgentPrompt}
         onCopyShareLink={async () => {
           try {
             setIsSharing(true)

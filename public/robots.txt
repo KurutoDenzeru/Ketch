@@ -1,4 +1,4 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
 Disallow:
-Sitemap: https://ketch.kurtcalacday.workers.dev/sitemap.xml
+Sitemap: https://ketch.krtclcdy.workers.dev/sitemap.xml

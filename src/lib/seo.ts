@@ -1,4 +1,4 @@
-const defaultSiteUrl = "https://ketch.kurtcalacday.workers.dev"
+const defaultSiteUrl = "https://ketch.krtclcdy.workers.dev"
 
 const normalizedSiteUrl = (
   import.meta.env.VITE_PUBLIC_SITE_URL ?? defaultSiteUrl
