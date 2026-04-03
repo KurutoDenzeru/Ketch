@@ -52,7 +52,6 @@ bun start
 The editor is componentized under `src/`. Key areas to customize are:
 
 ```text
-# Ketch project directory tree
 src/
   components/
     analysis-dashboard.tsx  # Dashboard UI for performance analysis and data summary
