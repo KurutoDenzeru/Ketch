@@ -533,7 +533,7 @@ export const getGenerationRateLimitStatus = createServerFn({
 })
 
 export const generateIdea = createServerFn({ method: "POST" })
-  .inputValidator((input: IdeaBriefInput) => input)
+  .validator((input: IdeaBriefInput) => input)
   .handler(async ({ data }) => {
     await consumeGenerationRateLimitCredit("generateIdea")
 
@@ -588,7 +588,7 @@ Keep the tone practical, specific, and portfolio-worthy.`
   })
 
 export const generatePitch = createServerFn({ method: "POST" })
-  .inputValidator((input: { idea: StartupIdea }) => input)
+  .validator((input: { idea: StartupIdea }) => input)
   .handler(async ({ data }) => {
     const prompt = `Expand this startup concept into a concise investor-style mini pitch.
 
@@ -612,7 +612,7 @@ Keep each field specific and practical.`
   })
 
 export const regenerateIdea = createServerFn({ method: "POST" })
-  .inputValidator((input: { idea: StartupIdea }) => input)
+  .validator((input: { idea: StartupIdea }) => input)
   .handler(async ({ data }) => {
     await consumeGenerationRateLimitCredit("regenerateIdea")
 
@@ -648,7 +648,7 @@ Requirements:
   })
 
 export const regenerateIdeaTitles = createServerFn({ method: "POST" })
-  .inputValidator((input: { idea: StartupIdea }) => input)
+  .validator((input: { idea: StartupIdea }) => input)
   .handler(async ({ data }) => {
     await consumeGenerationRateLimitCredit("regenerateTitles")
 
@@ -686,7 +686,7 @@ Requirements:
   })
 
 export const generateMarketValidation = createServerFn({ method: "POST" })
-  .inputValidator((input: { idea: StartupIdea }) => input)
+  .validator((input: { idea: StartupIdea }) => input)
   .handler(async ({ data }) => {
     const prompt = `Analyze this startup concept like an early-stage market validator.
 

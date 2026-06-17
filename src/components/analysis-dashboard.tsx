@@ -480,10 +480,10 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
                   content={
                     <ChartTooltipContent
                       indicator="line"
-                      formatter={(value) => [
+                      formatter={(value: unknown) => [
                         typeof value === "number"
                           ? value.toLocaleString()
-                          : value,
+                          : String(value),
                         "Search volume",
                       ]}
                     />

@@ -1,3 +1,4 @@
+import { DEV_MODE } from "./dev"
 import { mkdir, readFile, writeFile } from "node:fs/promises"
 import { homedir, tmpdir } from "node:os"
 import path from "node:path"
@@ -163,6 +164,16 @@ async function loadPrunedStore() {
 }
 
 export async function getGenerationRateLimitStatus() {
+  if (DEV_MODE) {
+    return {
+      limit: RATE_LIMIT_MAX_REQUESTS,
+      used: 0,
+      remaining: RATE_LIMIT_MAX_REQUESTS,
+      isExhausted: false,
+      resetsAt: null,
+      windowDays: RATE_LIMIT_WINDOW_DAYS,
+    }
+  }
   return serializeOperation(async () => buildStatus(await loadPrunedStore()))
 }
 
@@ -170,6 +181,16 @@ export async function consumeGenerationRateLimitCredit(
   action: GenerationRateLimitedAction
 ) {
   return serializeOperation(async () => {
+    if (DEV_MODE) {
+      return await Promise.resolve({
+        limit: RATE_LIMIT_MAX_REQUESTS,
+        used: 0,
+        remaining: RATE_LIMIT_MAX_REQUESTS,
+        isExhausted: false,
+        resetsAt: null,
+        windowDays: RATE_LIMIT_WINDOW_DAYS,
+      })
+    }
     const events = await loadPrunedStore()
     const currentStatus = buildStatus(events)
 
