@@ -143,12 +143,12 @@ function buildDemandPeriodLabels(count: number) {
     month: "short",
     year: "2-digit",
   })
-  const now = new Date()
+  const ref = new Date(2026, 5, 1)
 
   return Array.from({ length: count }, (_, index) => {
     const date = new Date(
-      now.getFullYear(),
-      now.getMonth() - (count - 1 - index),
+      ref.getFullYear(),
+      ref.getMonth() - (count - 1 - index),
       1
     )
 
@@ -196,9 +196,11 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
   const [selectedKeyword, setSelectedKeyword] = useState(
     keywordOptions[0] ?? ""
   )
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setSelectedKeyword(keywordOptions[0] ?? "")
+    setMounted(true)
   }, [keywordOptions])
 
   const activeKeywordSignal =
@@ -424,6 +426,7 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
               </span>
             </div>
 
+            {mounted && (
             <ChartContainer
               config={trendConfig}
               className="!aspect-auto h-[18rem] min-h-[18rem] w-full sm:h-[22rem] sm:min-h-[22rem]"
@@ -480,10 +483,10 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
                   content={
                     <ChartTooltipContent
                       indicator="line"
-                      formatter={(value) => [
+                      formatter={(value: unknown) => [
                         typeof value === "number"
                           ? value.toLocaleString()
-                          : value,
+                          : String(value),
                         "Search volume",
                       ]}
                     />
@@ -499,6 +502,7 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
                 />
               </AreaChart>
             </ChartContainer>
+            )}
 
             <div className="hidden sm:block" />
             <div className="pt-1 text-center text-[11px] font-semibold tracking-[0.22em] text-muted-foreground uppercase">
@@ -611,6 +615,7 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
                 <TrendingUp className="size-3.5" />
                 Value Equation
               </div>
+              {mounted && (
               <ChartContainer
                 config={{
                   score: {
@@ -653,6 +658,7 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
                   </text>
                 </RadialBarChart>
               </ChartContainer>
+              )}
             </div>
           </div>
 
@@ -669,6 +675,7 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
                   </span>
                 </div>
 
+                {mounted && (
                 <ChartContainer
                   config={{
                     score: {
@@ -720,6 +727,7 @@ export function AnalysisDashboard({ idea }: AnalysisDashboardProps) {
                     />
                   </RechartsBarChart>
                 </ChartContainer>
+                )}
 
                 <div />
                 <div className="pt-1 text-center text-[11px] font-semibold tracking-[0.22em] text-muted-foreground uppercase">

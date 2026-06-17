@@ -141,6 +141,20 @@ export const Route = createRootRoute({
       },
     ],
   }),
+  notFoundComponent: () => (
+    <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+      <h1 className="font-display text-6xl font-bold">404</h1>
+      <p className="text-lg text-muted-foreground">
+        Page not found — this route doesn't exist.
+      </p>
+      <a
+        href="/"
+        className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+      >
+        Go home
+      </a>
+    </div>
+  ),
   shellComponent: RootDocument,
 })
 
@@ -156,7 +170,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           }}
         />
       </head>
-      <body className="min-h-svh bg-background text-foreground antialiased">
+      <body className="min-h-svh bg-background text-foreground antialiased" suppressHydrationWarning>
         <ThemeProvider>
           <div className="flex min-h-svh flex-col">
             <AppNavbar />
@@ -189,6 +203,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               render: <TanStackRouterDevtoolsPanel />,
             },
           ]}
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `document.querySelectorAll("[data-protonpass-form]").forEach(function(el){el.removeAttribute("data-protonpass-form")})`,
+          }}
         />
         <Scripts />
       </body>

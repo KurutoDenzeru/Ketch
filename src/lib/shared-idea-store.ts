@@ -93,7 +93,7 @@ async function writeStore(store: SharedIdeaStore) {
 }
 
 export const createSharedIdeaLink = createServerFn({ method: "POST" })
-  .inputValidator((input: { payload: ShareableIdeaPayload }) => input)
+  .validator((input: { payload: ShareableIdeaPayload }) => input)
   .handler(async ({ data }) => {
     const store = await readStore()
     const id = randomUUID().slice(0, 8)
@@ -115,7 +115,7 @@ export const createSharedIdeaLink = createServerFn({ method: "POST" })
   })
 
 export const getSharedIdeaLink = createServerFn({ method: "GET" })
-  .inputValidator((input: { shareId: string }) => input)
+  .validator((input: { shareId: string }) => input)
   .handler(async ({ data }) => {
     const store = await readStore()
     const record = store.items.find((item) => item.shareId === data.shareId)
