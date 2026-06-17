@@ -204,6 +204,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             },
           ]}
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `document.querySelectorAll("[data-protonpass-form]").forEach(function(el){el.removeAttribute("data-protonpass-form")})`,
+          }}
+        />
         <Scripts />
       </body>
     </html>

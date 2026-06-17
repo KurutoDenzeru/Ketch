@@ -118,24 +118,16 @@ async function copyText(value: string) {
 function IndexPage() {
   const queryClient = useQueryClient()
   const generatedIdeaRef = useRef<HTMLElement | null>(null)
-  const [brief, setBrief] = useState<IdeaBriefInput>(
-    () => getIdeaLabDraft()?.brief ?? initialBrief
-  )
-  const [idea, setIdea] = useState<StartupIdea | null>(
-    () => getIdeaLabDraft()?.idea ?? null
-  )
-  const [pitch, setPitch] = useState<StartupPitch | null>(
-    () => getIdeaLabDraft()?.pitch ?? null
-  )
+  const [brief, setBrief] = useState<IdeaBriefInput>(initialBrief)
+  const [idea, setIdea] = useState<StartupIdea | null>(null)
+  const [pitch, setPitch] = useState<StartupPitch | null>(null)
   const [isSharing, setIsSharing] = useState(false)
   const [copiedIdeaFormat, setCopiedIdeaFormat] = useState<
     "text" | "markdown" | "agent-prompt" | null
   >(null)
   const [isShareLinkCopied, setIsShareLinkCopied] = useState(false)
   const [marketValidation, setMarketValidation] =
-    useState<MarketValidation | null>(
-      () => getIdeaLabDraft()?.marketValidation ?? null
-    )
+    useState<MarketValidation | null>(null)
   const [savedCount, setSavedCount] = useState(0)
   const generationRateLimitQuery = useQuery({
     queryKey: generationRateLimitQueryKey,
@@ -149,6 +141,15 @@ function IndexPage() {
       queryKey: generationRateLimitQueryKey,
     })
   }
+  useEffect(() => {
+    const draft = getIdeaLabDraft()
+    if (draft) {
+      if (draft.brief) setBrief(draft.brief)
+      if (draft.idea) setIdea(draft.idea)
+      if (draft.pitch) setPitch(draft.pitch)
+      if (draft.marketValidation) setMarketValidation(draft.marketValidation)
+    }
+  }, [])
 
   useEffect(() => {
     setSavedCount(getSavedIdeas().length)
