@@ -265,7 +265,7 @@ export function IdeaBriefForm({
               Tip: three inputs is enough. Use the toggles to steer the type of
               startup you want without turning the form into work.
             </p>
-            <p className="text-xs leading-6 text-muted-foreground">
+            <p className="text-xs leading-6 text-muted-foreground" suppressHydrationWarning>
               {generationRateLimit
                 ? generationRateLimit.isExhausted
                   ? `Weekly generation cooldown active. ${generationRateLimit.limit}/${generationRateLimit.limit} used.${generationRateLimit.resetsAt ? ` Resets ${new Date(generationRateLimit.resetsAt).toLocaleString()}.` : ""}`

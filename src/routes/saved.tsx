@@ -265,7 +265,7 @@ function SavedIdeaCard({
             <CalendarDays className="size-3.5" />
             Saved snapshot
           </Badge>
-          <span className="inline-flex items-center gap-2">
+          <span className="inline-flex items-center gap-2" suppressHydrationWarning>
             <CalendarDays className="size-4" />
             {new Date(savedIdea.createdAt).toLocaleDateString()}
           </span>

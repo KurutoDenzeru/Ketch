@@ -143,12 +143,12 @@ function buildDemandPeriodLabels(count: number) {
     month: "short",
     year: "2-digit",
   })
-  const now = new Date()
+  const ref = new Date(2026, 5, 1)
 
   return Array.from({ length: count }, (_, index) => {
     const date = new Date(
-      now.getFullYear(),
-      now.getMonth() - (count - 1 - index),
+      ref.getFullYear(),
+      ref.getMonth() - (count - 1 - index),
       1
     )
 

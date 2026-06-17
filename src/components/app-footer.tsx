@@ -7,7 +7,7 @@ export function AppFooter() {
     <footer className="mt-auto border-t border-border/70 bg-background/85 backdrop-blur">
       <div className="mx-auto flex w-full max-w-7xl flex-col gap-5 px-4 py-6 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between md:px-6">
         <p className="text-sm text-muted-foreground">
-          {`© ${new Date().getFullYear()} Ketch. KurutoDenzeru. All rights reserved.`}
+          {"© 2026 Ketch. KurutoDenzeru. All rights reserved."}
         </p>
 
         <div className="flex flex-wrap items-center gap-3">

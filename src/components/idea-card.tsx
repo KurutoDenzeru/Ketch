@@ -211,7 +211,7 @@ export function IdeaCard({
                     Generate new titles
                   </Button>
                 </div>
-                <p className="text-xs leading-6 text-muted-foreground">
+                <p className="text-xs leading-6 text-muted-foreground" suppressHydrationWarning>
                   {generationRateLimit
                     ? generationRateLimit.isExhausted
                       ? `Generation cooldown active until ${generationRateLimit.resetsAt ? new Date(generationRateLimit.resetsAt).toLocaleString() : "later this week"}.`
