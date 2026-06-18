@@ -7,7 +7,6 @@ import {
   Check,
   ChevronRight,
   Cpu,
-  Database,
   Globe,
   Lightbulb,
   LineChart,
@@ -154,7 +153,6 @@ const faqItems: Array<{ q: string; a: string }> = [
 const trustStrip: Array<{ label: string; icon: LucideIcon }> = [
   { label: "Powered by Gemini", icon: Cpu },
   { label: "Open source", icon: Package },
-  { label: "Local-first", icon: Database },
   { label: "No account needed", icon: ShieldCheck },
 ]
 
@@ -221,7 +219,7 @@ function MarketingLanding() {
 
       {/* TRUST STRIP */}
       <section className="border-y border-border/60 bg-background/40 py-8">
-        <div className="mx-auto grid w-full max-w-6xl grid-cols-2 gap-4 px-4 sm:grid-cols-4 md:px-6">
+        <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-4 px-4 sm:grid-cols-3 md:px-6">
           {trustStrip.map(({ label, icon: Icon }) => (
             <div
               key={label}
