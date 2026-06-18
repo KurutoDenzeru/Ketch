@@ -171,7 +171,7 @@ function AppDock({ pathname }: { pathname: string }) {
   return (
     <Dock>
       <NavItemTooltip label={`${brand.name} home`}>
-        <BrandLockup to="/app/new" />
+        <BrandLockup to="/" />
       </NavItemTooltip>
 
       <DockSeparator />
@@ -200,31 +200,6 @@ function AppDock({ pathname }: { pathname: string }) {
           )
         })}
       </nav>
-
-      <DockSeparator />
-
-      <NavItemTooltip label="Back to the marketing site">
-        <Button
-          asChild
-          variant="outline"
-          size="sm"
-          className="hidden rounded-full md:inline-flex"
-        >
-          <Link to="/">
-            Back to site
-            <ArrowRight className="size-4 ml-1" />
-          </Link>
-        </Button>
-      </NavItemTooltip>
-      <NavItemTooltip label="Generate a new idea">
-        <Button asChild size="sm" className="rounded-full">
-          <Link to="/app/new">
-            <Sparkles className="size-4 md:mr-1" />
-            <span className="hidden md:inline">New idea</span>
-            <span className="md:hidden">New</span>
-          </Link>
-        </Button>
-      </NavItemTooltip>
     </Dock>
   )
 }
