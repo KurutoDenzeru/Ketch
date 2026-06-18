@@ -12,8 +12,6 @@ import {
   Globe,
   Lightbulb,
   LineChart,
-  
-  Network,
   Package,
   Rocket,
   Share2,
@@ -22,13 +20,19 @@ import {
   Target,
   Timer,
   Wallet,
-  Workflow
+  Workflow,
 } from "lucide-react"
-import type {LucideIcon} from "lucide-react";
+import type { LucideIcon } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
 import { RevealOnScroll } from "@/components/reveal-on-scroll"
 import { SectionEyebrow } from "@/components/section-eyebrow"
 import { SectionHeader } from "@/components/section-header"
@@ -180,7 +184,7 @@ function MarketingLanding() {
         <div className="mx-auto grid w-full max-w-6xl gap-12 px-4 pb-20 pt-16 md:px-6 md:pt-24 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:pb-28 lg:pt-28">
           <div className="space-y-7 text-balance">
             <RevealOnScroll>
-              <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1.5 text-[12px] font-medium text-foreground/80 shadow-card backdrop-blur">
+              <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1.5 text-[12px] font-medium text-foreground/80 shadow-xs backdrop-blur">
                 <span className="relative flex size-2">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
                   <span className="relative inline-flex size-2 rounded-full bg-primary" />
@@ -196,9 +200,7 @@ function MarketingLanding() {
             </RevealOnScroll>
             <RevealOnScroll delay={160}>
               <p className="max-w-xl text-base leading-7 text-muted-foreground text-pretty sm:text-lg">
-                {brand.shortDescription} Bring a brief, leave with a memo —
-                opportunity scoring, market timing, shareable reports, and a
-                phased execution plan.
+                {brand.shortDescription}
               </p>
             </RevealOnScroll>
             <RevealOnScroll delay={240}>
@@ -270,7 +272,7 @@ function MarketingLanding() {
           />
           <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
             <RevealOnScroll className="lg:row-span-2">
-              <Card className="h-full rounded-3xl border border-border/60 bg-card/80 py-0 shadow-card">
+              <Card className="h-full rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
                 <CardContent className="flex h-full flex-col gap-6 p-7">
                   <div className="flex items-center justify-between text-[11px] font-semibold tracking-[0.22em] text-muted-foreground uppercase">
                     <span className="inline-flex items-center gap-2">
@@ -315,7 +317,7 @@ function MarketingLanding() {
             </RevealOnScroll>
             {howItWorks.slice(1).map((step, index) => (
               <RevealOnScroll key={step.title} delay={index * 80}>
-                <Card className="h-full rounded-3xl border border-border/60 bg-card/80 py-0 shadow-card">
+                <Card className="h-full rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
                   <CardContent className="flex h-full flex-col gap-5 p-7">
                     <div className="flex items-center justify-between text-[11px] font-semibold tracking-[0.22em] text-muted-foreground uppercase">
                       <span className="inline-flex items-center gap-2">
@@ -374,7 +376,7 @@ function MarketingLanding() {
                   </ul>
                 </div>
                 <div>
-                  <Card className="overflow-hidden rounded-3xl border border-border/60 bg-card/80 py-0 shadow-elevated">
+                  <Card className="overflow-hidden rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
                     <CardContent className="space-y-5 p-7">
                       {index === 0 ? <SampleScores /> : null}
                       {index === 1 ? <SampleTrend /> : null}
@@ -403,7 +405,7 @@ function MarketingLanding() {
             description="The Library holds every idea you've saved, every link you've shared, and every shared idea you've opened — searchable, sortable, and exportable from any device."
           />
           <RevealOnScroll>
-            <Card className="overflow-hidden rounded-3xl border border-border/60 bg-card/80 py-0 shadow-elevated">
+            <Card className="overflow-hidden rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
               <CardContent className="space-y-6 p-7">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div>
@@ -460,14 +462,26 @@ function MarketingLanding() {
             />
           </div>
           <div className="md:flex-1">
-            <dl className="divide-y divide-border/60">
+            <Accordion
+              type="single"
+              collapsible
+              className="rounded-2xl border border-border/60 bg-card/80"
+            >
               {faqItems.map((item) => (
-                <div key={item.q} className="grid gap-2 py-5 md:grid-cols-[0.45fr_0.55fr] md:gap-8">
-                  <dt className="font-medium text-foreground">{item.q}</dt>
-                  <dd className="text-sm leading-7 text-muted-foreground">{item.a}</dd>
-                </div>
+                <AccordionItem
+                  key={item.q}
+                  value={item.q}
+                  className="border-border/60 px-5 last:border-b-0"
+                >
+                  <AccordionTrigger className="py-4 text-sm font-medium text-foreground hover:no-underline">
+                    {item.q}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-sm leading-7 text-muted-foreground">
+                    {item.a}
+                  </AccordionContent>
+                </AccordionItem>
               ))}
-            </dl>
+            </Accordion>
           </div>
         </div>
       </section>
@@ -639,8 +653,7 @@ function SampleShare() {
 function HeroMockup() {
   return (
     <div className="relative">
-      <div className="absolute -inset-3 -z-10 rounded-[36px] bg-gradient-to-br from-primary/30 via-brand-blue/20 to-brand-green/20 blur-2xl" />
-      <Card className="overflow-hidden rounded-[28px] border border-border/60 bg-card/90 py-0 shadow-elevated">
+      <Card className="overflow-hidden rounded-[28px] border border-border/60 bg-card/90 py-0 shadow-xs">
         <CardContent className="space-y-5 p-6 sm:p-7">
           <div className="flex items-center justify-between">
             <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/80 px-3 py-1.5 text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
@@ -699,12 +712,6 @@ function HeroMockup() {
           </div>
         </CardContent>
       </Card>
-      <div className="absolute -bottom-6 -right-4 hidden sm:block">
-        <div className="flex items-center gap-2 rounded-full border border-border/60 bg-background/95 px-3 py-1.5 text-[12px] font-medium shadow-card">
-          <Network className="size-3.5 text-primary" />
-          8 analysis blocks
-        </div>
-      </div>
     </div>
   )
 }

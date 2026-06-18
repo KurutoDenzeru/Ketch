@@ -34,9 +34,9 @@ const ShareSlugRoute = ShareSlugRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const IdeaSlugRoute = IdeaSlugRouteImport.update({
-  id: '/$slug',
-  path: '/$slug',
-  getParentRoute: () => IdeaRoute,
+  id: '/idea/$slug',
+  path: '/idea/$slug',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/app/settings',
@@ -129,6 +129,7 @@ export interface RootRouteChildren {
   AppLibraryRoute: typeof AppLibraryRoute
   AppNewRoute: typeof AppNewRoute
   AppSettingsRoute: typeof AppSettingsRoute
+  IdeaSlugRoute: typeof IdeaSlugRoute
   ShareSlugRoute: typeof ShareSlugRoute
   AppLibraryIdRoute: typeof AppLibraryIdRoute
 }
@@ -158,10 +159,10 @@ declare module '@tanstack/react-router' {
     }
     '/idea/$slug': {
       id: '/idea/$slug'
-      path: '/$slug'
+      path: '/idea/$slug'
       fullPath: '/idea/$slug'
       preLoaderRoute: typeof IdeaSlugRouteImport
-      parentRoute: typeof IdeaRoute
+      parentRoute: typeof rootRouteImport
     }
     '/app/settings': {
       id: '/app/settings'
@@ -200,6 +201,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppLibraryRoute: AppLibraryRoute,
   AppNewRoute: AppNewRoute,
   AppSettingsRoute: AppSettingsRoute,
+  IdeaSlugRoute: IdeaSlugRoute,
   ShareSlugRoute: ShareSlugRoute,
   AppLibraryIdRoute: AppLibraryIdRoute,
 }

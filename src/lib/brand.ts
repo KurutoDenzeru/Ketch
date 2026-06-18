@@ -2,7 +2,7 @@ export const brand = {
   name: "Ketch",
   tagline: "Generate startup ideas worth pursuing.",
   shortDescription:
-    "A founder-first AI workshop that turns rough briefs into opportunity scoring, market timing, shareable reports, and execution plans.",
+    "A founder-first AI workshop that turns rough briefs into a scored, shareable idea memo.",
   author: "Kurt Calacday",
   authorHandle: "KurutoDenzeru",
   github: "https://github.com/KurutoDenzeru/Ketch",

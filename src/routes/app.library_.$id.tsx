@@ -338,7 +338,7 @@ function LibraryDetailPage() {
         <span className="text-foreground">{idea?.name ?? "Loading…"}</span>
       </nav>
 
-      <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-card">
+      <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
         <CardContent className="flex flex-wrap items-center justify-between gap-3 p-5 md:p-6">
           <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
             <SectionEyebrow icon={CalendarDays}>
@@ -434,7 +434,7 @@ function LibraryDetailPage() {
           onSave={handleSave}
         />
       ) : (
-        <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-card">
+        <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
           <CardContent className="space-y-3 p-6">
             <div className="h-12 w-2/3 animate-pulse rounded-lg bg-muted" />
             <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />

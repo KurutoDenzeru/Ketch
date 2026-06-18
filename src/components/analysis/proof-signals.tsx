@@ -45,7 +45,7 @@ export function ProofSignals({ analysis }: ProofSignalsProps) {
         return (
           <Card
             key={key}
-            className="rounded-2xl border border-border/60 bg-card/80 py-0 shadow-card"
+            className="rounded-2xl border border-border/60 bg-card/80 py-0 shadow-xs"
           >
             <CardContent className="space-y-3 p-5">
               <SectionEyebrow icon={config.icon}>{config.label}</SectionEyebrow>

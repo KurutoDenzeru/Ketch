@@ -74,7 +74,7 @@ export function FitAndLadder({ idea }: FitAndLadderProps) {
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
-      <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-card">
+      <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
         <CardContent className="space-y-4 p-6">
           <SectionEyebrow icon={LineChart}>Framework fit</SectionEyebrow>
           <div className="space-y-4">
@@ -97,7 +97,7 @@ export function FitAndLadder({ idea }: FitAndLadderProps) {
         </CardContent>
       </Card>
 
-      <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-card">
+      <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
         <CardContent className="space-y-4 p-6">
           <div className="flex items-start justify-between gap-4">
             <SectionEyebrow icon={Sparkles}>Value equation</SectionEyebrow>
@@ -120,7 +120,7 @@ export function FitAndLadder({ idea }: FitAndLadderProps) {
         </CardContent>
       </Card>
 
-      <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-card lg:col-span-2">
+      <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs lg:col-span-2">
         <CardContent className="space-y-4 p-6">
           <SectionEyebrow icon={BarChart3}>Value ladder</SectionEyebrow>
           {mounted ? (

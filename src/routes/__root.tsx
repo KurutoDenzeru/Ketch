@@ -133,7 +133,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             toastOptions={{
               classNames: {
                 toast:
-                  "rounded-2xl border border-border/70 bg-background/95 shadow-card backdrop-blur-xl",
+                  "rounded-2xl border border-border/70 bg-background/95 shadow-xs backdrop-blur-xl",
                 title: "text-sm font-medium",
                 description: "text-sm text-muted-foreground",
               },

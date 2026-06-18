@@ -224,7 +224,7 @@ export function TrendChart({ idea }: TrendChartProps) {
   }
 
   return (
-    <div className="rounded-3xl border border-border/60 bg-card/80 p-6 shadow-card md:p-7">
+    <div className="rounded-3xl border border-border/60 bg-card/80 p-6 shadow-xs md:p-7">
       <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0 space-y-3">
           <SectionEyebrow icon={LineChart}>Market timing</SectionEyebrow>

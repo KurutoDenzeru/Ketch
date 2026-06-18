@@ -25,7 +25,7 @@ export function EmptyState({
         "flex flex-col items-center justify-center gap-4 rounded-3xl px-6 py-14 text-center",
         variant === "dashed"
           ? "border border-dashed border-border/70 bg-muted/20"
-          : "border border-border/60 bg-card/80 shadow-card",
+          : "border border-border/60 bg-card/80 shadow-xs",
         className
       )}
     >

@@ -77,7 +77,7 @@ export function IdeaBriefForm({
   }
 
   return (
-    <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-card">
+    <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
       <CardContent className="space-y-7 p-6 md:p-8">
         <div className="space-y-3">
           <Label className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
@@ -101,7 +101,7 @@ export function IdeaBriefForm({
                   className={cn(
                     "inline-flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                     active
-                      ? "border-primary bg-primary text-primary-foreground shadow-card"
+                      ? "border-primary bg-primary text-primary-foreground shadow-xs"
                       : "border-border/60 bg-background/70 text-foreground/80 hover:border-border hover:bg-muted/60"
                   )}
                 >
@@ -216,7 +216,7 @@ export function IdeaBriefForm({
                   className={cn(
                     "inline-flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
                     active
-                      ? "border-primary bg-primary text-primary-foreground shadow-card"
+                      ? "border-primary bg-primary text-primary-foreground shadow-xs"
                       : "border-border/60 bg-background/70 text-foreground/80 hover:border-border hover:bg-muted/60"
                   )}
                 >

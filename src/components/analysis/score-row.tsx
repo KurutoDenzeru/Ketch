@@ -55,7 +55,7 @@ export function ScoreRow({ metrics }: ScoreRowProps) {
         return (
           <div
             key={metric.label}
-            className="flex h-full flex-col rounded-2xl border border-border/60 bg-card/80 p-5 shadow-card"
+            className="flex h-full flex-col rounded-2xl border border-border/60 bg-card/80 p-5 shadow-xs"
           >
             <div className="mb-4 flex items-start justify-between gap-3">
               <div className="min-w-0">

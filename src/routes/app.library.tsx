@@ -246,7 +246,7 @@ function LibraryPage() {
             onValueChange={(value) => setTab(value as LibraryTab)}
             className="gap-0"
           >
-            <TabsList className="h-auto rounded-full border border-border/60 bg-card/80 p-1 shadow-card">
+            <TabsList className="h-auto rounded-full border border-border/60 bg-card/80 p-1 shadow-xs">
               <TabTrigger value="saved" icon={Bookmark} label="Saved" count={items.saved.length} />
               <TabTrigger value="shared" icon={Share2} label="Shared by me" count={items.shared.length} />
               <TabTrigger value="recent" icon={Eye} label="Recently viewed" count={items.recent.length} />
@@ -372,7 +372,7 @@ type LibraryRowProps = {
 function LibraryRow({ item, onOpen, onDelete }: LibraryRowProps) {
   const Icon = getCategoryIcon(item.category)
   return (
-    <Card className="group rounded-2xl border border-border/60 bg-card/80 py-0 shadow-card transition-shadow hover:shadow-elevated">
+    <Card className="group rounded-2xl border border-border/60 bg-card/80 py-0 shadow-xs transition-shadow hover:shadow-xs">
       <CardContent className="flex flex-wrap items-center gap-4 p-4 sm:p-5">
         <button
           type="button"
@@ -501,7 +501,7 @@ function LibrarySkeleton() {
   return (
     <div className="space-y-3">
       {Array.from({ length: 4 }).map((_, i) => (
-        <Card key={i} className="rounded-2xl border border-border/60 bg-card/80 py-0 shadow-card">
+        <Card key={i} className="rounded-2xl border border-border/60 bg-card/80 py-0 shadow-xs">
           <CardContent className="flex items-center gap-4 p-5">
             <Skeleton className="size-11 rounded-2xl" />
             <div className="flex-1 space-y-2">

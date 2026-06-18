@@ -245,7 +245,7 @@ export function MobileAppTabBar() {
   })
   return (
     <div className="fixed inset-x-0 bottom-3 z-40 px-3 md:hidden">
-      <div className="mx-auto flex max-w-md items-center justify-around rounded-full border border-border/60 bg-background/90 px-2 py-1.5 shadow-elevated backdrop-blur">
+      <div className="mx-auto flex max-w-md items-center justify-around rounded-full border border-border/60 bg-background/90 px-2 py-1.5 shadow-xs backdrop-blur">
         {navLinks.appMobile.map((item) => {
           const active = isAppRouteActive(pathname, item.to)
           return (

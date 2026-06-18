@@ -11,7 +11,7 @@ type ExecutionTimelineProps = {
 
 export function ExecutionTimeline({ steps }: ExecutionTimelineProps) {
   return (
-    <div className="rounded-3xl border border-border/60 bg-card/80 p-6 shadow-card md:p-7">
+    <div className="rounded-3xl border border-border/60 bg-card/80 p-6 shadow-xs md:p-7">
       <SectionEyebrow icon={Compass} className="mb-5">
         Detailed plan
       </SectionEyebrow>

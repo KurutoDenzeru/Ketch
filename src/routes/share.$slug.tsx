@@ -265,7 +265,7 @@ function SharedIdeaRoute() {
   if (!hydrated || (sharedQuery.isPending && !currentPayload)) {
     return (
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-12 md:px-6">
-        <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-card">
+        <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
           <CardContent className="space-y-3 p-6">
             <Skeleton className="h-4 w-32" />
             <Skeleton className="h-12 w-2/3" />

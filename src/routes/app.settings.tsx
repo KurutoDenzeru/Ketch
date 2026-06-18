@@ -124,7 +124,7 @@ function SettingsPage() {
                   className={cn(
                     "flex w-full items-center gap-3 rounded-2xl border px-3 py-2.5 text-left transition-colors",
                     active
-                      ? "border-primary/40 bg-primary/10 text-foreground shadow-card"
+                      ? "border-primary/40 bg-primary/10 text-foreground shadow-xs"
                       : "border-transparent text-foreground/75 hover:border-border/60 hover:bg-muted/40"
                   )}
                   aria-current={active ? "page" : undefined}
@@ -171,7 +171,7 @@ function GenerationSection() {
   const rateLimit = generationRateLimitQuery.data ?? null
 
   return (
-    <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-card">
+    <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
       <CardContent className="space-y-6 p-6 md:p-7">
         <div>
           <SectionEyebrow icon={WandSparkles}>Generation</SectionEyebrow>
@@ -328,7 +328,7 @@ function DataSection() {
   }
 
   return (
-    <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-card">
+    <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
       <CardContent className="space-y-6 p-6 md:p-7">
         <div>
           <SectionEyebrow icon={Database}>Data</SectionEyebrow>
@@ -467,7 +467,7 @@ function SharingSection() {
 
   return (
     <div className="space-y-4">
-      <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-card">
+      <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
         <CardContent className="space-y-4 p-6 md:p-7">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -537,7 +537,7 @@ function SharingSection() {
         </CardContent>
       </Card>
 
-      <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-card">
+      <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
         <CardContent className="space-y-4 p-6 md:p-7">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -614,7 +614,7 @@ function SharingSection() {
 
 function AboutSection() {
   return (
-    <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-card">
+    <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
       <CardContent className="space-y-5 p-6 md:p-7">
         <div>
           <SectionEyebrow icon={Package}>About</SectionEyebrow>

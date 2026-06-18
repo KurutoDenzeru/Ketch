@@ -60,7 +60,7 @@ export function KeywordTable({ signals }: KeywordTableProps) {
   }
 
   return (
-    <div className="space-y-4 rounded-3xl border border-border/60 bg-card/80 p-6 shadow-card md:p-7">
+    <div className="space-y-4 rounded-3xl border border-border/60 bg-card/80 p-6 shadow-xs md:p-7">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <SectionEyebrow icon={Search}>Keyword signals</SectionEyebrow>

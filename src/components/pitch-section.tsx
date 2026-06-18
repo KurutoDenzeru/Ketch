@@ -22,7 +22,7 @@ export function PitchSection({
   disabled,
 }: PitchSectionProps) {
   return (
-    <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-card">
+    <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
       <CardContent className="space-y-5 p-6 md:p-7">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="space-y-2">

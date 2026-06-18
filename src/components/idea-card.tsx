@@ -145,7 +145,7 @@ export function IdeaCard({
     isRegeneratingTitles || Boolean(generationRateLimit?.isExhausted)
 
   return (
-    <Card className="overflow-hidden rounded-3xl border border-border/60 bg-card/80 py-0 shadow-card">
+    <Card className="overflow-hidden rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
       <CardContent className="space-y-7 p-6 md:p-8">
         {/* HEADER ROW */}
         <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
@@ -221,7 +221,7 @@ export function IdeaCard({
               <TabsTrigger
                 key={value}
                 value={value}
-                className="inline-flex h-9 items-center gap-1.5 rounded-xl px-3 text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-card"
+                className="inline-flex h-9 items-center gap-1.5 rounded-xl px-3 text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-xs"
               >
                 <Icon className="size-4" aria-hidden="true" />
                 {label}
@@ -287,7 +287,7 @@ export function IdeaCard({
                       className={cn(
                         "inline-flex h-9 items-center rounded-full border px-3.5 text-sm font-medium transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                         isSelected
-                          ? "border-primary bg-primary text-primary-foreground shadow-card"
+                          ? "border-primary bg-primary text-primary-foreground shadow-xs"
                           : "border-border/60 bg-background/75 text-foreground/85 hover:bg-muted/60"
                       )}
                     >
@@ -313,7 +313,7 @@ export function IdeaCard({
           </TabsContent>
 
           <TabsContent value="validation" className="space-y-4">
-            <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-card">
+            <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
               <CardContent className="space-y-5 p-6 md:p-7">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="space-y-2">
