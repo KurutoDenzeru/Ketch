@@ -9,25 +9,19 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SharedRouteImport } from './routes/shared'
-import { Route as SavedRouteImport } from './routes/saved'
-import { Route as IdeaRouteImport } from './routes/idea'
+import { Route as SplatRouteImport } from './routes/$'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ShareSlugRouteImport } from './routes/share.$slug'
 import { Route as IdeaSlugRouteImport } from './routes/idea.$slug'
+import { Route as AppSettingsRouteImport } from './routes/app.settings'
+import { Route as AppNewRouteImport } from './routes/app.new'
+import { Route as AppLibraryRouteImport } from './routes/app.library'
+import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
+import { Route as AppLibraryIdRouteImport } from './routes/app.library.$id'
 
-const SharedRoute = SharedRouteImport.update({
-  id: '/shared',
-  path: '/shared',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SavedRoute = SavedRouteImport.update({
-  id: '/saved',
-  path: '/saved',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IdeaRoute = IdeaRouteImport.update({
-  id: '/idea',
-  path: '/idea',
+const SplatRoute = SplatRouteImport.update({
+  id: '/$',
+  path: '/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -35,70 +29,129 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShareSlugRoute = ShareSlugRouteImport.update({
+  id: '/share/$slug',
+  path: '/share/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IdeaSlugRoute = IdeaSlugRouteImport.update({
   id: '/$slug',
   path: '/$slug',
   getParentRoute: () => IdeaRoute,
 } as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/app/settings',
+  path: '/app/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppNewRoute = AppNewRouteImport.update({
+  id: '/app/new',
+  path: '/app/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppLibraryRoute = AppLibraryRouteImport.update({
+  id: '/app/library',
+  path: '/app/library',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/app/dashboard',
+  path: '/app/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppLibraryIdRoute = AppLibraryIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => AppLibraryRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/idea': typeof IdeaRouteWithChildren
-  '/saved': typeof SavedRoute
-  '/shared': typeof SharedRoute
+  '/$': typeof SplatRoute
+  '/app/dashboard': typeof AppDashboardRoute
+  '/app/library': typeof AppLibraryRouteWithChildren
+  '/app/new': typeof AppNewRoute
+  '/app/settings': typeof AppSettingsRoute
   '/idea/$slug': typeof IdeaSlugRoute
+  '/share/$slug': typeof ShareSlugRoute
+  '/app/library/$id': typeof AppLibraryIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/idea': typeof IdeaRouteWithChildren
-  '/saved': typeof SavedRoute
-  '/shared': typeof SharedRoute
+  '/$': typeof SplatRoute
+  '/app/dashboard': typeof AppDashboardRoute
+  '/app/library': typeof AppLibraryRouteWithChildren
+  '/app/new': typeof AppNewRoute
+  '/app/settings': typeof AppSettingsRoute
   '/idea/$slug': typeof IdeaSlugRoute
+  '/share/$slug': typeof ShareSlugRoute
+  '/app/library/$id': typeof AppLibraryIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/idea': typeof IdeaRouteWithChildren
-  '/saved': typeof SavedRoute
-  '/shared': typeof SharedRoute
+  '/$': typeof SplatRoute
+  '/app/dashboard': typeof AppDashboardRoute
+  '/app/library': typeof AppLibraryRouteWithChildren
+  '/app/new': typeof AppNewRoute
+  '/app/settings': typeof AppSettingsRoute
   '/idea/$slug': typeof IdeaSlugRoute
+  '/share/$slug': typeof ShareSlugRoute
+  '/app/library/$id': typeof AppLibraryIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/idea' | '/saved' | '/shared' | '/idea/$slug'
+  fullPaths:
+    | '/'
+    | '/$'
+    | '/app/dashboard'
+    | '/app/library'
+    | '/app/new'
+    | '/app/settings'
+    | '/idea/$slug'
+    | '/share/$slug'
+    | '/app/library/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/idea' | '/saved' | '/shared' | '/idea/$slug'
-  id: '__root__' | '/' | '/idea' | '/saved' | '/shared' | '/idea/$slug'
+  to:
+    | '/'
+    | '/$'
+    | '/app/dashboard'
+    | '/app/library'
+    | '/app/new'
+    | '/app/settings'
+    | '/idea/$slug'
+    | '/share/$slug'
+    | '/app/library/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/$'
+    | '/app/dashboard'
+    | '/app/library'
+    | '/app/new'
+    | '/app/settings'
+    | '/idea/$slug'
+    | '/share/$slug'
+    | '/app/library/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  IdeaRoute: typeof IdeaRouteWithChildren
-  SavedRoute: typeof SavedRoute
-  SharedRoute: typeof SharedRoute
+  SplatRoute: typeof SplatRoute
+  AppDashboardRoute: typeof AppDashboardRoute
+  AppLibraryRoute: typeof AppLibraryRouteWithChildren
+  AppNewRoute: typeof AppNewRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+  ShareSlugRoute: typeof ShareSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/shared': {
-      id: '/shared'
-      path: '/shared'
-      fullPath: '/shared'
-      preLoaderRoute: typeof SharedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/saved': {
-      id: '/saved'
-      path: '/saved'
-      fullPath: '/saved'
-      preLoaderRoute: typeof SavedRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/idea': {
-      id: '/idea'
-      path: '/idea'
-      fullPath: '/idea'
-      preLoaderRoute: typeof IdeaRouteImport
+    '/$': {
+      id: '/$'
+      path: '/$'
+      fullPath: '/$'
+      preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -108,6 +161,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/share/$slug': {
+      id: '/share/$slug'
+      path: '/share/$slug'
+      fullPath: '/share/$slug'
+      preLoaderRoute: typeof ShareSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/idea/$slug': {
       id: '/idea/$slug'
       path: '/$slug'
@@ -115,24 +175,64 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IdeaSlugRouteImport
       parentRoute: typeof IdeaRoute
     }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/app/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/new': {
+      id: '/app/new'
+      path: '/app/new'
+      fullPath: '/app/new'
+      preLoaderRoute: typeof AppNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/library': {
+      id: '/app/library'
+      path: '/app/library'
+      fullPath: '/app/library'
+      preLoaderRoute: typeof AppLibraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/dashboard': {
+      id: '/app/dashboard'
+      path: '/app/dashboard'
+      fullPath: '/app/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app/library/$id': {
+      id: '/app/library/$id'
+      path: '/$id'
+      fullPath: '/app/library/$id'
+      preLoaderRoute: typeof AppLibraryIdRouteImport
+      parentRoute: typeof AppLibraryRoute
+    }
   }
 }
 
-interface IdeaRouteChildren {
-  IdeaSlugRoute: typeof IdeaSlugRoute
+interface AppLibraryRouteChildren {
+  AppLibraryIdRoute: typeof AppLibraryIdRoute
 }
 
-const IdeaRouteChildren: IdeaRouteChildren = {
-  IdeaSlugRoute: IdeaSlugRoute,
+const AppLibraryRouteChildren: AppLibraryRouteChildren = {
+  AppLibraryIdRoute: AppLibraryIdRoute,
 }
 
-const IdeaRouteWithChildren = IdeaRoute._addFileChildren(IdeaRouteChildren)
+const AppLibraryRouteWithChildren = AppLibraryRoute._addFileChildren(
+  AppLibraryRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  IdeaRoute: IdeaRouteWithChildren,
-  SavedRoute: SavedRoute,
-  SharedRoute: SharedRoute,
+  SplatRoute: SplatRoute,
+  AppDashboardRoute: AppDashboardRoute,
+  AppLibraryRoute: AppLibraryRouteWithChildren,
+  AppNewRoute: AppNewRoute,
+  AppSettingsRoute: AppSettingsRoute,
+  ShareSlugRoute: ShareSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

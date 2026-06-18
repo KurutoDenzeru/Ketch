@@ -5,8 +5,8 @@ import path from "node:path"
 
 import { createServerFn } from "@tanstack/react-start"
 
-import { createIdeaShareSlug } from "@/lib/idea-storage"
 import type { ShareableIdeaPayload } from "@/types/idea"
+import { createIdeaShareSlug } from "@/lib/idea-storage"
 
 const STORE_FILE_PATH = path.join(getDataDirectory(), "shared-ideas.json")
 
@@ -18,7 +18,7 @@ type SharedIdeaRecord = {
 }
 
 type SharedIdeaStore = {
-  items: SharedIdeaRecord[]
+  items: Array<SharedIdeaRecord>
 }
 
 function getDataDirectory() {

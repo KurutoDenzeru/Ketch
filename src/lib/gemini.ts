@@ -1,10 +1,6 @@
 import { GoogleGenAI, ThinkingLevel } from "@google/genai"
 import { createServerFn } from "@tanstack/react-start"
 
-import {
-  consumeGenerationRateLimitCredit,
-  getGenerationRateLimitStatus as readGenerationRateLimitStatus,
-} from "@/lib/generation-rate-limit"
 import type {
   IdeaBriefInput,
   IdeaCategory,
@@ -13,6 +9,10 @@ import type {
   StartupPitch,
 } from "@/types/idea"
 import type { GenerationRateLimitStatus } from "@/types/rate-limit"
+import {
+  consumeGenerationRateLimitCredit,
+  getGenerationRateLimitStatus as readGenerationRateLimitStatus,
+} from "@/lib/generation-rate-limit"
 
 const GEMINI_MODEL = "gemini-3.1-flash-lite-preview"
 
@@ -670,7 +670,7 @@ Requirements:
 
     const result = await callGemini<{
       name: string
-      alternativeNames: string[]
+      alternativeNames: Array<string>
     }>({
       prompt,
       schema: titlesResponseSchema,

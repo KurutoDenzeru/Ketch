@@ -32,7 +32,7 @@ export const featurePreferences = [
 
 export type FeaturePreference = (typeof featurePreferences)[number]
 
-export const categoryFocusOptions: Record<IdeaCategory, string[]> = {
+export const categoryFocusOptions: Record<IdeaCategory, Array<string>> = {
   SaaS: ["Internal tools", "Team productivity", "Vertical SaaS", "Analytics"],
   "AI Tool": [
     "Agent workflow",
@@ -110,7 +110,7 @@ export type IdeaBriefInput = {
   problem: string
   audience: string
   categoryFocus: string
-  featurePreferences: FeaturePreference[]
+  featurePreferences: Array<FeaturePreference>
 }
 
 export type IdeaScoreMetric = {
@@ -140,26 +140,26 @@ export type DetailedPlanStep = {
   phase: string
   timeframe: string
   objective: string
-  actions: string[]
+  actions: Array<string>
   outcome: string
 }
 
 export type IdeaAnalysis = {
-  tags: string[]
+  tags: Array<string>
   whyNow: string
-  proofSignals: string[]
+  proofSignals: Array<string>
   marketGap: string
   executionPlan: string
-  scoreMetrics: IdeaScoreMetric[]
-  trendPoints: IdeaTrendPoint[]
+  scoreMetrics: Array<IdeaScoreMetric>
+  trendPoints: Array<IdeaTrendPoint>
   frameworkFit: {
     audience: number
     community: number
     product: number
   }
-  valueLadder: IdeaValueLadderStep[]
-  keywordSignals: IdeaKeywordSignal[]
-  detailedPlan: DetailedPlanStep[]
+  valueLadder: Array<IdeaValueLadderStep>
+  keywordSignals: Array<IdeaKeywordSignal>
+  detailedPlan: Array<DetailedPlanStep>
 }
 
 export type StartupIdea = {
@@ -170,7 +170,7 @@ export type StartupIdea = {
   twist: string
   monetization: string
   validationScore: number
-  alternativeNames: string[]
+  alternativeNames: Array<string>
   category: IdeaCategory
   analysis: IdeaAnalysis
 }
@@ -183,9 +183,9 @@ export type StartupPitch = {
 }
 
 export type MarketValidation = {
-  competition: string[]
-  risks: string[]
-  potentialUsers: string[]
+  competition: Array<string>
+  risks: Array<string>
+  potentialUsers: Array<string>
   verdict: string
 }
 

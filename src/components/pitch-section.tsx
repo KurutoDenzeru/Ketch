@@ -1,126 +1,93 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { ChevronDown, LoaderCircle, WandSparkles } from "lucide-react"
+import { LoaderCircle, WandSparkles } from "lucide-react"
 
-import { Button } from "@/components/ui/button"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
-import { Separator } from "@/components/ui/separator"
-import { Skeleton } from "@/components/ui/skeleton"
-import { cn } from "@/lib/utils"
 import type { StartupPitch } from "@/types/idea"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { SectionEyebrow } from "@/components/section-eyebrow"
+import { Skeleton } from "@/components/ui/skeleton"
 
 type PitchSectionProps = {
   pitch: StartupPitch | null
   isLoading: boolean
   onGenerate: () => void
+  disabled?: boolean
 }
 
 export function PitchSection({
   pitch,
   isLoading,
   onGenerate,
+  disabled,
 }: PitchSectionProps) {
-  const [open, setOpen] = useState(Boolean(pitch))
-
-  useEffect(() => {
-    if (pitch) {
-      setOpen(true)
-    }
-  }, [pitch])
-
   return (
-    <Collapsible
-      open={open}
-      onOpenChange={setOpen}
-      className="rounded-[2rem] border border-border/70 bg-background/85 shadow-sm"
-    >
-      <div className="flex flex-col gap-3 p-5 md:flex-row md:items-center md:justify-between">
-        <div className="space-y-1">
-          <div className="text-xs font-semibold tracking-[0.24em] text-muted-foreground uppercase">
-            AI Startup Pitch
+    <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-card">
+      <CardContent className="space-y-5 p-6 md:p-7">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="space-y-2">
+            <SectionEyebrow icon={WandSparkles}>Founder pitch</SectionEyebrow>
+            <h3 className="font-display text-2xl leading-tight">
+              Founder-ready narrative
+            </h3>
+            <p className="max-w-xl text-sm leading-6 text-muted-foreground">
+              Expand the idea into a short pitch covering the problem,
+              solution, market, and business model.
+            </p>
           </div>
-          <h3 className="font-display text-2xl leading-none text-foreground">
-            Founder-ready narrative
-          </h3>
-          <p className="max-w-2xl text-sm text-muted-foreground">
-            Expand the idea into a short pitch covering the problem, solution,
-            market, and business model.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
           <Button
             type="button"
             onClick={onGenerate}
-            disabled={isLoading}
-            className="rounded-full px-4"
+            disabled={isLoading || disabled}
+            className="rounded-full"
           >
             {isLoading ? (
               <LoaderCircle className="animate-spin" />
             ) : (
-              <WandSparkles />
+              <WandSparkles className="size-4" />
             )}
-            {pitch ? "Regenerate Pitch" : "Generate Pitch"}
+            {pitch ? "Regenerate pitch" : "Generate pitch"}
           </Button>
-
-          {pitch ? (
-            <CollapsibleTrigger asChild>
-              <Button type="button" variant="outline" size="icon-sm">
-                <ChevronDown
-                  className={cn("transition-transform", open && "rotate-180")}
-                />
-              </Button>
-            </CollapsibleTrigger>
-          ) : null}
         </div>
-      </div>
-
-      <CollapsibleContent className="px-5 pb-5">
-        <Separator className="mb-5" />
 
         {isLoading ? (
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="grid gap-3 md:grid-cols-2">
             {Array.from({ length: 4 }).map((_, index) => (
               <div
                 key={index}
-                className="space-y-3 rounded-[1.5rem] border border-border/70 bg-muted/30 p-4"
+                className="space-y-3 rounded-2xl border border-border/60 bg-muted/30 p-4"
               >
-                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-3 w-24" />
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-4 w-5/6" />
               </div>
             ))}
           </div>
         ) : pitch ? (
-          <div className="grid gap-4 md:grid-cols-2">
-            {[
-              ["Problem", pitch.problem],
-              ["Solution", pitch.solution],
-              ["Market", pitch.market],
-              ["Business Model", pitch.businessModel],
-            ].map(([label, value]) => (
+          <div className="grid gap-3 md:grid-cols-2">
+            {(
+              [
+                ["Problem", pitch.problem],
+                ["Solution", pitch.solution],
+                ["Market", pitch.market],
+                ["Business model", pitch.businessModel],
+              ] as const
+            ).map(([label, value]) => (
               <div
                 key={label}
-                className="rounded-[1.5rem] border border-border/70 bg-muted/30 p-4"
+                className="rounded-2xl border border-border/60 bg-muted/30 p-4"
               >
-                <div className="mb-2 text-xs font-semibold tracking-[0.22em] text-muted-foreground uppercase">
-                  {label}
-                </div>
+                <SectionEyebrow className="mb-2">{label}</SectionEyebrow>
                 <p className="text-sm leading-6 text-foreground">{value}</p>
               </div>
             ))}
           </div>
         ) : (
-          <div className="rounded-[1.5rem] border border-dashed border-border/70 bg-muted/20 p-5 text-sm text-muted-foreground">
+          <div className="rounded-2xl border border-dashed border-border/60 bg-muted/20 p-5 text-sm text-muted-foreground">
             Generate a pitch to turn the concept into a crisp startup story.
           </div>
         )}
-      </CollapsibleContent>
-    </Collapsible>
+      </CardContent>
+    </Card>
   )
 }

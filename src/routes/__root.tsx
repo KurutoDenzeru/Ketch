@@ -1,13 +1,13 @@
-import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router"
+import { HeadContent, Scripts, createRootRoute, useRouterState } from "@tanstack/react-router"
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 import { TanStackDevtools } from "@tanstack/react-devtools"
 
-import { AppFooter } from "@/components/app-footer"
-import { AppNavbar } from "@/components/app-navbar"
+import appCss from "../styles.css?url"
+import { AppShell } from "@/components/app-shell"
+import { NotFoundPage } from "@/components/not-found-page"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/sonner"
 import { defaultSeo, getCanonicalUrl, getOgImageUrl } from "@/lib/seo"
-import appCss from "../styles.css?url"
 
 const siteName = "Ketch"
 const pageTitle = defaultSeo.title
@@ -77,108 +77,55 @@ const structuredData = {
 export const Route = createRootRoute({
   head: () => ({
     meta: [
-      {
-        charSet: "utf-8",
-      },
+      { charSet: "utf-8" },
       {
         name: "viewport",
-        content: "width=device-width, initial-scale=1",
+        content: "width=device-width, initial-scale=1, viewport-fit=cover",
       },
-      {
-        title: pageTitle,
-      },
-      {
-        name: "author",
-        content: "Kurt Calacday",
-      },
-      {
-        name: "authors",
-        content: "Kurt Calacday",
-      },
-      {
-        name: "creator",
-        content: "Kurt Calacday",
-      },
-      {
-        name: "publisher",
-        content: siteName,
-      },
-      {
-        name: "theme-color",
-        content: "#111111",
-      },
+      { title: pageTitle },
+      { name: "author", content: "Kurt Calacday" },
+      { name: "authors", content: "Kurt Calacday" },
+      { name: "creator", content: "Kurt Calacday" },
+      { name: "publisher", content: siteName },
+      { name: "theme-color", content: "#faf9f5" },
+      { name: "color-scheme", content: "light dark" },
     ],
     links: [
-      {
-        rel: "icon",
-        type: "image/webp",
-        href: "/Sparkle.webp",
-      },
-      {
-        rel: "apple-touch-icon",
-        href: "/Sparkle.webp",
-      },
-      {
-        rel: "manifest",
-        href: "/manifest.json",
-      },
-      {
-        rel: "sitemap",
-        type: "application/xml",
-        href: "/sitemap.xml",
-      },
+      { rel: "icon", type: "image/webp", href: "/Sparkle.webp" },
+      { rel: "apple-touch-icon", href: "/Sparkle.webp" },
+      { rel: "manifest", href: "/manifest.json" },
+      { rel: "sitemap", type: "application/xml", href: "/sitemap.xml" },
+      { rel: "stylesheet", href: appCss },
+      { rel: "preconnect", href: "https://api.fonts.coollabs.io" },
       {
         rel: "stylesheet",
-        href: appCss,
-      },
-      {
-        rel: "preconnect",
-        href: "https://api.fonts.coollabs.io",
-      },
-      {
-        rel: "stylesheet",
-        href: "https://api.fonts.coollabs.io/css2?family=Fraunces:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",
+        href: "https://api.fonts.coollabs.io/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",
       },
     ],
   }),
-  notFoundComponent: () => (
-    <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
-      <h1 className="font-display text-6xl font-bold">404</h1>
-      <p className="text-lg text-muted-foreground">
-        Page not found — this route doesn't exist.
-      </p>
-      <a
-        href="/"
-        className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-      >
-        Go home
-      </a>
-    </div>
-  ),
+  notFoundComponent: NotFoundPage,
   shellComponent: RootDocument,
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  const variant: "marketing" | "app" = pathname.startsWith("/app") ? "app" : "marketing"
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(structuredData),
-          }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
       </head>
-      <body className="min-h-svh bg-background text-foreground antialiased" suppressHydrationWarning>
+      <body
+        className="min-h-svh bg-background text-foreground antialiased"
+        suppressHydrationWarning
+      >
         <ThemeProvider>
-          <div className="flex min-h-svh flex-col">
-            <AppNavbar />
-            <div className="flex-1 px-0 pt-20 pb-24 md:pt-24 md:pb-0">
-              {children}
-            </div>
-            <AppFooter />
-          </div>
+          <AppShell variant={variant}>{children}</AppShell>
           <Toaster
             position="bottom-right"
             expand={false}
@@ -186,7 +133,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             toastOptions={{
               classNames: {
                 toast:
-                  "rounded-2xl border border-border/70 bg-background/95 shadow-sm backdrop-blur-xl",
+                  "rounded-2xl border border-border/70 bg-background/95 shadow-card backdrop-blur-xl",
                 title: "text-sm font-medium",
                 description: "text-sm text-muted-foreground",
               },
@@ -194,9 +141,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           />
         </ThemeProvider>
         <TanStackDevtools
-          config={{
-            position: "bottom-right",
-          }}
+          config={{ position: "bottom-right" }}
           plugins={[
             {
               name: "Tanstack Router",
