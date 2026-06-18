@@ -17,7 +17,7 @@ export const navLinks = {
     { label: "FAQ", href: "#faq", icon: "HelpCircle" as const },
   ],
   app: [
-    { label: "New idea", to: "/app/new", icon: "Sparkles" as const },
+    { label: "New", to: "/app/new", icon: "Sparkles" as const },
     { label: "Library", to: "/app/library", icon: "Bookmark" as const },
     { label: "Settings", to: "/app/settings", icon: "Settings" as const },
   ],
