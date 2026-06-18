@@ -4,12 +4,10 @@ import { useEffect, useMemo, useState } from "react"
 import { createFileRoute } from "@tanstack/react-router"
 import {
   AlertTriangle,
-  Check,
   ChevronRight,
   Database,
   Download,
   Eye,
-  Package,
   Share2,
   Trash2,
   Upload,
@@ -50,7 +48,6 @@ import {
   parseImport,
 } from "@/lib/data-export"
 import { buildSeoHead } from "@/lib/seo"
-import { brand } from "@/lib/brand"
 import { cn } from "@/lib/utils"
 
 export const Route = createFileRoute("/app/settings")({
@@ -66,7 +63,7 @@ export const Route = createFileRoute("/app/settings")({
   component: SettingsPage,
 })
 
-type SectionId = "generation" | "data" | "sharing" | "about"
+type SectionId = "generation" | "data" | "sharing"
 
 const sections: Array<{ id: SectionId; label: string; description: string; icon: LucideIcon }> = [
   {
@@ -86,12 +83,6 @@ const sections: Array<{ id: SectionId; label: string; description: string; icon:
     label: "Sharing",
     description: "Share links on this device.",
     icon: Share2,
-  },
-  {
-    id: "about",
-    label: "About",
-    description: "Version and credits.",
-    icon: Package,
   },
 ]
 
@@ -156,7 +147,6 @@ function SettingsPage() {
           {section === "generation" ? <GenerationSection /> : null}
           {section === "data" ? <DataSection /> : null}
           {section === "sharing" ? <SharingSection /> : null}
-          {section === "about" ? <AboutSection /> : null}
         </section>
       </div>
     </div>
@@ -609,85 +599,6 @@ function SharingSection() {
         </CardContent>
       </Card>
     </div>
-  )
-}
-
-function AboutSection() {
-  return (
-    <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
-      <CardContent className="space-y-5 p-6 md:p-7">
-        <div>
-          <SectionEyebrow icon={Package}>About</SectionEyebrow>
-          <h3 className="mt-2 font-display text-2xl leading-tight">{brand.name}</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            A founder-first AI workshop. Local-first, open source, MIT licensed.
-          </p>
-        </div>
-
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Stat label="Version" value="0.2.0" />
-          <Stat label="License" value="MIT" />
-        </div>
-
-        <Separator />
-
-        <ul className="space-y-2 text-sm">
-          <li>
-            <a
-              href={brand.github}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-foreground/80 hover:text-foreground"
-            >
-              GitHub repository <ChevronRight className="size-3.5" />
-            </a>
-          </li>
-          <li>
-            <a
-              href={brand.linkedin}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-foreground/80 hover:text-foreground"
-            >
-              LinkedIn <ChevronRight className="size-3.5" />
-            </a>
-          </li>
-          <li>
-            <a
-              href="https://github.com/KurutoDenzeru/Ketch/blob/main/Contributing.md"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-foreground/80 hover:text-foreground"
-            >
-              Contributing <ChevronRight className="size-3.5" />
-            </a>
-          </li>
-          <li>
-            <a
-              href="https://github.com/KurutoDenzeru/Ketch/blob/main/LICENSE"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 text-foreground/80 hover:text-foreground"
-            >
-              License <ChevronRight className="size-3.5" />
-            </a>
-          </li>
-        </ul>
-
-        <Separator />
-
-        <div className="rounded-2xl border border-border/60 bg-background/80 p-4 text-sm leading-6 text-muted-foreground">
-          <p className="inline-flex items-center gap-2 font-medium text-foreground/85">
-            <Check className="size-4 text-primary" />
-            Built for solo founders
-          </p>
-          <p className="mt-2">
-            {brand.name} keeps your briefs, saved ideas, and draft memo on this
-            device. Share links are published when you choose to.
-          </p>
-        </div>
-      </CardContent>
-    </Card>
   )
 }
 
