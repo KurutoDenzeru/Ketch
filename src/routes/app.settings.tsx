@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { useTheme } from "next-themes"
 import { createFileRoute } from "@tanstack/react-router"
 import {
   AlertTriangle,
@@ -10,21 +9,16 @@ import {
   Database,
   Download,
   Eye,
-  LaptopMinimal,
-  
-  MoonStar,
   Package,
-  Paintbrush,
   Share2,
-  SunMedium,
   Trash2,
   Upload,
-  WandSparkles
+  WandSparkles,
 } from "lucide-react"
 import { toast } from "sonner"
 
 import { useQuery } from "@tanstack/react-query"
-import type {LucideIcon} from "lucide-react";
+import type { LucideIcon } from "lucide-react"
 import type { SavedIdea } from "@/types/idea"
 import { EmptyState } from "@/components/empty-state"
 import { SectionEyebrow } from "@/components/section-eyebrow"
@@ -36,7 +30,6 @@ import { Label } from "@/components/ui/label"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Switch } from "@/components/ui/switch"
 import { getGenerationRateLimitStatus } from "@/lib/gemini"
 import {
   clearRecentSharedIdeas,
@@ -65,23 +58,17 @@ export const Route = createFileRoute("/app/settings")({
     buildSeoHead({
       path: "/app/settings",
       title: "Settings | Ketch",
-      description: "Theme, generation quota, and data controls for Ketch.",
-      keywords: "Ketch settings, theme, data export",
+      description: "Generation quota, data controls, and share-link history for Ketch.",
+      keywords: "Ketch settings, data export, share links",
       imageAlt: "Ketch settings",
       robots: "noindex, follow",
     }),
   component: SettingsPage,
 })
 
-type SectionId = "appearance" | "generation" | "data" | "sharing" | "about"
+type SectionId = "generation" | "data" | "sharing" | "about"
 
 const sections: Array<{ id: SectionId; label: string; description: string; icon: LucideIcon }> = [
-  {
-    id: "appearance",
-    label: "Appearance",
-    description: "Theme, motion, and density.",
-    icon: Paintbrush,
-  },
   {
     id: "generation",
     label: "Generation",
@@ -109,12 +96,7 @@ const sections: Array<{ id: SectionId; label: string; description: string; icon:
 ]
 
 function SettingsPage() {
-  const [section, setSection] = useState<SectionId>("appearance")
-  const [hydrated, setHydrated] = useState(false)
-
-  useEffect(() => {
-    setHydrated(true)
-  }, [])
+  const [section, setSection] = useState<SectionId>("generation")
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 md:px-6 md:py-12">
@@ -126,7 +108,7 @@ function SettingsPage() {
             <span className="italic text-primary"> feel like home.</span>
           </>
         }
-        description="Theme, generation quota, and data controls. Settings are stored locally in this browser."
+        description="Generation quota, data controls, and share-link history. The theme toggle lives in the footer."
       />
 
       <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
@@ -171,7 +153,6 @@ function SettingsPage() {
         </aside>
 
         <section className="space-y-4">
-          {section === "appearance" ? <AppearanceSection hydrated={hydrated} /> : null}
           {section === "generation" ? <GenerationSection /> : null}
           {section === "data" ? <DataSection /> : null}
           {section === "sharing" ? <SharingSection /> : null}
@@ -179,128 +160,6 @@ function SettingsPage() {
         </section>
       </div>
     </div>
-  )
-}
-
-function AppearanceSection({ hydrated }: { hydrated: boolean }) {
-  const { theme, setTheme } = useTheme()
-  const [reducedMotion, setReducedMotion] = useState(false)
-  const [density, setDensity] = useState<"comfortable" | "compact">("comfortable")
-
-  useEffect(() => {
-    if (typeof window === "undefined") return
-    setReducedMotion(window.matchMedia("(prefers-reduced-motion: reduce)").matches)
-    const stored = window.localStorage.getItem("ketch:density")
-    if (stored === "compact" || stored === "comfortable") {
-      setDensity(stored)
-    }
-  }, [])
-
-  function applyDensity(value: "comfortable" | "compact") {
-    setDensity(value)
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("ketch:density", value)
-    }
-  }
-
-  const themeOptions: Array<{ value: "system" | "light" | "dark"; label: string; icon: LucideIcon }> = [
-    { value: "system", label: "System", icon: LaptopMinimal },
-    { value: "light", label: "Light", icon: SunMedium },
-    { value: "dark", label: "Dark", icon: MoonStar },
-  ]
-
-  return (
-    <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-card">
-      <CardContent className="space-y-6 p-6 md:p-7">
-        <div>
-          <SectionEyebrow icon={Paintbrush}>Appearance</SectionEyebrow>
-          <h3 className="mt-2 font-display text-2xl leading-tight">Theme</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Ketch follows your system theme by default. Override it here.
-          </p>
-        </div>
-        <div className="grid gap-2 sm:grid-cols-3">
-          {themeOptions.map((option) => {
-            const active = theme === option.value
-            const Icon = option.icon
-            return (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => setTheme(option.value)}
-                className={cn(
-                  "inline-flex h-12 items-center justify-center gap-2 rounded-2xl border text-sm font-medium transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-                  active
-                    ? "border-primary bg-primary text-primary-foreground shadow-card"
-                    : "border-border/60 bg-background/70 text-foreground/80 hover:border-border hover:bg-muted/60"
-                )}
-                aria-pressed={active}
-              >
-                <Icon className="size-4" />
-                {option.label}
-              </button>
-            )
-          })}
-        </div>
-
-        <Separator />
-
-        <div className="flex items-center justify-between gap-4">
-          <div>
-            <h4 className="font-medium">Reduced motion</h4>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Disable non-essential transitions and scroll animations. Ketch
-              already respects your OS preference — toggle to override.
-            </p>
-          </div>
-          <Switch
-            checked={reducedMotion}
-            onCheckedChange={(value) => {
-              setReducedMotion(Boolean(value))
-              if (typeof window !== "undefined") {
-                window.localStorage.setItem(
-                  "ketch:reduced-motion",
-                  value ? "true" : "false"
-                )
-              }
-            }}
-            disabled={!hydrated}
-            aria-label="Reduced motion"
-          />
-        </div>
-
-        <Separator />
-
-        <div>
-          <h4 className="font-medium">Display density</h4>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Comfortable (default) or compact spacing for utility screens.
-          </p>
-          <div className="mt-3 grid gap-2 sm:grid-cols-2">
-            {(
-              [
-                { value: "comfortable", label: "Comfortable" },
-                { value: "compact", label: "Compact" },
-              ] as const
-            ).map((option) => (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() => applyDensity(option.value)}
-                className={cn(
-                  "inline-flex h-11 items-center justify-center rounded-2xl border text-sm font-medium transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-                  density === option.value
-                    ? "border-primary bg-primary text-primary-foreground shadow-card"
-                    : "border-border/60 bg-background/70 text-foreground/80 hover:border-border hover:bg-muted/60"
-                )}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </CardContent>
-    </Card>
   )
 }
 

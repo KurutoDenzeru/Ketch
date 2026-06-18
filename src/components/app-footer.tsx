@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router"
 import { Github, Instagram, Linkedin } from "lucide-react"
 
+import { ThemeToggleTabs } from "@/components/theme-toggle-tabs"
 import { brand } from "@/lib/brand"
 
 const productLinks = [
@@ -26,7 +27,18 @@ const companyLinks = [
 export function AppFooter() {
   return (
     <footer className="mt-auto border-t border-border/60 bg-background/85">
-      <div className="mx-auto w-full max-w-6xl px-4 py-12 md:px-6">
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 md:flex-row md:items-center md:justify-between md:px-6 md:py-6">
+        <p className="text-xs text-muted-foreground">
+          © {new Date().getFullYear()} {brand.name}. Built by {brand.author}.
+        </p>
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+            Theme
+          </span>
+          <ThemeToggleTabs />
+        </div>
+      </div>
+      <div className="mx-auto w-full max-w-6xl border-t border-border/60 px-4 py-12 md:px-6">
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr]">
           <div className="space-y-4">
             <Link
@@ -46,9 +58,6 @@ export function AppFooter() {
             </Link>
             <p className="max-w-sm text-sm leading-7 text-muted-foreground">
               {brand.shortDescription}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              © {new Date().getFullYear()} {brand.name}. Built by {brand.author}.
             </p>
           </div>
 

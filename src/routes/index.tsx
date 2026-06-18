@@ -535,16 +535,21 @@ function SampleTrend() {
     <div className="space-y-5">
       <SectionEyebrow icon={LineChart}>Market timing</SectionEyebrow>
       <div className="rounded-2xl border border-border/60 bg-background/85 p-5">
-        <div className="flex h-32 items-end gap-2">
+        <div className="flex h-32 items-stretch gap-2">
           {sampleTrend.map((point) => {
-            const height = `${Math.round((point.value / max) * 100)}%`
+            const heightPercent = Math.round((point.value / max) * 100)
             return (
-              <div key={point.label} className="flex flex-1 flex-col items-center gap-2">
-                <div
-                  className="w-full rounded-md bg-primary/85"
-                  style={{ height }}
-                  aria-hidden="true"
-                />
+              <div
+                key={point.label}
+                className="flex h-full flex-1 flex-col items-center justify-end gap-2"
+              >
+                <div className="flex h-full w-full items-end">
+                  <div
+                    className="w-full rounded-md bg-primary/85"
+                    style={{ height: `${heightPercent}%`, minHeight: "0.5rem" }}
+                    aria-hidden="true"
+                  />
+                </div>
                 <span className="text-[11px] text-muted-foreground">{point.label}</span>
               </div>
             )
