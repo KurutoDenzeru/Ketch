@@ -19,13 +19,11 @@ export const navLinks = {
   app: [
     { label: "New idea", to: "/app/new", icon: "Sparkles" as const },
     { label: "Library", to: "/app/library", icon: "Bookmark" as const },
-    { label: "Dashboard", to: "/app/dashboard", icon: "BarChart3" as const },
     { label: "Settings", to: "/app/settings", icon: "Settings" as const },
   ],
   appMobile: [
     { label: "New", to: "/app/new" },
     { label: "Library", to: "/app/library" },
-    { label: "Dashboard", to: "/app/dashboard" },
     { label: "Settings", to: "/app/settings" },
   ],
 } as const

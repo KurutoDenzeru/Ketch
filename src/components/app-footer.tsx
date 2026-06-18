@@ -8,7 +8,6 @@ const productLinks = [
   { label: "Sample report", href: "/#what-you-get" },
   { label: "Open the lab", to: "/app/new" as const },
   { label: "Library", to: "/app/library" as const },
-  { label: "Dashboard", to: "/app/dashboard" as const },
   { label: "Settings", to: "/app/settings" as const },
 ]
 

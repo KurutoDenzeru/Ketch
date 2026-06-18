@@ -2,7 +2,6 @@
 
 import { Link, useRouterState } from "@tanstack/react-router"
 import {
-  BarChart3,
   Bookmark,
   Menu,
   Settings,
@@ -24,7 +23,6 @@ import { cn } from "@/lib/utils"
 const appNavIcons = {
   Sparkles,
   Bookmark,
-  BarChart3,
   Settings,
 } as const
 
@@ -234,9 +232,6 @@ function isAppRouteActive(pathname: string, to: string) {
   }
   if (to === "/app/library") {
     return pathname === "/app/library" || pathname.startsWith("/app/library/")
-  }
-  if (to === "/app/dashboard") {
-    return pathname === "/app/dashboard"
   }
   if (to === "/app/settings") {
     return pathname === "/app/settings"

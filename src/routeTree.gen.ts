@@ -16,8 +16,7 @@ import { Route as IdeaSlugRouteImport } from './routes/idea.$slug'
 import { Route as AppSettingsRouteImport } from './routes/app.settings'
 import { Route as AppNewRouteImport } from './routes/app.new'
 import { Route as AppLibraryRouteImport } from './routes/app.library'
-import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
-import { Route as AppLibraryIdRouteImport } from './routes/app.library.$id'
+import { Route as AppLibraryIdRouteImport } from './routes/app.library_.$id'
 
 const SplatRoute = SplatRouteImport.update({
   id: '/$',
@@ -54,22 +53,16 @@ const AppLibraryRoute = AppLibraryRouteImport.update({
   path: '/app/library',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppDashboardRoute = AppDashboardRouteImport.update({
-  id: '/app/dashboard',
-  path: '/app/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AppLibraryIdRoute = AppLibraryIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => AppLibraryRoute,
+  id: '/app/library_/$id',
+  path: '/app/library/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
-  '/app/dashboard': typeof AppDashboardRoute
-  '/app/library': typeof AppLibraryRouteWithChildren
+  '/app/library': typeof AppLibraryRoute
   '/app/new': typeof AppNewRoute
   '/app/settings': typeof AppSettingsRoute
   '/idea/$slug': typeof IdeaSlugRoute
@@ -79,8 +72,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
-  '/app/dashboard': typeof AppDashboardRoute
-  '/app/library': typeof AppLibraryRouteWithChildren
+  '/app/library': typeof AppLibraryRoute
   '/app/new': typeof AppNewRoute
   '/app/settings': typeof AppSettingsRoute
   '/idea/$slug': typeof IdeaSlugRoute
@@ -91,20 +83,18 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
-  '/app/dashboard': typeof AppDashboardRoute
-  '/app/library': typeof AppLibraryRouteWithChildren
+  '/app/library': typeof AppLibraryRoute
   '/app/new': typeof AppNewRoute
   '/app/settings': typeof AppSettingsRoute
   '/idea/$slug': typeof IdeaSlugRoute
   '/share/$slug': typeof ShareSlugRoute
-  '/app/library/$id': typeof AppLibraryIdRoute
+  '/app/library_/$id': typeof AppLibraryIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/$'
-    | '/app/dashboard'
     | '/app/library'
     | '/app/new'
     | '/app/settings'
@@ -115,7 +105,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/$'
-    | '/app/dashboard'
     | '/app/library'
     | '/app/new'
     | '/app/settings'
@@ -126,23 +115,22 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/$'
-    | '/app/dashboard'
     | '/app/library'
     | '/app/new'
     | '/app/settings'
     | '/idea/$slug'
     | '/share/$slug'
-    | '/app/library/$id'
+    | '/app/library_/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
-  AppDashboardRoute: typeof AppDashboardRoute
-  AppLibraryRoute: typeof AppLibraryRouteWithChildren
+  AppLibraryRoute: typeof AppLibraryRoute
   AppNewRoute: typeof AppNewRoute
   AppSettingsRoute: typeof AppSettingsRoute
   ShareSlugRoute: typeof ShareSlugRoute
+  AppLibraryIdRoute: typeof AppLibraryIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -196,43 +184,24 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLibraryRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/app/dashboard': {
-      id: '/app/dashboard'
-      path: '/app/dashboard'
-      fullPath: '/app/dashboard'
-      preLoaderRoute: typeof AppDashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/library/$id': {
-      id: '/app/library/$id'
-      path: '/$id'
+    '/app/library_/$id': {
+      id: '/app/library_/$id'
+      path: '/app/library/$id'
       fullPath: '/app/library/$id'
       preLoaderRoute: typeof AppLibraryIdRouteImport
-      parentRoute: typeof AppLibraryRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
 
-interface AppLibraryRouteChildren {
-  AppLibraryIdRoute: typeof AppLibraryIdRoute
-}
-
-const AppLibraryRouteChildren: AppLibraryRouteChildren = {
-  AppLibraryIdRoute: AppLibraryIdRoute,
-}
-
-const AppLibraryRouteWithChildren = AppLibraryRoute._addFileChildren(
-  AppLibraryRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
-  AppDashboardRoute: AppDashboardRoute,
-  AppLibraryRoute: AppLibraryRouteWithChildren,
+  AppLibraryRoute: AppLibraryRoute,
   AppNewRoute: AppNewRoute,
   AppSettingsRoute: AppSettingsRoute,
   ShareSlugRoute: ShareSlugRoute,
+  AppLibraryIdRoute: AppLibraryIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

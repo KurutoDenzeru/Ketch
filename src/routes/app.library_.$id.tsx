@@ -51,7 +51,7 @@ import { buildSeoHead } from "@/lib/seo"
 
 const generationRateLimitQueryKey = ["generation-rate-limit"] as const
 
-export const Route = createFileRoute("/app/library/$id")({
+export const Route = createFileRoute("/app/library_/$id")({
   head: () =>
     buildSeoHead({
       path: "/app/library",

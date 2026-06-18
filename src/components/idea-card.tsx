@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   BarChart3,
   Bookmark,
@@ -131,6 +131,13 @@ export function IdeaCard({
   defaultTab = "overview",
 }: IdeaCardProps) {
   const [tab, setTab] = useState<IdeaTab>(defaultTab)
+  const [justSaved, setJustSaved] = useState(false)
+
+  useEffect(() => {
+    if (!justSaved) return
+    const timeout = window.setTimeout(() => setJustSaved(false), 1400)
+    return () => window.clearTimeout(timeout)
+  }, [justSaved])
 
   const CategoryIcon = getCategoryIcon(idea.category)
   const validationTone = getValidationTone(idea.validationScore)
@@ -427,14 +434,25 @@ export function IdeaCard({
               type="button"
               onClick={() => {
                 onSave()
+                setJustSaved(true)
                 toast.success(isSaved ? "Saved idea updated" : "Idea saved", {
                   description: "Your startup idea is stored in this browser.",
                 })
               }}
               className="rounded-full"
             >
-              <Bookmark className="size-4" />
-              {isSaved ? "Update saved idea" : "Save idea"}
+              {justSaved ? (
+                <Check className="size-4 text-emerald-500" />
+              ) : (
+                <Bookmark className="size-4" />
+              )}
+              {justSaved
+                ? isSaved
+                  ? "Updated"
+                  : "Saved"
+                : isSaved
+                  ? "Update saved idea"
+                  : "Save idea"}
             </Button>
           </div>
         </footer>

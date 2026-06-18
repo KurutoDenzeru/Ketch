@@ -140,7 +140,7 @@ const faqItems: Array<{ q: string; a: string }> = [
   },
   {
     q: "Is there a rate limit?",
-    a: "To keep generation fair across users, Ketch applies a weekly cap shown in the Idea Lab and the Dashboard. The cap is generous; you'll see remaining credits next to the Generate button.",
+    a: "To keep generation fair across users, Ketch applies a weekly cap shown in the Idea Lab. The cap is generous; you'll see remaining credits next to the Generate button.",
   },
   {
     q: "What happens to my data if I clear my browser?",
@@ -185,7 +185,7 @@ function MarketingLanding() {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
                   <span className="relative inline-flex size-2 rounded-full bg-primary" />
                 </span>
-                New: library + dashboard
+                New: unified library
               </div>
             </RevealOnScroll>
             <RevealOnScroll delay={80}>
@@ -389,18 +389,18 @@ function MarketingLanding() {
         </div>
       </section>
 
-      {/* DASHBOARD PREVIEW */}
+      {/* LIBRARY PREVIEW */}
       <section className="border-y border-border/60 bg-muted/30 py-20 md:py-28">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 md:px-6">
           <SectionHeader
-            eyebrow="Library & dashboard"
+            eyebrow="Library"
             title={
               <>
                 Everything you generated,
                 <span className="italic text-primary"> kept nearby.</span>
               </>
             }
-            description="The Library holds every idea you've saved, every link you've shared, and every shared idea you've opened. The Dashboard gives you a weekly view of how you're using the lab."
+            description="The Library holds every idea you've saved, every link you've shared, and every shared idea you've opened — searchable, sortable, and exportable from any device."
           />
           <RevealOnScroll>
             <Card className="overflow-hidden rounded-3xl border border-border/60 bg-card/80 py-0 shadow-elevated">
