@@ -191,9 +191,9 @@ function MarketingLanding() {
             </div>
           </RevealOnScroll>
           <RevealOnScroll delay={80}>
-            <h1 className="font-display text-5xl leading-[0.95] sm:text-6xl lg:text-7xl">
-              Generate startup ideas
-              <span className="block italic text-primary">worth pursuing.</span>
+            <h1 className="font-display text-6xl leading-[0.95] sm:text-7xl lg:text-8xl">
+              AI Startup
+              <span className="block italic text-primary">Idea Lab</span>
             </h1>
           </RevealOnScroll>
           <RevealOnScroll delay={160}>
@@ -215,22 +215,6 @@ function MarketingLanding() {
                 </a>
               </Button>
             </div>
-          </RevealOnScroll>
-          <RevealOnScroll delay={320}>
-            <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[13px] text-muted-foreground">
-              <li className="inline-flex items-center gap-1.5">
-                <Check className="size-3.5 text-primary" />
-                No signup
-              </li>
-              <li className="inline-flex items-center gap-1.5">
-                <Check className="size-3.5 text-primary" />
-                Local-first
-              </li>
-              <li className="inline-flex items-center gap-1.5">
-                <Check className="size-3.5 text-primary" />
-                Open source on GitHub
-              </li>
-            </ul>
           </RevealOnScroll>
         </div>
       </section>
@@ -513,7 +497,7 @@ function SampleScores() {
   return (
     <div className="space-y-5">
       <SectionEyebrow icon={BarChart3}>Opportunity scoring</SectionEyebrow>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3">
         {sampleRow.map((row) => (
           <div
             key={row.label}
@@ -642,4 +626,3 @@ function SampleShare() {
     </div>
   )
 }
-
