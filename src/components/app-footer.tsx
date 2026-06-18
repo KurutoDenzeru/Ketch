@@ -27,10 +27,14 @@ const companyLinks = [
 export function AppFooter() {
   return (
     <footer className="mt-auto border-t border-border/60 bg-background/85">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 md:flex-row md:items-center md:justify-between md:px-6 md:py-6">
-        <p className="text-xs text-muted-foreground">
-          © {new Date().getFullYear()} {brand.name}. Built by {brand.author}.
-        </p>
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-6 md:flex-row md:items-center md:justify-between md:px-6 md:py-6">
+        <div className="inline-flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="relative flex size-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60" />
+            <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+          </span>
+          All systems operational
+        </div>
         <div className="flex flex-wrap items-center gap-3">
           <span className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
             Theme
@@ -58,6 +62,9 @@ export function AppFooter() {
             </Link>
             <p className="max-w-sm text-sm leading-7 text-muted-foreground">
               {brand.shortDescription}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              © {new Date().getFullYear()} {brand.name} by {brand.author}.
             </p>
           </div>
 
