@@ -1,7 +1,7 @@
-import { DEV_MODE } from "./dev"
 import { mkdir, readFile, writeFile } from "node:fs/promises"
 import { homedir, tmpdir } from "node:os"
 import path from "node:path"
+import { DEV_MODE } from "./dev"
 
 import type {
   GenerationRateLimitStatus,
@@ -55,7 +55,7 @@ type GenerationEvent = {
 }
 
 type RateLimitStore = {
-  events: GenerationEvent[]
+  events: Array<GenerationEvent>
 }
 
 let operationQueue = Promise.resolve()
@@ -71,7 +71,7 @@ function serializeOperation<T>(operation: () => Promise<T>) {
   return nextOperation
 }
 
-function normalizeEvents(events: GenerationEvent[], nowMs: number) {
+function normalizeEvents(events: Array<GenerationEvent>, nowMs: number) {
   return events
     .filter((event) => {
       const timestamp = Date.parse(event.createdAt)
@@ -85,13 +85,13 @@ function normalizeEvents(events: GenerationEvent[], nowMs: number) {
     )
 }
 
-function buildStatus(events: GenerationEvent[]): GenerationRateLimitStatus {
+function buildStatus(events: Array<GenerationEvent>): GenerationRateLimitStatus {
   const used = events.length
   const remaining = Math.max(RATE_LIMIT_MAX_REQUESTS - used, 0)
   const resetsAt =
     used >= RATE_LIMIT_MAX_REQUESTS
       ? new Date(
-          Date.parse(events[0]!.createdAt) + RATE_LIMIT_WINDOW_MS
+          Date.parse(events[0].createdAt) + RATE_LIMIT_WINDOW_MS
         ).toISOString()
       : null
 

@@ -1,122 +1,221 @@
 "use client"
 
 import { Link, useRouterState } from "@tanstack/react-router"
-import { Bookmark, FlaskConical, Share2 } from "lucide-react"
+import {
+  ArrowRight,
+  Bookmark,
+  Compass,
+  HelpCircle,
+  LineChart,
+  Settings,
+  Sparkles,
+} from "lucide-react"
+import type { ReactNode } from "react"
 
+import { Button } from "@/components/ui/button"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { brand, navLinks } from "@/lib/brand"
 import { cn } from "@/lib/utils"
 
-export function AppNavbar() {
+const appNavIcons: Record<string, typeof Sparkles> = {
+  Sparkles,
+  Bookmark,
+  Settings,
+}
+
+const marketingNavIcons: Record<string, typeof Compass> = {
+  Compass,
+  LineChart,
+  HelpCircle,
+}
+
+type AppNavbarProps = {
+  variant: "marketing" | "app"
+}
+
+export function AppNavbar({ variant }: AppNavbarProps) {
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   })
 
-  const navItems = [
-    {
-      to: "/",
-      label: "Idea Lab",
-      icon: FlaskConical,
-      active: pathname === "/",
-    },
-    {
-      to: "/saved",
-      label: "Saved Ideas",
-      icon: Bookmark,
-      active: pathname === "/saved",
-    },
-    {
-      to: "/shared",
-      label: "Shared Idea",
-      icon: Share2,
-      active: pathname === "/shared" || pathname.startsWith("/idea/"),
-    },
-  ] as const
+  if (variant === "marketing") {
+    return <MarketingDock pathname={pathname} />
+  }
 
+  return <AppDock pathname={pathname} />
+}
+
+function Dock({ children }: { children: ReactNode }) {
   return (
-    <>
-      <div className="fixed inset-x-0 top-4 z-40 hidden px-4 md:top-5 md:block md:px-6">
-        <div className="mx-auto flex w-full max-w-7xl justify-center">
-          <div className="flex w-full items-center justify-between rounded-[1.75rem] border border-white/35 bg-background/58 px-4 py-3 shadow-sm backdrop-blur-xl supports-[backdrop-filter]:bg-background/48 md:px-5">
-            <Link
-              to="/"
-              className="inline-flex items-center gap-3 px-2 py-1.5 transition-colors hover:bg-white/10"
-            >
-              <span className="inline-flex size-10 items-center justify-center overflow-hidden ">
-                <img
-                  src="/Sparkle.webp"
-                  alt="Ketch"
-                  width={40}
-                  height={40}
-                  className="size-full object-cover"
-                />
-              </span>
-              <span className="font-display text-2xl leading-none">Ketch</span>
-            </Link>
-
-            <div className="flex items-center gap-2">
-              {navItems.map(({ to, label, active }) => (
-                <Link
-                  key={to}
-                  to={to}
-                  className={cn(
-                    "inline-flex h-11 items-center justify-center rounded-lg border border-transparent px-4 text-sm font-medium transition-all",
-                    active
-                      ? "bg-primary text-primary-foreground"
-                      : "text-foreground/80 hover:bg-muted/60 hover:text-foreground"
-                  )}
-                >
-                  {label}
-                </Link>
-              ))}
-            </div>
-          </div>
+    <TooltipProvider delayDuration={200}>
+      <div
+        className="pointer-events-none fixed inset-x-0 z-50
+                   md:bottom-auto md:top-3 top-auto bottom-3
+                   flex justify-center px-3"
+      >
+        <div
+          className="pointer-events-auto flex max-w-fit items-center gap-1
+                     rounded-full border border-border/60
+                     bg-background/70 px-1.5 py-1.5 shadow-xs
+                     ring-1 ring-foreground/5 backdrop-blur-xl"
+        >
+          {children}
         </div>
       </div>
+    </TooltipProvider>
+  )
+}
 
-      <div className="fixed inset-x-0 bottom-4 z-40 px-4 md:hidden">
-        <div className="mx-auto flex max-w-sm justify-center">
-          <div className="grid w-full grid-cols-4 items-center rounded-[1.6rem] border border-white/35 bg-background/74 px-2 py-2 shadow-sm backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
-            <Link
-              to="/"
-              aria-label="Ketch home"
-              className="inline-flex min-h-14 items-center justify-center px-2 py-2 text-foreground/80 transition-colors hover:text-foreground"
-            >
-              <span className="inline-flex size-10 items-center justify-center overflow-hidden">
-                <img
-                  src="/Sparkle.webp"
-                  alt="Ketch"
-                  width={40}
-                  height={40}
-                  className="size-full object-cover"
-                />
-              </span>
-            </Link>
+function DockSeparator() {
+  return (
+    <span
+      aria-hidden="true"
+      className="mx-0.5 hidden h-5 w-px bg-border/70 md:inline-block"
+    />
+  )
+}
 
-            {navItems.map(({ to, label, icon: Icon, active }) => (
+function BrandLockup({ to }: { to: "/" | "/app/new" }) {
+  return (
+    <Link
+      to={to}
+      aria-label={`${brand.name} home`}
+      className="inline-flex h-9 items-center gap-2 rounded-full pl-1 pr-2.5
+                 transition-transform active:scale-95
+                 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+    >
+      <span className="inline-flex size-7 items-center justify-center overflow-hidden rounded-full">
+        <img
+          src="/Sparkle.webp"
+          alt=""
+          width={28}
+          height={28}
+          className="size-full object-cover"
+        />
+      </span>
+      <span className="font-display text-base font-semibold leading-none tracking-tight">
+        {brand.name}
+      </span>
+    </Link>
+  )
+}
+
+type NavItemTooltipProps = {
+  label: string
+  children: ReactNode
+}
+
+function NavItemTooltip({ label, children }: NavItemTooltipProps) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipContent sideOffset={8}>
+        {label}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
+function MarketingDock({ pathname: _pathname }: { pathname: string }) {
+  return (
+    <Dock>
+      <NavItemTooltip label={`${brand.name} home`}>
+        <BrandLockup to="/" />
+      </NavItemTooltip>
+
+      <DockSeparator />
+
+      <nav
+        aria-label="Primary"
+        className="flex items-center gap-0.5"
+      >
+        {navLinks.marketing.map((link) => {
+          const Icon = marketingNavIcons[link.icon] ?? Compass
+          return (
+            <NavItemTooltip key={link.href} label={link.label}>
+              <a
+                href={link.href}
+                className="inline-flex h-9 items-center gap-2 rounded-full px-3 text-sm font-medium
+                           text-foreground/75 transition-colors
+                           hover:bg-muted/60 hover:text-foreground
+                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              >
+                <Icon className="size-4" aria-hidden="true" />
+                <span className="hidden md:inline">{link.label}</span>
+              </a>
+            </NavItemTooltip>
+          )
+        })}
+      </nav>
+
+      <DockSeparator />
+
+      <NavItemTooltip label="Open the app">
+        <Button asChild size="sm" className="rounded-full">
+          <Link to="/app/new">
+            <span className="hidden md:inline">Open the app</span>
+            <ArrowRight className="size-4 md:ml-1" />
+          </Link>
+        </Button>
+      </NavItemTooltip>
+    </Dock>
+  )
+}
+
+function AppDock({ pathname }: { pathname: string }) {
+  return (
+    <Dock>
+      <NavItemTooltip label={`${brand.name} home`}>
+        <BrandLockup to="/" />
+      </NavItemTooltip>
+
+      <DockSeparator />
+
+      <nav aria-label="App" className="flex items-center gap-0.5">
+        {navLinks.app.map((item) => {
+          const Icon = appNavIcons[item.icon] ?? Sparkles
+          const isActive = isAppRouteActive(pathname, item.to)
+          return (
+            <NavItemTooltip key={item.to} label={item.label}>
               <Link
-                key={to}
-                to={to}
-                title={label}
-                aria-label={label}
+                to={item.to}
+                aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "inline-flex min-h-14 flex-col items-center justify-center gap-1 px-2 py-2 text-[11px] font-medium transition-all",
-                  active
-                    ? "bg-white/10 text-foreground rounded-md"
-                    : "text-foreground/72 hover:bg-white/6 hover:text-foreground rounded-md"
+                  "relative inline-flex h-9 items-center gap-2 rounded-full px-3 text-sm font-medium transition-colors",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground/70 hover:bg-muted/60 hover:text-foreground"
                 )}
               >
                 <Icon className="size-4" aria-hidden="true" />
-                <span className="leading-none">
-                  {label === "Saved Ideas"
-                    ? "Saved"
-                    : label === "Shared Idea"
-                      ? "Shared"
-                      : "Idea Lab"}
-                </span>
+                <span className="hidden md:inline">{item.label}</span>
               </Link>
-            ))}
-          </div>
-        </div>
-      </div>
-    </>
+            </NavItemTooltip>
+          )
+        })}
+      </nav>
+    </Dock>
   )
+}
+
+function isAppRouteActive(pathname: string, to: string) {
+  if (to === "/app") {
+    return pathname === "/app" || pathname === "/app/"
+  }
+  if (to === "/app/new") {
+    return pathname === "/app/new" || pathname === "/app"
+  }
+  if (to === "/app/library") {
+    return pathname === "/app/library" || pathname.startsWith("/app/library/")
+  }
+  if (to === "/app/settings") {
+    return pathname === "/app/settings"
+  }
+  return pathname.startsWith(to)
 }

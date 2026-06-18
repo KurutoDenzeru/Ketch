@@ -1,17 +1,19 @@
 import LZString from "lz-string"
 
+import type {IdeaBriefInput, IdeaLabDraft, SavedIdea, ShareableIdeaPayload, StartupIdea} from "@/types/idea";
 import {
-  ideaCategories,
-  type IdeaBriefInput,
-  type IdeaLabDraft,
-  type SavedIdea,
-  type ShareableIdeaPayload,
-  type StartupIdea,
+  
+  
+  
+  
+  
+  ideaCategories
 } from "@/types/idea"
 
 const STORAGE_KEY = "ai-startup-idea-lab:saved-ideas"
 const DRAFT_STORAGE_KEY = "ai-startup-idea-lab:current-draft"
-const SHARED_IDEA_STORAGE_KEY = "ai-startup-idea-lab:shared-idea"
+const SHARED_IDEA_STORAGE_KEY = "ketch:recent-shared-ideas"
+const RECENT_MAX = 25
 
 function isBrowser() {
   return typeof window !== "undefined"
@@ -51,7 +53,7 @@ function isString(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0
 }
 
-function isStringArray(value: unknown): value is string[] {
+function isStringArray(value: unknown): value is Array<string> {
   return (
     Array.isArray(value) &&
     value.length > 0 &&
@@ -208,13 +210,13 @@ function isIdeaLabDraft(value: unknown): value is IdeaLabDraft {
 
 export function getSavedIdeas() {
   if (!isBrowser()) {
-    return [] as SavedIdea[]
+    return [] as Array<SavedIdea>
   }
 
   const raw = window.localStorage.getItem(STORAGE_KEY)
 
   if (!raw) {
-    return [] as SavedIdea[]
+    return [] as Array<SavedIdea>
   }
 
   try {
@@ -222,11 +224,11 @@ export function getSavedIdeas() {
 
     return Array.isArray(parsed) ? parsed.filter(isSavedIdea) : []
   } catch {
-    return [] as SavedIdea[]
+    return [] as Array<SavedIdea>
   }
 }
 
-function writeSavedIdeas(ideas: SavedIdea[]) {
+function writeSavedIdeas(ideas: Array<SavedIdea>) {
   if (!isBrowser()) {
     return
   }
@@ -366,24 +368,27 @@ function isSharedIdeaState(value: unknown): value is SharedIdeaState {
   )
 }
 
-export function getRecentSharedIdea() {
+export function getRecentSharedIdeas(): Array<SharedIdeaState> {
   if (!isBrowser()) {
-    return null
+    return []
   }
-
   const raw = window.localStorage.getItem(SHARED_IDEA_STORAGE_KEY)
-
   if (!raw) {
-    return null
+    return []
   }
-
   try {
     const parsed = JSON.parse(raw)
-
-    return isSharedIdeaState(parsed) ? parsed : null
+    return Array.isArray(parsed)
+      ? parsed.filter(isSharedIdeaState)
+      : []
   } catch {
-    return null
+    return []
   }
+}
+
+export function getRecentSharedIdea() {
+  const all = getRecentSharedIdeas()
+  return all[0] ?? null
 }
 
 export function saveRecentSharedIdea(
@@ -393,23 +398,29 @@ export function saveRecentSharedIdea(
   if (!isBrowser()) {
     return null
   }
-
+  const all = getRecentSharedIdeas().filter((item) => item.shareId !== shareId)
   const state: SharedIdeaState = {
     shareId,
     payload,
     viewedAt: new Date().toISOString(),
   }
-
-  window.localStorage.setItem(SHARED_IDEA_STORAGE_KEY, JSON.stringify(state))
-
+  const next = [state, ...all].slice(0, RECENT_MAX)
+  window.localStorage.setItem(SHARED_IDEA_STORAGE_KEY, JSON.stringify(next))
   return state
 }
 
-export function clearRecentSharedIdea() {
+export function removeRecentSharedIdea(shareId: string) {
   if (!isBrowser()) {
     return
   }
+  const next = getRecentSharedIdeas().filter((item) => item.shareId !== shareId)
+  window.localStorage.setItem(SHARED_IDEA_STORAGE_KEY, JSON.stringify(next))
+}
 
+export function clearRecentSharedIdeas() {
+  if (!isBrowser()) {
+    return
+  }
   window.localStorage.removeItem(SHARED_IDEA_STORAGE_KEY)
 }
 
@@ -420,8 +431,10 @@ export function encodeIdeaForUrl(payload: ShareableIdeaPayload) {
 export function decodeIdeaFromUrl(data: string) {
   try {
     const decompressed = LZString.decompressFromEncodedURIComponent(data)
-    const rawPayload = decompressed ?? decodeURIComponent(data)
-    const parsed = JSON.parse(rawPayload)
+    if (!decompressed) {
+      return null
+    }
+    const parsed = JSON.parse(decompressed)
 
     if (!isShareableIdeaPayload(parsed)) {
       return null
@@ -440,7 +453,7 @@ export function buildIdeaSharePath(payload: ShareableIdeaPayload) {
 }
 
 export function buildSharedIdeaPath(shareId: string) {
-  return `/idea/${shareId}`
+  return `/share/${shareId}`
 }
 
 export function buildSharedIdeaUrl(shareId: string) {
@@ -464,9 +477,9 @@ export function buildIdeaShareUrl(payload: ShareableIdeaPayload) {
 }
 
 function appendSection(
-  lines: string[],
+  lines: Array<string>,
   title: string,
-  body: string | string[]
+  body: string | Array<string>
 ) {
   lines.push("", title)
 
@@ -569,7 +582,7 @@ export function formatIdeaForClipboard(payload: ShareableIdeaPayload) {
 }
 
 function escapeMarkdown(value: string) {
-  return value.replace(/[\\`*_{}\[\]()#+\-.!|>]/g, "\\$&")
+  return value.replace(/[\\`*_{}[\]()#+\-.!|>]/g, "\\$&")
 }
 
 export function formatIdeaAsMarkdown(payload: ShareableIdeaPayload) {
