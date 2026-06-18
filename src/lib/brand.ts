@@ -12,9 +12,9 @@ export const brand = {
 
 export const navLinks = {
   marketing: [
-    { label: "How it works", href: "#how-it-works" },
-    { label: "What you get", href: "#what-you-get" },
-    { label: "FAQ", href: "#faq" },
+    { label: "How it works", href: "#how-it-works", icon: "Compass" as const },
+    { label: "What you get", href: "#what-you-get", icon: "LineChart" as const },
+    { label: "FAQ", href: "#faq", icon: "HelpCircle" as const },
   ],
   app: [
     { label: "New idea", to: "/app/new", icon: "Sparkles" as const },

@@ -4,7 +4,6 @@ import {
   BarChart3,
   Bookmark,
   Bot,
-  CalendarDays,
   Check,
   ChevronRight,
   Cpu,
@@ -181,63 +180,57 @@ function MarketingLanding() {
     <main className="flex flex-col">
       {/* HERO */}
       <section className="relative overflow-hidden">
-        <div className="mx-auto grid w-full max-w-6xl gap-12 px-4 pb-20 pt-16 md:px-6 md:pt-24 lg:grid-cols-[1.05fr_0.95fr] lg:items-center lg:pb-28 lg:pt-28">
-          <div className="space-y-7 text-balance">
-            <RevealOnScroll>
-              <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1.5 text-[12px] font-medium text-foreground/80 shadow-xs backdrop-blur">
-                <span className="relative flex size-2">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
-                  <span className="relative inline-flex size-2 rounded-full bg-primary" />
-                </span>
-                New: unified library
-              </div>
-            </RevealOnScroll>
-            <RevealOnScroll delay={80}>
-              <h1 className="font-display text-5xl leading-[0.95] sm:text-6xl lg:text-7xl">
-                Generate startup ideas
-                <span className="block italic text-primary">worth pursuing.</span>
-              </h1>
-            </RevealOnScroll>
-            <RevealOnScroll delay={160}>
-              <p className="max-w-xl text-base leading-7 text-muted-foreground text-pretty sm:text-lg">
-                {brand.shortDescription}
-              </p>
-            </RevealOnScroll>
-            <RevealOnScroll delay={240}>
-              <div className="flex flex-wrap items-center gap-3">
-                <Button asChild size="lg" className="rounded-full px-6">
-                  <Link to="/app/new">
-                    Open the lab
-                    <ArrowRight className="size-4" />
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" size="lg" className="rounded-full px-6">
-                  <a href="#what-you-get">
-                    See a sample report
-                  </a>
-                </Button>
-              </div>
-            </RevealOnScroll>
-            <RevealOnScroll delay={320}>
-              <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] text-muted-foreground">
-                <li className="inline-flex items-center gap-1.5">
-                  <Check className="size-3.5 text-primary" />
-                  No signup
-                </li>
-                <li className="inline-flex items-center gap-1.5">
-                  <Check className="size-3.5 text-primary" />
-                  Local-first
-                </li>
-                <li className="inline-flex items-center gap-1.5">
-                  <Check className="size-3.5 text-primary" />
-                  Free while in beta
-                </li>
-              </ul>
-            </RevealOnScroll>
-          </div>
-
-          <RevealOnScroll delay={200} className="relative">
-            <HeroMockup />
+        <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-8 px-4 pb-20 pt-8 text-center md:px-6 md:pt-12 lg:pb-28">
+          <RevealOnScroll>
+            <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1.5 text-[12px] font-medium text-foreground/80 shadow-xs backdrop-blur">
+              <span className="relative flex size-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
+                <span className="relative inline-flex size-2 rounded-full bg-primary" />
+              </span>
+              New: unified library
+            </div>
+          </RevealOnScroll>
+          <RevealOnScroll delay={80}>
+            <h1 className="font-display text-5xl leading-[0.95] sm:text-6xl lg:text-7xl">
+              Generate startup ideas
+              <span className="block italic text-primary">worth pursuing.</span>
+            </h1>
+          </RevealOnScroll>
+          <RevealOnScroll delay={160}>
+            <p className="max-w-xl text-base leading-7 text-muted-foreground text-pretty sm:text-lg">
+              {brand.shortDescription}
+            </p>
+          </RevealOnScroll>
+          <RevealOnScroll delay={240}>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Button asChild size="lg" className="rounded-full px-6">
+                <Link to="/app/new">
+                  Open the lab
+                  <ArrowRight className="size-4" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg" className="rounded-full px-6">
+                <a href="#what-you-get">
+                  See a sample report
+                </a>
+              </Button>
+            </div>
+          </RevealOnScroll>
+          <RevealOnScroll delay={320}>
+            <ul className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-[13px] text-muted-foreground">
+              <li className="inline-flex items-center gap-1.5">
+                <Check className="size-3.5 text-primary" />
+                No signup
+              </li>
+              <li className="inline-flex items-center gap-1.5">
+                <Check className="size-3.5 text-primary" />
+                Local-first
+              </li>
+              <li className="inline-flex items-center gap-1.5">
+                <Check className="size-3.5 text-primary" />
+                Open source on GitHub
+              </li>
+            </ul>
           </RevealOnScroll>
         </div>
       </section>
@@ -650,68 +643,3 @@ function SampleShare() {
   )
 }
 
-function HeroMockup() {
-  return (
-    <div className="relative">
-      <Card className="overflow-hidden rounded-[28px] border border-border/60 bg-card/90 py-0 shadow-xs">
-        <CardContent className="space-y-5 p-6 sm:p-7">
-          <div className="flex items-center justify-between">
-            <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/80 px-3 py-1.5 text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
-              <Sparkles className="size-3.5 text-primary" />
-              AI Tool · Agent workflow
-            </div>
-            <span className="font-mono text-[11px] text-muted-foreground">live</span>
-          </div>
-          <div>
-            <h3 className="font-display text-3xl leading-tight">
-              Mosaic Health
-            </h3>
-            <p className="mt-2 text-sm leading-6 text-muted-foreground">
-              Brief-on-call AI co-pilot for independent specialty clinics. One
-              intake, one structured memo, every visit.
-            </p>
-          </div>
-          <div className="grid grid-cols-4 gap-2">
-            {sampleRow.map((row) => (
-              <div
-                key={row.label}
-                className="rounded-2xl border border-border/60 bg-background/85 p-3 text-center"
-              >
-                <p className="text-[10px] font-semibold tracking-[0.16em] text-muted-foreground uppercase">
-                  {row.label}
-                </p>
-                <p className="mt-1 font-display text-xl leading-none tabular-nums">
-                  {row.value}
-                </p>
-              </div>
-            ))}
-          </div>
-          <div className="rounded-2xl border border-border/60 bg-background/85 p-4">
-            <p className="text-[11px] font-semibold tracking-[0.22em] text-muted-foreground uppercase">
-              Why now
-            </p>
-            <p className="mt-2 text-sm leading-6 text-foreground/85">
-              Specialty clinics are short on intake staff, long on forms. The
-              ambient-AI wave is opening a window for tooling that doesn't
-              require a year-long integration.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {["Agent workflow", "Fast MVP", "B2B"].map((tag) => (
-              <span
-                key={tag}
-                className="inline-flex items-center rounded-full border border-border/60 bg-background/85 px-3 py-1 text-[12px] font-medium text-foreground/80"
-              >
-                {tag}
-              </span>
-            ))}
-            <span className="ml-auto inline-flex items-center gap-1.5 text-[12px] text-muted-foreground">
-              <CalendarDays className="size-3.5" />
-              8 days ago
-            </span>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  )
-}
