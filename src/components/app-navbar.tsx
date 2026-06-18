@@ -13,6 +13,12 @@ import {
 import type { ReactNode } from "react"
 
 import { Button } from "@/components/ui/button"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { brand, navLinks } from "@/lib/brand"
 import { cn } from "@/lib/utils"
 
@@ -44,26 +50,24 @@ export function AppNavbar({ variant }: AppNavbarProps) {
   return <AppDock pathname={pathname} />
 }
 
-type DockProps = {
-  children: ReactNode
-}
-
-function Dock({ children }: DockProps) {
+function Dock({ children }: { children: ReactNode }) {
   return (
-    <div
-      className="pointer-events-none fixed inset-x-0 z-50
-                 md:bottom-auto md:top-3 top-auto bottom-3
-                 flex justify-center px-3"
-    >
+    <TooltipProvider delayDuration={200}>
       <div
-        className="pointer-events-auto flex max-w-fit items-center gap-1
-                   rounded-full border border-border/60
-                   bg-background/70 px-2 py-1.5 shadow-xs
-                   ring-1 ring-foreground/5 backdrop-blur-xl"
+        className="pointer-events-none fixed inset-x-0 z-50
+                   md:bottom-auto md:top-3 top-auto bottom-3
+                   flex justify-center px-3"
       >
-        {children}
+        <div
+          className="pointer-events-auto flex max-w-fit items-center gap-1
+                     rounded-full border border-border/60
+                     bg-background/70 px-1.5 py-1.5 shadow-xs
+                     ring-1 ring-foreground/5 backdrop-blur-xl"
+        >
+          {children}
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
   )
 }
 
@@ -76,24 +80,53 @@ function DockSeparator() {
   )
 }
 
-function MarketingDock({ pathname: _pathname }: { pathname: string }) {
+function BrandLockup({ to }: { to: "/" | "/app/new" }) {
   return (
-    <Dock>
-      <Link
-        to="/"
-        aria-label={`${brand.name} home`}
-        className="inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full
-                   transition-transform active:scale-95
-                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-      >
+    <Link
+      to={to}
+      aria-label={`${brand.name} home`}
+      className="inline-flex h-9 items-center gap-2 rounded-full pl-1 pr-2.5
+                 transition-transform active:scale-95
+                 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+    >
+      <span className="inline-flex size-7 items-center justify-center overflow-hidden rounded-full">
         <img
           src="/Sparkle.webp"
           alt=""
-          width={36}
-          height={36}
+          width={28}
+          height={28}
           className="size-full object-cover"
         />
-      </Link>
+      </span>
+      <span className="font-display text-base font-semibold leading-none tracking-tight">
+        {brand.name}
+      </span>
+    </Link>
+  )
+}
+
+type NavItemTooltipProps = {
+  label: string
+  children: ReactNode
+}
+
+function NavItemTooltip({ label, children }: NavItemTooltipProps) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipContent sideOffset={8}>
+        {label}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
+
+function MarketingDock({ pathname: _pathname }: { pathname: string }) {
+  return (
+    <Dock>
+      <NavItemTooltip label={`${brand.name} home`}>
+        <BrandLockup to="/" />
+      </NavItemTooltip>
 
       <DockSeparator />
 
@@ -104,34 +137,32 @@ function MarketingDock({ pathname: _pathname }: { pathname: string }) {
         {navLinks.marketing.map((link) => {
           const Icon = marketingNavIcons[link.icon] ?? Compass
           return (
-            <a
-              key={link.href}
-              href={link.href}
-              aria-label={link.label}
-              className="inline-flex h-9 items-center gap-2 rounded-full px-3 text-sm font-medium
-                         text-foreground/75 transition-colors
-                         hover:bg-muted/60 hover:text-foreground
-                         focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-            >
-              <Icon className="size-4" aria-hidden="true" />
-              <span className="hidden md:inline">{link.label}</span>
-            </a>
+            <NavItemTooltip key={link.href} label={link.label}>
+              <a
+                href={link.href}
+                className="inline-flex h-9 items-center gap-2 rounded-full px-3 text-sm font-medium
+                           text-foreground/75 transition-colors
+                           hover:bg-muted/60 hover:text-foreground
+                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              >
+                <Icon className="size-4" aria-hidden="true" />
+                <span className="hidden md:inline">{link.label}</span>
+              </a>
+            </NavItemTooltip>
           )
         })}
       </nav>
 
       <DockSeparator />
 
-      <Button
-        asChild
-        size="sm"
-        className="rounded-full"
-      >
-        <Link to="/app/new">
-          <span className="hidden md:inline">Open the app</span>
-          <ArrowRight className="size-4 md:ml-1" />
-        </Link>
-      </Button>
+      <NavItemTooltip label="Open the app">
+        <Button asChild size="sm" className="rounded-full">
+          <Link to="/app/new">
+            <span className="hidden md:inline">Open the app</span>
+            <ArrowRight className="size-4 md:ml-1" />
+          </Link>
+        </Button>
+      </NavItemTooltip>
     </Dock>
   )
 }
@@ -139,21 +170,9 @@ function MarketingDock({ pathname: _pathname }: { pathname: string }) {
 function AppDock({ pathname }: { pathname: string }) {
   return (
     <Dock>
-      <Link
-        to="/app/new"
-        aria-label={`${brand.name} — New idea`}
-        className="inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full
-                   transition-transform active:scale-95
-                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-      >
-        <img
-          src="/Sparkle.webp"
-          alt=""
-          width={36}
-          height={36}
-          className="size-full object-cover"
-        />
-      </Link>
+      <NavItemTooltip label={`${brand.name} home`}>
+        <BrandLockup to="/app/new" />
+      </NavItemTooltip>
 
       <DockSeparator />
 
@@ -162,50 +181,50 @@ function AppDock({ pathname }: { pathname: string }) {
           const Icon = appNavIcons[item.icon] ?? Sparkles
           const isActive = isAppRouteActive(pathname, item.to)
           return (
-            <Link
-              key={item.to}
-              to={item.to}
-              aria-current={isActive ? "page" : undefined}
-              aria-label={item.label}
-              className={cn(
-                "group relative inline-flex h-9 items-center gap-2 rounded-full px-3 text-sm font-medium transition-colors",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-                isActive
-                  ? "bg-primary text-primary-foreground"
-                  : "text-foreground/70 hover:bg-muted/60 hover:text-foreground"
-              )}
-            >
-              <Icon className="size-4" aria-hidden="true" />
-              <span className="hidden md:inline">{item.label}</span>
-            </Link>
+            <NavItemTooltip key={item.to} label={item.label}>
+              <Link
+                to={item.to}
+                aria-current={isActive ? "page" : undefined}
+                className={cn(
+                  "relative inline-flex h-9 items-center gap-2 rounded-full px-3 text-sm font-medium transition-colors",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground/70 hover:bg-muted/60 hover:text-foreground"
+                )}
+              >
+                <Icon className="size-4" aria-hidden="true" />
+                <span className="hidden md:inline">{item.label}</span>
+              </Link>
+            </NavItemTooltip>
           )
         })}
       </nav>
 
       <DockSeparator />
 
-      <Button
-        asChild
-        variant="outline"
-        size="sm"
-        className="rounded-full"
-      >
-        <Link to="/">
-          <span className="hidden md:inline">Back to site</span>
-          <ArrowRight className="size-4 md:ml-1" />
-        </Link>
-      </Button>
-      <Button
-        asChild
-        size="sm"
-        className="rounded-full"
-      >
-        <Link to="/app/new">
-          <Sparkles className="size-4 md:mr-1" />
-          <span className="hidden md:inline">New idea</span>
-          <span className="md:hidden">New</span>
-        </Link>
-      </Button>
+      <NavItemTooltip label="Back to the marketing site">
+        <Button
+          asChild
+          variant="outline"
+          size="sm"
+          className="hidden rounded-full md:inline-flex"
+        >
+          <Link to="/">
+            Back to site
+            <ArrowRight className="size-4 ml-1" />
+          </Link>
+        </Button>
+      </NavItemTooltip>
+      <NavItemTooltip label="Generate a new idea">
+        <Button asChild size="sm" className="rounded-full">
+          <Link to="/app/new">
+            <Sparkles className="size-4 md:mr-1" />
+            <span className="hidden md:inline">New idea</span>
+            <span className="md:hidden">New</span>
+          </Link>
+        </Button>
+      </NavItemTooltip>
     </Dock>
   )
 }

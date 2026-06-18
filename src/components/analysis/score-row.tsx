@@ -48,7 +48,7 @@ type ScoreRowProps = {
 
 export function ScoreRow({ metrics }: ScoreRowProps) {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {metrics.map((metric) => {
         const Icon = getMetricIcon(metric.label)
         const score = temperScore(metric.score, 1.2)
