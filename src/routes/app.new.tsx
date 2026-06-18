@@ -317,8 +317,8 @@ function NewIdeaPage() {
         </p>
       </header>
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
-        <aside className="lg:sticky lg:top-24 lg:self-start">
+      <div className="flex flex-col gap-8">
+        <aside>
           <IdeaBriefForm
             brief={brief}
             onChange={(patch) =>

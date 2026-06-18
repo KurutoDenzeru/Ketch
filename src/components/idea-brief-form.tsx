@@ -115,7 +115,7 @@ export function IdeaBriefForm({
 
         <Separator />
 
-        <div className="grid gap-5 md:grid-cols-2">
+        <div className="space-y-5">
           <div className="space-y-2">
             <Label htmlFor="concept" className="inline-flex items-center gap-1.5">
               <Lightbulb className="size-4 text-primary" />
