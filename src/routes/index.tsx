@@ -151,7 +151,7 @@ const faqItems: Array<{ q: string; a: string }> = [
 ]
 
 const trustStrip: Array<{ label: string; icon: LucideIcon }> = [
-  { label: "New: unified library", icon: Bookmark },
+  { label: "Unified library", icon: Bookmark },
   { label: "Open source", icon: Package },
   { label: "No account needed", icon: ShieldCheck },
 ]
