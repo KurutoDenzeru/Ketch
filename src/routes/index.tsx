@@ -116,7 +116,7 @@ const whatYouGet: Array<{
     body: "Every idea you generate can be shared as a single URL — no account, no signup, no Paywall. Paste it in a DM.",
     icon: Globe,
     bullets: [
-      "Slug-based public URL",
+      "Self-contained URL — works on any device, no server needed",
       "Recent list of shared links",
       "Copy as text, markdown, or AI prompt",
     ],
@@ -601,7 +601,7 @@ function SampleShare() {
             <p className="text-[11px] font-semibold tracking-[0.22em] text-muted-foreground uppercase">
               ketch.krtclcdy.workers.dev
             </p>
-            <p className="mt-1 font-medium">/share/mosaic-health-healthcare-a1b2</p>
+            <p className="mt-1 font-medium">/idea/mosaic-healthcare?data=eyJhbGc…</p>
           </div>
           <Button size="sm" className="rounded-full" type="button">
             <Bot className="size-3.5" />
