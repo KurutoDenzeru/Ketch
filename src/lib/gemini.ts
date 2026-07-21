@@ -590,6 +590,7 @@ Keep the tone practical, specific, and portfolio-worthy.`
 export const generatePitch = createServerFn({ method: "POST" })
   .validator((input: { idea: StartupIdea }) => input)
   .handler(async ({ data }) => {
+    await consumeGenerationRateLimitCredit("generatePitch")
     const prompt = `Expand this startup concept into a concise investor-style mini pitch.
 
 Startup JSON:
@@ -688,6 +689,7 @@ Requirements:
 export const generateMarketValidation = createServerFn({ method: "POST" })
   .validator((input: { idea: StartupIdea }) => input)
   .handler(async ({ data }) => {
+    await consumeGenerationRateLimitCredit("generateMarketValidation")
     const prompt = `Analyze this startup concept like an early-stage market validator.
 
 Startup JSON:

@@ -46,7 +46,9 @@ import {
   exportIdeasAsJson,
   exportIdeasAsMarkdown,
   exportIdeasAsText,
+  getLastExportTimestamp,
   parseImport,
+  recordExportTimestamp,
 } from "@/lib/data-export"
 import { buildSeoHead } from "@/lib/seo"
 import { cn } from "@/lib/utils"
@@ -360,10 +362,12 @@ function ContributionGraph() {
 function DataSection() {
   const [hydrated, setHydrated] = useState(false)
   const [saved, setSaved] = useState<Array<SavedIdea>>([])
+  const [lastExportAt, setLastExportAt] = useState<string | null>(null)
 
   useEffect(() => {
     setSaved(getSavedIdeas())
     setHydrated(true)
+    setLastExportAt(getLastExportTimestamp())
   }, [])
 
   const storageBytes = useMemo(() => estimateStorageBytes(saved), [saved])
@@ -390,6 +394,8 @@ function DataSection() {
     anchor.click()
     URL.revokeObjectURL(url)
     toast.success("Exported", { description: `${saved.length} ideas downloaded.` })
+    recordExportTimestamp()
+    setLastExportAt(new Date().toISOString())
   }
 
   function handleImport(event: React.ChangeEvent<HTMLInputElement>) {
@@ -448,7 +454,7 @@ function DataSection() {
         <div className="grid gap-3 sm:grid-cols-3">
           <Stat label="Saved ideas" value={saved.length} />
           <Stat label="Local size" value={`${kb} KB`} />
-          <Stat label="Last export" value="—" />
+          <Stat label="Last export" value={hydrated && lastExportAt ? new Date(lastExportAt).toLocaleDateString() : "—"} />
         </div>
 
         <Separator />

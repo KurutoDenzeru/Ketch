@@ -17,8 +17,6 @@ export const ideaCategories = [
 
 export type IdeaCategory = (typeof ideaCategories)[number]
 
-export type IdeaFacet = "tagline" | "twist"
-
 export const featurePreferences = [
   "Fast MVP",
   "Recurring Revenue",

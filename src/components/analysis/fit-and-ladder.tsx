@@ -54,7 +54,7 @@ export function FitAndLadder({ idea }: FitAndLadderProps) {
       idea.validationScore * 0.45 +
         temperedFit.product * 0.2 +
         temperedFit.audience * 0.2 +
-        0 -
+        temperedFit.community * 0.2 -
         1.5
     ),
     1,

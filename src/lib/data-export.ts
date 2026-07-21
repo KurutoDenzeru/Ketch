@@ -113,3 +113,15 @@ export function estimateStorageBytes(ideas: ReturnType<typeof getSavedIdeas>): n
     return 0
   }
 }
+
+const EXPORT_TIMESTAMP_KEY = "ketch:last-export-at"
+
+export function getLastExportTimestamp(): string | null {
+  if (typeof window === "undefined") return null
+  return localStorage.getItem(EXPORT_TIMESTAMP_KEY)
+}
+
+export function recordExportTimestamp(): void {
+  if (typeof window === "undefined") return
+  localStorage.setItem(EXPORT_TIMESTAMP_KEY, new Date().toISOString())
+}
