@@ -177,7 +177,7 @@ function MarketingLanding() {
   return (
     <main className="flex flex-col">
       {/* HERO */}
-      <section className="relative flex min-h-screen flex-col overflow-hidden">
+      <section className="relative flex h-screen flex-col overflow-hidden">
         <div className="mx-auto flex flex-1 w-full max-w-3xl flex-col items-center justify-center gap-8 px-4 py-8 text-center md:px-6">
           <RevealOnScroll>
             <div className="flex flex-wrap items-center justify-center gap-2">
