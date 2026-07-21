@@ -151,7 +151,7 @@ const faqItems: Array<{ q: string; a: string }> = [
 ]
 
 const trustStrip: Array<{ label: string; icon: LucideIcon }> = [
-  { label: "Powered by Gemini", icon: Cpu },
+  { label: "New: unified library", icon: Bookmark },
   { label: "Open source", icon: Package },
   { label: "No account needed", icon: ShieldCheck },
 ]
@@ -182,10 +182,10 @@ function MarketingLanding() {
           <RevealOnScroll>
             <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1.5 text-[12px] font-medium text-foreground/80 shadow-xs backdrop-blur">
               <span className="relative flex size-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-60" />
-                <span className="relative inline-flex size-2 rounded-full bg-primary" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60" />
+                <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
               </span>
-              New: unified library
+              Powered by Gemini
             </div>
           </RevealOnScroll>
           <RevealOnScroll delay={80}>
