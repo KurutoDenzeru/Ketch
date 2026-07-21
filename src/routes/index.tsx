@@ -180,12 +180,18 @@ function MarketingLanding() {
       <section className="relative overflow-hidden">
         <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-8 px-4 pb-20 pt-8 text-center md:px-6 md:pt-12 lg:pb-28">
           <RevealOnScroll>
-            <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1.5 text-[12px] font-medium text-foreground/80 shadow-xs backdrop-blur">
-              <span className="relative flex size-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60" />
-                <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
-              </span>
-              Powered by Gemini
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1.5 text-[12px] font-medium text-foreground/80 shadow-xs backdrop-blur">
+                <span className="relative flex size-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-60" />
+                  <span className="relative inline-flex size-2 rounded-full bg-emerald-500" />
+                </span>
+                Powered by Gemini
+              </div>
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/70 px-3 py-1.5 text-[12px] font-medium text-foreground/80 shadow-xs backdrop-blur">
+                <Check className="size-3.5 text-emerald-500" />
+                Founder-first evaluator
+              </div>
             </div>
           </RevealOnScroll>
           <RevealOnScroll delay={80}>
