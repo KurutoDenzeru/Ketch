@@ -64,7 +64,7 @@ export function AppFooter() {
               {brand.shortDescription}
             </p>
             <p className="text-xs text-muted-foreground">
-              © {new Date().getFullYear()} {brand.name} by {brand.author}.
+              © 2026 Barcoda. {brand.authorHandle}. All rights reserved.
             </p>
           </div>
 
