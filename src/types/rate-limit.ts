@@ -2,6 +2,8 @@ export type GenerationRateLimitedAction =
   | "generateIdea"
   | "regenerateIdea"
   | "regenerateTitles"
+  | "generatePitch"
+  | "generateMarketValidation"
 
 export type GenerationRateLimitStatus = {
   limit: number

@@ -1,10 +1,6 @@
 import { GoogleGenAI, ThinkingLevel } from "@google/genai"
 import { createServerFn } from "@tanstack/react-start"
 
-import {
-  consumeGenerationRateLimitCredit,
-  getGenerationRateLimitStatus as readGenerationRateLimitStatus,
-} from "@/lib/generation-rate-limit"
 import type {
   IdeaBriefInput,
   IdeaCategory,
@@ -13,6 +9,10 @@ import type {
   StartupPitch,
 } from "@/types/idea"
 import type { GenerationRateLimitStatus } from "@/types/rate-limit"
+import {
+  consumeGenerationRateLimitCredit,
+  getGenerationRateLimitStatus as readGenerationRateLimitStatus,
+} from "@/lib/generation-rate-limit"
 
 const GEMINI_MODEL = "gemini-3.1-flash-lite-preview"
 
@@ -590,6 +590,7 @@ Keep the tone practical, specific, and portfolio-worthy.`
 export const generatePitch = createServerFn({ method: "POST" })
   .validator((input: { idea: StartupIdea }) => input)
   .handler(async ({ data }) => {
+    await consumeGenerationRateLimitCredit("generatePitch")
     const prompt = `Expand this startup concept into a concise investor-style mini pitch.
 
 Startup JSON:
@@ -670,7 +671,7 @@ Requirements:
 
     const result = await callGemini<{
       name: string
-      alternativeNames: string[]
+      alternativeNames: Array<string>
     }>({
       prompt,
       schema: titlesResponseSchema,
@@ -688,6 +689,7 @@ Requirements:
 export const generateMarketValidation = createServerFn({ method: "POST" })
   .validator((input: { idea: StartupIdea }) => input)
   .handler(async ({ data }) => {
+    await consumeGenerationRateLimitCredit("generateMarketValidation")
     const prompt = `Analyze this startup concept like an early-stage market validator.
 
 Startup JSON:

@@ -2,4 +2,5 @@
  * Set to `true` to bypass rate limits, skip API calls, or enable other
  * development conveniences while testing locally.
  */
-export const DEV_MODE = false
+// eslint-disable-next-line @typescript-eslint/no-inferrable-types
+export const DEV_MODE: boolean = false
