@@ -61,7 +61,7 @@ function Dock({ children }: { children: ReactNode }) {
         <div
           className="pointer-events-auto flex max-w-fit items-center gap-1
                      rounded-full border border-border/60
-                     bg-background/70 px-1.5 py-1.5 shadow-xs
+                     bg-background/70 px-2.5 py-2 shadow-xs
                      ring-1 ring-foreground/5 backdrop-blur-xl"
         >
           {children}
@@ -75,7 +75,7 @@ function DockSeparator() {
   return (
     <span
       aria-hidden="true"
-      className="mx-0.5 hidden h-5 w-px bg-border/70 md:inline-block"
+      className="mx-1 hidden h-5 w-px bg-border/70 md:inline-block"
     />
   )
 }
