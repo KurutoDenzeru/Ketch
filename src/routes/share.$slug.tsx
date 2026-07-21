@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { createFileRoute, useNavigate, useParams } from "@tanstack/react-router"
+import { createFileRoute, useNavigate } from "@tanstack/react-router"
 import { Bookmark, Compass, Globe } from "lucide-react"
 import { toast } from "sonner"
 
@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
-  buildSharedIdeaUrl,
+  buildIdeaShareUrl,
   decodeIdeaFromUrl,
   formatIdeaAsAgentPrompt,
   formatIdeaAsMarkdown,
@@ -36,7 +36,6 @@ import {
   getGenerationRateLimitStatus,
   regenerateIdeaTitles,
 } from "@/lib/gemini"
-import { createSharedIdeaLink, getSharedIdeaLink } from "@/lib/shared-idea-store"
 import { buildSeoHead } from "@/lib/seo"
 import { brand } from "@/lib/brand"
 
@@ -59,7 +58,6 @@ async function copyText(value: string) {
 }
 
 function SharedIdeaRoute() {
-  const params = useParams({ strict: false })
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const [hydrated, setHydrated] = useState(false)
@@ -68,16 +66,10 @@ function SharedIdeaRoute() {
   const [marketValidation, setMarketValidation] = useState<MarketValidation | null>(null)
   type RecentEntry = ReturnType<typeof getRecentSharedIdeas>[number]
   const [recent, setRecent] = useState<RecentEntry | null>(null)
-  const [isSharing, setIsSharing] = useState(false)
   const [copiedFormat, setCopiedFormat] = useState<
     "text" | "markdown" | "agent-prompt" | "link" | null
   >(null)
 
-  const sharedQuery = useQuery({
-    queryKey: ["shared-idea", params.slug],
-    queryFn: () => getSharedIdeaLink({ data: { shareId: params.slug ?? "" } }),
-    enabled: Boolean(params.slug),
-  })
   const generationRateLimitQuery = useQuery({
     queryKey: generationRateLimitQueryKey,
     queryFn: () => getGenerationRateLimitStatus(),
@@ -96,21 +88,6 @@ function SharedIdeaRoute() {
   }, [])
 
   useEffect(() => {
-    const data = sharedQuery.data
-    if (data) {
-      setIdea(data.payload.idea)
-      setPitch(data.payload.pitch ?? null)
-      setMarketValidation(data.payload.marketValidation ?? null)
-      saveRecentSharedIdea(data.shareId, data.payload)
-      setRecent(getRecentSharedIdeas()[0] ?? null)
-      recordActivity("link_viewed", {
-        idea: data.payload.idea,
-        shareId: data.shareId,
-      })
-    }
-  }, [sharedQuery.data])
-
-  useEffect(() => {
     if (typeof window === "undefined") return
     const url = new URLSearchParams(window.location.search)
     const inline = url.get("data")
@@ -120,6 +97,9 @@ function SharedIdeaRoute() {
       setIdea(decoded.idea)
       setPitch(decoded.pitch ?? null)
       setMarketValidation(decoded.marketValidation ?? null)
+      saveRecentSharedIdea(inline, decoded)
+      setRecent(getRecentSharedIdeas()[0] ?? null)
+      recordActivity("link_viewed", { idea: decoded.idea, shareId: inline })
     }
   }, [])
 
@@ -180,77 +160,31 @@ function SharedIdeaRoute() {
     ? { idea, pitch, marketValidation }
     : null
 
-  async function createShareLink(payload: ShareableIdeaPayload) {
-    const shared = await createSharedIdeaLink({ data: { payload } })
-    recordSharedLink(shared.shareId, shared.payload)
-    return {
-      shareId: shared.shareId,
-      shareUrl: buildSharedIdeaUrl(shared.shareId),
-    }
-  }
-
-  function setCopy(format: "text" | "markdown" | "agent-prompt" | "link") {
-    setCopiedFormat(format)
-    window.setTimeout(() => setCopiedFormat(null), 2000)
-  }
-
-  function handleCopy(
-    format: "text" | "markdown" | "agent-prompt" | "link",
-    value: string
-  ) {
-    return copyText(value)
-      .then(() => setCopy(format))
-      .catch(() =>
+  function handleCopyShareLink() {
+    if (!currentPayload) return
+    const shareUrl = buildIdeaShareUrl(currentPayload)
+    copyText(shareUrl)
+      .then(() => {
+        setCopy("link")
+        recordSharedLink(shareUrl, currentPayload)
+        recordActivity("link_shared", { idea: currentPayload.idea, shareId: shareUrl })
+        toast.success("Share link copied", {
+          description: "You can paste the shared idea URL anywhere.",
+        })
+      })
+      .catch(() => {
         toast.error("Clipboard unavailable", {
           description: "This browser blocked clipboard access.",
         })
-      )
-  }
-  function handleCopyText() {
-    if (!currentPayload) return
-    return handleCopy("text", formatIdeaForClipboard(currentPayload))
-  }
-  function handleCopyMarkdown() {
-    if (!currentPayload) return
-    return handleCopy("markdown", formatIdeaAsMarkdown(currentPayload))
-  }
-  function handleCopyAgentPrompt() {
-    if (!currentPayload) return
-    return handleCopy("agent-prompt", formatIdeaAsAgentPrompt(currentPayload))
-  }
-  async function handleCopyShareLink() {
-    if (!currentPayload) return
-    try {
-      setIsSharing(true)
-      const { shareUrl } = await createShareLink(currentPayload)
-      await copyText(shareUrl)
-      setCopy("link")
-      recordActivity("link_shared", { idea: currentPayload.idea, shareId: shareUrl })
-      toast.success("Share link copied", {
-        description: "You can paste the shared idea URL anywhere.",
       })
-    } catch {
-      toast.error("Clipboard unavailable", {
-        description: "This browser blocked clipboard access.",
-      })
-    } finally {
-      setIsSharing(false)
-    }
   }
-  async function handleOpenSharedView() {
+
+  function handleOpenSharedView() {
     if (!currentPayload) return
-    try {
-      setIsSharing(true)
-      const { shareUrl } = await createShareLink(currentPayload)
-      recordActivity("link_shared", { idea: currentPayload.idea, shareId: shareUrl })
-      window.location.assign(shareUrl)
-    } catch {
-      toast.error("Unable to open shared view", {
-        description: "Ketch could not create a shared snapshot right now.",
-      })
-    } finally {
-      setIsSharing(false)
-    }
+    const shareUrl = buildIdeaShareUrl(currentPayload)
+    recordSharedLink(shareUrl, currentPayload)
+    recordActivity("link_shared", { idea: currentPayload.idea, shareId: shareUrl })
+    window.location.assign(shareUrl)
   }
 
   function handleSave() {
@@ -262,7 +196,7 @@ function SharedIdeaRoute() {
     })
   }
 
-  if (!hydrated || (sharedQuery.isPending && !currentPayload)) {
+  if (!hydrated) {
     return (
       <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-12 md:px-6">
         <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
@@ -335,7 +269,7 @@ function SharedIdeaRoute() {
         isPitchLoading={pitchMutation.isPending}
         isMarketValidationLoading={marketValidationMutation.isPending}
         isRegeneratingTitles={regenerateTitlesMutation.isPending}
-        isSharing={isSharing}
+        isSharing={false}
         isSaved={isIdeaSaved(idea)}
         copiedIdeaFormat={
           copiedFormat === "text" ||

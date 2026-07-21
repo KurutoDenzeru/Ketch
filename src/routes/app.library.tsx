@@ -26,7 +26,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { getCategoryIcon } from "@/lib/category-icons"
 import {
-  buildSharedIdeaUrl,
   getRecentSharedIdeas,
   getSavedIdeas,
   removeIdea,
@@ -169,7 +168,7 @@ function LibraryPage() {
       return
     }
     if (item.shareId) {
-      window.location.assign(buildSharedIdeaUrl(item.shareId))
+      window.location.assign(item.shareId)
       return
     }
     navigate({ to: "/app/library/$id", params: { id: item.id } })

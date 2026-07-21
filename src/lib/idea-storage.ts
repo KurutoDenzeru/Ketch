@@ -452,19 +452,6 @@ export function buildIdeaSharePath(payload: ShareableIdeaPayload) {
   return `/idea/${shareSlug}?data=${encodeIdeaForUrl(payload)}`
 }
 
-export function buildSharedIdeaPath(shareId: string) {
-  return `/share/${shareId}`
-}
-
-export function buildSharedIdeaUrl(shareId: string) {
-  const sharePath = buildSharedIdeaPath(shareId)
-
-  if (!isBrowser()) {
-    return sharePath
-  }
-
-  return `${window.location.origin}${sharePath}`
-}
 
 export function buildIdeaShareUrl(payload: ShareableIdeaPayload) {
   const sharePath = buildIdeaSharePath(payload)

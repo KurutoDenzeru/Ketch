@@ -20,7 +20,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { buildSeoHead } from "@/lib/seo"
 import {
-  buildSharedIdeaUrl,
+  buildIdeaShareUrl,
   clearIdeaLabDraft,
   formatIdeaAsAgentPrompt,
   formatIdeaAsMarkdown,
@@ -40,7 +40,6 @@ import {
   getGenerationRateLimitStatus,
   regenerateIdeaTitles,
 } from "@/lib/gemini"
-import { createSharedIdeaLink } from "@/lib/shared-idea-store"
 
 const generationRateLimitQueryKey = ["generation-rate-limit"] as const
 
@@ -77,7 +76,6 @@ function NewIdeaPage() {
   const [idea, setIdea] = useState<StartupIdea | null>(null)
   const [pitch, setPitch] = useState<StartupPitch | null>(null)
   const [marketValidation, setMarketValidation] = useState<MarketValidation | null>(null)
-  const [isSharing, setIsSharing] = useState(false)
   const [copiedFormat, setCopiedFormat] = useState<
     "text" | "markdown" | "agent-prompt" | "link" | null
   >(null)
@@ -207,26 +205,17 @@ function NewIdeaPage() {
 
   const isSaved = idea ? isIdeaSaved(idea) : false
 
-  async function createShareLink(payload: ShareableIdeaPayload) {
-    const sharedIdea = await createSharedIdeaLink({ data: { payload } })
-    recordSharedLink(sharedIdea.shareId, sharedIdea.payload)
-    return {
-      shareId: sharedIdea.shareId,
-      shareUrl: buildSharedIdeaUrl(sharedIdea.shareId),
-    }
-  }
-
-  function setTemporaryCopyState(
-    format: "text" | "markdown" | "agent-prompt" | "link"
-  ) {
-    setCopiedFormat(format)
-    window.setTimeout(() => setCopiedFormat(null), 2000)
-  }
-
-  function handleCopy(format: "text" | "markdown" | "agent-prompt" | "link", value: string) {
-    return copyText(value)
+  function handleCopyShareLink() {
+    if (!currentPayload) return
+    const shareUrl = buildIdeaShareUrl(currentPayload)
+    copyText(shareUrl)
       .then(() => {
-        setTemporaryCopyState(format)
+        setTemporaryCopyState("link")
+        recordSharedLink(shareUrl, currentPayload)
+        recordActivity("link_shared", { idea: currentPayload.idea, shareId: shareUrl })
+        toast.success("Share link copied", {
+          description: "You can paste the shared idea URL anywhere.",
+        })
       })
       .catch(() => {
         toast.error("Clipboard unavailable", {
@@ -235,53 +224,12 @@ function NewIdeaPage() {
       })
   }
 
-  function handleCopyText() {
+  function handleOpenSharedView() {
     if (!currentPayload) return
-    return handleCopy("text", formatIdeaForClipboard(currentPayload))
-  }
-  function handleCopyMarkdown() {
-    if (!currentPayload) return
-    return handleCopy("markdown", formatIdeaAsMarkdown(currentPayload))
-  }
-  function handleCopyAgentPrompt() {
-    if (!currentPayload) return
-    return handleCopy("agent-prompt", formatIdeaAsAgentPrompt(currentPayload))
-  }
-
-  async function handleCopyShareLink() {
-    if (!currentPayload) return
-    try {
-      setIsSharing(true)
-      const { shareUrl } = await createShareLink(currentPayload)
-      await copyText(shareUrl)
-      setTemporaryCopyState("link")
-      recordActivity("link_shared", { idea: currentPayload.idea, shareId: shareUrl })
-      toast.success("Share link copied", {
-        description: "You can paste the shared idea URL anywhere.",
-      })
-    } catch {
-      toast.error("Clipboard unavailable", {
-        description: "This browser blocked clipboard access.",
-      })
-    } finally {
-      setIsSharing(false)
-    }
-  }
-
-  async function handleOpenSharedView() {
-    if (!currentPayload) return
-    try {
-      setIsSharing(true)
-      const { shareUrl } = await createShareLink(currentPayload)
-      recordActivity("link_shared", { idea: currentPayload.idea, shareId: shareUrl })
-      window.location.assign(shareUrl)
-    } catch {
-      toast.error("Unable to open shared view", {
-        description: "Ketch could not create a shared snapshot right now.",
-      })
-    } finally {
-      setIsSharing(false)
-    }
+    const shareUrl = buildIdeaShareUrl(currentPayload)
+    recordSharedLink(shareUrl, currentPayload)
+    recordActivity("link_shared", { idea: currentPayload.idea, shareId: shareUrl })
+    window.location.assign(shareUrl)
   }
 
   function handleSaveIdea() {
@@ -341,7 +289,7 @@ function NewIdeaPage() {
               isPitchLoading={pitchMutation.isPending}
               isMarketValidationLoading={marketValidationMutation.isPending}
               isRegeneratingTitles={regenerateTitlesMutation.isPending}
-              isSharing={isSharing}
+              isSharing={false}
               isSaved={isSaved}
               copiedIdeaFormat={
                 copiedFormat === "text" ||
