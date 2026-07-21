@@ -29,6 +29,7 @@ import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getGenerationRateLimitStatus } from "@/lib/gemini"
+import { getActivityLog } from "@/lib/activity-log"
 import {
   clearRecentSharedIdeas,
   getRecentSharedIdeas,
@@ -69,7 +70,7 @@ const sections: Array<{ id: SectionId; label: string; description: string; icon:
   {
     id: "generation",
     label: "Generation",
-    description: "Quota, model info, and defaults.",
+    description: "Quota and usage history.",
     icon: WandSparkles,
   },
   {
@@ -165,7 +166,7 @@ function GenerationSection() {
       <CardContent className="space-y-6 p-6 md:p-7">
         <div>
           <SectionEyebrow icon={WandSparkles}>Generation</SectionEyebrow>
-          <h3 className="mt-2 font-display text-2xl leading-tight">Quota & model</h3>
+          <h3 className="mt-2 font-display text-2xl leading-tight">Quota</h3>
           <p className="mt-1 text-sm text-muted-foreground">
             Generation is rate-limited per week to keep the lab fair for everyone.
           </p>
@@ -195,48 +196,164 @@ function GenerationSection() {
         ) : (
           <Skeleton className="h-4 w-1/2" />
         )}
-
         <Separator />
 
         <div>
-          <h4 className="font-medium">Model</h4>
+          <h4 className="font-medium">Usage activity</h4>
           <p className="mt-1 text-sm text-muted-foreground">
-            Idea framing, scoring, market validation, and pitch generation all
-            run on Google Gemini. Model is selected automatically based on
-            latency vs. quality.
+            Your generation activity over the past year.
           </p>
-        </div>
-
-        <div>
-          <h4 className="font-medium">Default category</h4>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Ketch remembers your last-used category. Pick one to pre-set on
-            next visit (no account needed).
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {(
-              [
-                "AI Tool",
-                "SaaS",
-                "Dev Tool",
-                "Mobile App",
-                "Marketplace",
-                "Fintech",
-                "Healthcare",
-                "Creator Tool",
-              ] as const
-            ).map((category) => (
-              <span
-                key={category}
-                className="inline-flex h-9 items-center rounded-full border border-border/60 bg-background/70 px-3.5 text-sm font-medium text-foreground/80"
-              >
-                {category}
-              </span>
-            ))}
+          <div className="mt-3">
+            <ContributionGraph />
           </div>
         </div>
       </CardContent>
     </Card>
+  )
+}
+
+function ContributionGraph() {
+  const [hydrated, setHydrated] = useState(false)
+  const [grid, setGrid] = useState<Array<Array<number>>>([])
+  const [monthLabels, setMonthLabels] = useState<Array<{ label: string; col: number }>>([])
+
+  useEffect(() => {
+    const log = getActivityLog()
+    const now = new Date()
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+
+    const start = new Date(today)
+    start.setDate(start.getDate() - 52 * 7 - start.getDay() + 1)
+    if (start.getDay() !== 1) start.setDate(start.getDate() + 1)
+
+    const counts: Record<string, number> = {}
+    for (const event of log) {
+      const d = new Date(event.at)
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
+      counts[key] = (counts[key] ?? 0) + 1
+    }
+
+    const totalDays = Math.floor((today.getTime() - start.getTime()) / 86400000) + 1
+    const totalWeeks = Math.ceil(totalDays / 7)
+
+    const g: Array<Array<number>> = []
+    const months: Array<{ label: string; col: number }> = []
+    let lastMonth = -1
+
+    for (let w = 0; w < totalWeeks; w++) {
+      const week: Array<number> = []
+      for (let d = 0; d < 7; d++) {
+        const day = new Date(start)
+        day.setDate(day.getDate() + w * 7 + d)
+        if (day > today) {
+          week.push(-1)
+        } else {
+          const key = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, "0")}-${String(day.getDate()).padStart(2, "0")}`
+          week.push(counts[key] ?? 0)
+          const m = day.getMonth()
+          if (m !== lastMonth) {
+            months.push({
+              label: day.toLocaleString("default", { month: "short" }),
+              col: w,
+            })
+            lastMonth = m
+          }
+        }
+      }
+      g.push(week)
+    }
+
+    setGrid(g)
+    setMonthLabels(months)
+    setHydrated(true)
+  }, [])
+
+  if (!hydrated || grid.length === 0) {
+    return <Skeleton className="h-[140px] w-full" />
+  }
+
+  const colW = 14
+  const dayColW = 32
+  const totalW = dayColW + grid.length * colW
+  const dayLabels = ["", "Mon", "", "Wed", "", "Fri", ""]
+
+  return (
+    <div className="overflow-x-auto">
+      <div style={{ width: totalW }} className="select-none">
+        {/* Month labels */}
+        <div className="relative mb-1" style={{ height: 14, paddingLeft: dayColW }}>
+          {monthLabels.map((m, i) => (
+            <span
+              key={`${m.label}-${i}`}
+              className="absolute top-0 text-[10px] leading-none text-muted-foreground"
+              style={{ left: dayColW + m.col * colW }}
+            >
+              {m.label}
+            </span>
+          ))}
+        </div>
+
+        {/* Grid */}
+        <div className="flex items-start gap-[3px]">
+          {/* Day-of-week labels */}
+          <div className="flex w-8 shrink-0 flex-col gap-[3px] pt-[3px]">
+            {dayLabels.map((label, i) => (
+              <span key={i} className="flex h-[11px] items-center text-[9px] leading-none text-muted-foreground">
+                {label}
+              </span>
+            ))}
+          </div>
+
+          {/* Week columns */}
+          {grid.map((week, w) => (
+            <div key={w} className="flex shrink-0 flex-col gap-[3px]">
+              {week.map((count, d) =>
+                count === -1 ? (
+                  <span key={d} className="h-[11px] w-[11px]" />
+                ) : (
+                  <span
+                    key={d}
+                    className={`h-[11px] w-[11px] rounded-[2px] ${
+                      count === 0
+                        ? "bg-muted/50"
+                        : count === 1
+                          ? "bg-primary/20"
+                          : count === 2
+                            ? "bg-primary/40"
+                            : count === 3
+                              ? "bg-primary/65"
+                              : "bg-primary"
+                    }`}
+                    title={`${count} event${count === 1 ? "" : "s"}`}
+                  />
+                )
+              )}
+            </div>
+          ))}
+        </div>
+        {/* Legend */}
+        <div className="mt-2 flex items-center justify-end gap-1.5 text-[10px] text-muted-foreground">
+          <span>Less</span>
+          {[0, 1, 2, 3, 4].map((n) => (
+            <span
+              key={n}
+              className={`h-[11px] w-[11px] rounded-[2px] ${
+                n === 0
+                  ? "bg-muted/50"
+                  : n === 1
+                    ? "bg-primary/20"
+                    : n === 2
+                      ? "bg-primary/40"
+                      : n === 3
+                        ? "bg-primary/65"
+                        : "bg-primary"
+              }`}
+            />
+          ))}
+          <span>More</span>
+        </div>
+      </div>
+    </div>
   )
 }
 
