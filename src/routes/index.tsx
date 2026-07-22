@@ -190,7 +190,9 @@ function MarketingLanding() {
                 Powered by Gemini
               </div>
               <div className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/70 px-3 py-1.5 text-[12px] font-medium text-foreground/80 shadow-xs backdrop-blur">
-                <BadgeCheck className="size-3.5 text-emerald-500" />
+                <span className="inline-flex size-4 items-center justify-center rounded-full bg-blue-500">
+                  <BadgeCheck className="size-3 text-white" />
+                </span>
                 Founder-first evaluator
               </div>
             </div>
