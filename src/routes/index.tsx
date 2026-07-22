@@ -5,6 +5,7 @@ import {
   Bookmark,
   Bot,
   BadgeCheck,
+  Check,
   ChevronRight,
   Cpu,
   Globe,
