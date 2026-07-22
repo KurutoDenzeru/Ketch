@@ -4,7 +4,7 @@ import {
   BarChart3,
   Bookmark,
   Bot,
-  Check,
+  BadgeCheck,
   ChevronRight,
   Cpu,
   Globe,
@@ -189,7 +189,7 @@ function MarketingLanding() {
                 Powered by Gemini
               </div>
               <div className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/70 px-3 py-1.5 text-[12px] font-medium text-foreground/80 shadow-xs backdrop-blur">
-                <Check className="size-3.5 text-emerald-500" />
+                <BadgeCheck className="size-3.5 text-emerald-500" />
                 Founder-first evaluator
               </div>
             </div>
