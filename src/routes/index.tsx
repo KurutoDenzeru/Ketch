@@ -177,8 +177,8 @@ function MarketingLanding() {
   return (
     <main className="flex flex-col">
       {/* HERO */}
-      <section className="relative flex h-screen flex-col overflow-hidden">
-        <div className="mx-auto flex flex-1 w-full max-w-3xl flex-col items-center justify-center gap-8 px-4 py-8 text-center md:px-6">
+      <section className="relative overflow-hidden">
+        <div className="mx-auto flex w-full max-w-3xl flex-col items-center gap-8 px-4 pb-20 pt-8 text-center md:px-6 md:pt-12 lg:pb-28">
           <RevealOnScroll>
             <div className="flex flex-wrap items-center justify-center gap-2">
               <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background/70 px-3 py-1.5 text-[12px] font-medium text-foreground/80 shadow-xs backdrop-blur">
@@ -221,19 +221,20 @@ function MarketingLanding() {
             </div>
           </RevealOnScroll>
         </div>
-        {/* TRUST STRIP — pinned to bottom of hero */}
-        <div className="border-t border-border/60 bg-background/40 py-8">
-          <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-4 px-4 sm:grid-cols-3 md:px-6">
-            {trustStrip.map(({ label, icon: Icon }) => (
-              <div
-                key={label}
-                className="flex items-center justify-center gap-2 text-[12px] font-semibold tracking-[0.18em] text-muted-foreground uppercase"
-              >
-                <Icon className="size-4" />
-                {label}
-              </div>
-            ))}
-          </div>
+      </section>
+
+      {/* TRUST STRIP */}
+      <section className="border-y border-border/60 bg-background/40 py-8">
+        <div className="mx-auto grid w-full max-w-6xl grid-cols-1 gap-4 px-4 sm:grid-cols-3 md:px-6">
+          {trustStrip.map(({ label, icon: Icon }) => (
+            <div
+              key={label}
+              className="flex items-center justify-center gap-2 text-[12px] font-semibold tracking-[0.18em] text-muted-foreground uppercase"
+            >
+              <Icon className="size-4" />
+              {label}
+            </div>
+          ))}
         </div>
       </section>
 
