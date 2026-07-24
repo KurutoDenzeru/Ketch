@@ -9,38 +9,28 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as SplatRouteImport } from './routes/$'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ShareSlugRouteImport } from './routes/share.$slug'
-import { Route as IdeaSlugRouteImport } from './routes/idea.$slug'
-import { Route as AppSettingsRouteImport } from './routes/app.settings'
-import { Route as AppNewRouteImport } from './routes/app.new'
+import { Route as SplatRouteImport } from './routes/$'
 import { Route as AppLibraryRouteImport } from './routes/app.library'
+import { Route as AppNewRouteImport } from './routes/app.new'
+import { Route as AppSettingsRouteImport } from './routes/app.settings'
+import { Route as IdeaSlugRouteImport } from './routes/idea.$slug'
+import { Route as ShareSlugRouteImport } from './routes/share.$slug'
 import { Route as AppLibraryIdRouteImport } from './routes/app.library_.$id'
 
-const SplatRoute = SplatRouteImport.update({
-  id: '/$',
-  path: '/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ShareSlugRoute = ShareSlugRouteImport.update({
-  id: '/share/$slug',
-  path: '/share/$slug',
+const SplatRoute = SplatRouteImport.update({
+  id: '/$',
+  path: '/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IdeaSlugRoute = IdeaSlugRouteImport.update({
-  id: '/idea/$slug',
-  path: '/idea/$slug',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AppSettingsRoute = AppSettingsRouteImport.update({
-  id: '/app/settings',
-  path: '/app/settings',
+const AppLibraryRoute = AppLibraryRouteImport.update({
+  id: '/app/library',
+  path: '/app/library',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppNewRoute = AppNewRouteImport.update({
@@ -48,9 +38,19 @@ const AppNewRoute = AppNewRouteImport.update({
   path: '/app/new',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AppLibraryRoute = AppLibraryRouteImport.update({
-  id: '/app/library',
-  path: '/app/library',
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/app/settings',
+  path: '/app/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IdeaSlugRoute = IdeaSlugRouteImport.update({
+  id: '/idea/$slug',
+  path: '/idea/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShareSlugRoute = ShareSlugRouteImport.update({
+  id: '/share/$slug',
+  path: '/share/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppLibraryIdRoute = AppLibraryIdRouteImport.update({
@@ -136,13 +136,6 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/$': {
-      id: '/$'
-      path: '/$'
-      fullPath: '/$'
-      preLoaderRoute: typeof SplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -150,25 +143,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/share/$slug': {
-      id: '/share/$slug'
-      path: '/share/$slug'
-      fullPath: '/share/$slug'
-      preLoaderRoute: typeof ShareSlugRouteImport
+    '/$': {
+      id: '/$'
+      path: '/$'
+      fullPath: '/$'
+      preLoaderRoute: typeof SplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/idea/$slug': {
-      id: '/idea/$slug'
-      path: '/idea/$slug'
-      fullPath: '/idea/$slug'
-      preLoaderRoute: typeof IdeaSlugRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/app/settings': {
-      id: '/app/settings'
-      path: '/app/settings'
-      fullPath: '/app/settings'
-      preLoaderRoute: typeof AppSettingsRouteImport
+    '/app/library': {
+      id: '/app/library'
+      path: '/app/library'
+      fullPath: '/app/library'
+      preLoaderRoute: typeof AppLibraryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app/new': {
@@ -178,11 +164,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppNewRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/app/library': {
-      id: '/app/library'
-      path: '/app/library'
-      fullPath: '/app/library'
-      preLoaderRoute: typeof AppLibraryRouteImport
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/app/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/idea/$slug': {
+      id: '/idea/$slug'
+      path: '/idea/$slug'
+      fullPath: '/idea/$slug'
+      preLoaderRoute: typeof IdeaSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/share/$slug': {
+      id: '/share/$slug'
+      path: '/share/$slug'
+      fullPath: '/share/$slug'
+      preLoaderRoute: typeof ShareSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app/library_/$id': {
