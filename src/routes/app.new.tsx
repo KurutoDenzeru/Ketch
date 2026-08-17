@@ -205,6 +205,43 @@ function NewIdeaPage() {
 
   const isSaved = idea ? isIdeaSaved(idea) : false
 
+  function setTemporaryCopyState(
+    format: "text" | "markdown" | "agent-prompt" | "link"
+  ) {
+    setCopiedFormat(format)
+    window.setTimeout(() => setCopiedFormat(null), 2000)
+  }
+
+  function handleCopy(
+    format: "text" | "markdown" | "agent-prompt" | "link",
+    value: string
+  ) {
+    return copyText(value)
+      .then(() => {
+        setTemporaryCopyState(format)
+      })
+      .catch(() => {
+        toast.error("Clipboard unavailable", {
+          description: "This browser blocked clipboard access.",
+        })
+      })
+  }
+
+  function handleCopyText() {
+    if (!currentPayload) return
+    return handleCopy("text", formatIdeaForClipboard(currentPayload))
+  }
+
+  function handleCopyMarkdown() {
+    if (!currentPayload) return
+    return handleCopy("markdown", formatIdeaAsMarkdown(currentPayload))
+  }
+
+  function handleCopyAgentPrompt() {
+    if (!currentPayload) return
+    return handleCopy("agent-prompt", formatIdeaAsAgentPrompt(currentPayload))
+  }
+
   function handleCopyShareLink() {
     if (!currentPayload) return
     const shareUrl = buildIdeaShareUrl(currentPayload)
