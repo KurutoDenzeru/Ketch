@@ -14,7 +14,7 @@ import {
   getGenerationRateLimitStatus as readGenerationRateLimitStatus,
 } from "@/lib/generation-rate-limit"
 
-const GEMINI_MODEL = "gemini-3.1-flash-lite-preview"
+const GEMINI_MODEL = "gemini-3.5-flash-lite"
 
 const sharedSchemaConfig = {
   type: "object",
