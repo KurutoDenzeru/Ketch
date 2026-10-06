@@ -1,9 +1,9 @@
 "use client"
 
-import { Compass } from "lucide-react"
+import { Compass, Target } from "lucide-react"
 
 import type { DetailedPlanStep } from "@/types/idea"
-import { SectionEyebrow } from "@/components/section-eyebrow"
+import { Panel, PanelBody } from "@/components/analysis/panel"
 
 type ExecutionTimelineProps = {
   steps: Array<DetailedPlanStep>
@@ -11,47 +11,65 @@ type ExecutionTimelineProps = {
 
 export function ExecutionTimeline({ steps }: ExecutionTimelineProps) {
   return (
-    <div className="rounded-3xl border border-border/60 bg-card/80 p-6 shadow-xs md:p-7">
-      <SectionEyebrow icon={Compass} className="mb-5">
-        Detailed plan
-      </SectionEyebrow>
+    <Panel>
+      <PanelBody className="space-y-8">
+        <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-border/60 pb-5">
+          <p className="inline-flex items-center gap-1.5 text-[11px] font-medium tracking-[0.18em] text-muted-foreground uppercase">
+            <Compass className="size-3.5" aria-hidden="true" />
+            Detailed plan
+          </p>
+          <p className="text-sm text-muted-foreground tabular-nums">
+            {steps.length} {steps.length === 1 ? "phase" : "phases"}
+          </p>
+        </div>
 
-      <ol className="relative space-y-6">
-        <span
-          className="absolute top-2 bottom-2 left-[15px] w-px bg-border"
-          aria-hidden="true"
-        />
-        {steps.map((step, index) => (
-          <li key={`${step.phase}-${index}`} className="relative pl-12">
-            <span
-              className="absolute top-1 left-0 inline-flex size-8 items-center justify-center rounded-full border border-primary/30 bg-primary/10 text-sm font-semibold text-primary"
-              aria-hidden="true"
-            >
-              {index + 1}
-            </span>
-            <div className="flex flex-wrap items-baseline gap-2">
-              <h4 className="font-display text-xl leading-tight">{step.phase}</h4>
-              <span className="text-xs font-semibold tracking-[0.18em] text-muted-foreground uppercase">
-                {step.timeframe}
+        <ol className="relative space-y-10">
+          <span
+            className="absolute top-2 bottom-2 left-[11px] w-px bg-border"
+            aria-hidden="true"
+          />
+          {steps.map((step, index) => (
+            <li key={`${step.phase}-${index}`} className="relative pl-10">
+              <span
+                className="absolute top-0.5 left-0 inline-flex size-6 items-center justify-center rounded-full border border-primary/30 bg-background font-mono text-[11px] font-medium text-primary tabular-nums"
+                aria-hidden="true"
+              >
+                {index + 1}
               </span>
-            </div>
-            <p className="mt-1 text-sm leading-6 text-foreground/85">
-              {step.objective}
-            </p>
-            <ul className="mt-3 space-y-1.5 text-sm text-muted-foreground">
-              {step.actions.map((action) => (
-                <li key={action} className="flex items-start gap-2">
-                  <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary" aria-hidden="true" />
-                  <span>{action}</span>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/85 px-3 py-1 text-xs font-medium text-foreground/80">
-              Outcome · {step.outcome}
-            </p>
-          </li>
-        ))}
-      </ol>
-    </div>
+              <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <h3 className="font-display text-xl leading-tight text-balance">
+                  {step.phase}
+                </h3>
+                <span className="text-xs font-medium tracking-[0.18em] text-muted-foreground uppercase">
+                  {step.timeframe}
+                </span>
+              </div>
+              <p className="mt-2 max-w-2xl text-sm leading-7 text-foreground/85 text-pretty">
+                {step.objective}
+              </p>
+              {step.actions.length > 0 ? (
+                <ul className="mt-4 space-y-2 border-l border-border/60 pl-4">
+                  {step.actions.map((action) => (
+                    <li
+                      key={action}
+                      className="text-sm leading-6 text-muted-foreground text-pretty"
+                    >
+                      {action}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+              <p className="mt-4 inline-flex items-start gap-2 text-sm text-foreground">
+                <Target
+                  className="mt-0.5 size-4 shrink-0 text-primary"
+                  aria-hidden="true"
+                />
+                <span className="text-pretty">{step.outcome}</span>
+              </p>
+            </li>
+          ))}
+        </ol>
+      </PanelBody>
+    </Panel>
   )
 }

@@ -11,19 +11,9 @@ export const brand = {
 } as const
 
 export const navLinks = {
-  marketing: [
-    { label: "How it works", href: "#how-it-works", icon: "Compass" as const },
-    { label: "What you get", href: "#what-you-get", icon: "LineChart" as const },
-    { label: "FAQ", href: "#faq", icon: "HelpCircle" as const },
-  ],
   app: [
     { label: "New", to: "/app/new", icon: "Sparkles" as const },
     { label: "Library", to: "/app/library", icon: "Bookmark" as const },
     { label: "Settings", to: "/app/settings", icon: "Settings" as const },
-  ],
-  appMobile: [
-    { label: "New", to: "/app/new" },
-    { label: "Library", to: "/app/library" },
-    { label: "Settings", to: "/app/settings" },
   ],
 } as const

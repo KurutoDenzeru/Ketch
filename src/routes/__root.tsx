@@ -1,4 +1,4 @@
-import { HeadContent, Scripts, createRootRoute, useRouterState } from "@tanstack/react-router"
+import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router"
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools"
 import { TanStackDevtools } from "@tanstack/react-devtools"
 
@@ -99,7 +99,7 @@ export const Route = createRootRoute({
       { rel: "preconnect", href: "https://api.fonts.coollabs.io" },
       {
         rel: "stylesheet",
-        href: "https://api.fonts.coollabs.io/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap",
+        href: "https://api.fonts.coollabs.io/css2?family=Geist:wght@400..700&family=Satoshi:wght@400..700&family=JetBrains+Mono:wght@400;500&display=swap",
       },
     ],
   }),
@@ -108,9 +108,6 @@ export const Route = createRootRoute({
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-  const pathname = useRouterState({ select: (s) => s.location.pathname })
-  const variant: "marketing" | "app" = pathname.startsWith("/app") ? "app" : "marketing"
-
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -125,7 +122,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         suppressHydrationWarning
       >
         <ThemeProvider>
-          <AppShell variant={variant}>{children}</AppShell>
+          <AppShell>{children}</AppShell>
           <Toaster
             position="bottom-right"
             expand={false}
@@ -135,7 +132,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
                 toast:
                   "rounded-2xl border border-border/70 bg-background/95 shadow-xs backdrop-blur-xl",
                 title: "text-sm font-medium",
-                description: "text-sm text-muted-foreground",
+                description: "text-sm leading-6 text-muted-foreground",
+                actionButton:
+                  "rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground",
+                cancelButton:
+                  "rounded-full bg-muted px-3 py-1.5 text-xs font-medium text-muted-foreground",
               },
             }}
           />
@@ -149,9 +150,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             },
           ]}
         />
+        {/* Proton Pass marks its detected form before React hydrates, so strip the marker as it lands. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `document.querySelectorAll("[data-protonpass-form]").forEach(function(el){el.removeAttribute("data-protonpass-form")})`,
+            __html: `(function(){var marker="data-protonpass-form";function strip(){document.querySelectorAll("["+marker+"]").forEach(function(el){el.removeAttribute(marker)})}var observer=new MutationObserver(strip);observer.observe(document,{attributes:true,attributeFilter:[marker],subtree:true});window.addEventListener("load",function(){requestAnimationFrame(function(){observer.disconnect()})},{once:true})})()`,
           }}
         />
         <Scripts />

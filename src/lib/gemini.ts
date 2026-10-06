@@ -240,6 +240,39 @@ function getGeminiClient() {
   return geminiClient
 }
 
+/** Provider failures arrive as a JSON envelope whose message is the raw body, sometimes nested. */
+function describeGeminiError(error: unknown) {
+  let message = error instanceof Error ? error.message : String(error)
+
+  for (let depth = 0; depth < 3; depth++) {
+    let parsed: unknown
+
+    try {
+      parsed = JSON.parse(message)
+    } catch {
+      break
+    }
+
+    if (!parsed || typeof parsed !== "object" || !("error" in parsed)) {
+      break
+    }
+
+    const envelope = parsed.error
+
+    if (!envelope || typeof envelope !== "object" || !("message" in envelope)) {
+      break
+    }
+
+    if (typeof envelope.message !== "string" || !envelope.message.trim()) {
+      break
+    }
+
+    message = envelope.message
+  }
+
+  return message
+}
+
 async function callGemini<T>({
   prompt,
   schema,
@@ -247,28 +280,33 @@ async function callGemini<T>({
   prompt: string
   schema: object
 }) {
-  const response = await getGeminiClient().models.generateContentStream({
-    model: GEMINI_MODEL,
-    config: {
-      temperature: 1,
-      responseMimeType: "application/json",
-      responseJsonSchema: schema,
-      thinkingConfig: {
-        thinkingLevel: ThinkingLevel.HIGH,
-      },
-    },
-    contents: [
-      {
-        role: "user",
-        parts: [{ text: prompt }],
-      },
-    ],
-  })
-
   let text = ""
 
-  for await (const chunk of response) {
-    text += chunk.text ?? ""
+  try {
+    const response = await getGeminiClient().models.generateContentStream({
+      model: GEMINI_MODEL,
+      config: {
+        temperature: 1,
+        responseMimeType: "application/json",
+        responseJsonSchema: schema,
+        thinkingConfig: {
+          thinkingLevel: ThinkingLevel.HIGH,
+        },
+      },
+      contents: [
+        {
+          role: "user",
+          parts: [{ text: prompt }],
+        },
+      ],
+    })
+
+    // The provider rejects on the first stream read, so the loop stays inside the try.
+    for await (const chunk of response) {
+      text += chunk.text ?? ""
+    }
+  } catch (error) {
+    throw new Error(describeGeminiError(error))
   }
 
   if (!text.trim()) {

@@ -1,7 +1,6 @@
+import { cn } from "cn"
 import type { LucideIcon } from "lucide-react"
 import type { ReactNode } from "react"
-
-import { cn } from "@/lib/utils"
 
 type SectionEyebrowProps = {
   icon?: LucideIcon
@@ -13,11 +12,13 @@ export function SectionEyebrow({ icon: Icon, children, className }: SectionEyebr
   return (
     <p
       className={cn(
-        "inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase",
+        "inline-flex items-center gap-2 text-[11px] leading-none font-semibold tracking-[0.2em] text-muted-foreground uppercase",
         className
       )}
     >
-      {Icon ? <Icon className="size-3.5" aria-hidden="true" /> : null}
+      {Icon ? (
+        <Icon className="size-3.5 text-primary/80" aria-hidden="true" />
+      ) : null}
       {children}
     </p>
   )

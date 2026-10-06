@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
-import { Compass, Lightbulb, Target, WandSparkles } from "lucide-react"
+import { cn } from "cn"
+import { Gauge, Lightbulb, Sparkles, Target, WandSparkles } from "lucide-react"
 import { toast } from "sonner"
 
 import type {
@@ -11,12 +12,15 @@ import type {
   StartupIdea,
   StartupPitch,
 } from "@/types/idea"
+import type { GenerationRateLimitStatus } from "@/types/rate-limit"
+
+import { AppCard, AppMasthead, AppPage } from "@/components/app/app-chrome"
 import { IdeaBriefForm } from "@/components/idea-brief-form"
 import { IdeaCard } from "@/components/idea-card"
-import { EmptyState } from "@/components/empty-state"
+import { ArtField } from "@/components/art-field"
 import { ScoreRing } from "@/components/score-ring"
-import { SectionEyebrow } from "@/components/section-eyebrow"
-import { Card, CardContent } from "@/components/ui/card"
+import { Faq } from "@/components/faq"
+import { ScrollReveal } from "@/components/motion/scroll-reveal"
 import { Skeleton } from "@/components/ui/skeleton"
 import { buildSeoHead } from "@/lib/seo"
 import {
@@ -79,6 +83,7 @@ function NewIdeaPage() {
   const [copiedFormat, setCopiedFormat] = useState<
     "text" | "markdown" | "agent-prompt" | "link" | null
   >(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const generationRateLimitQuery = useQuery({
     queryKey: generationRateLimitQueryKey,
@@ -109,12 +114,14 @@ function NewIdeaPage() {
   const ideaMutation = useMutation({
     mutationFn: (input: IdeaBriefInput) => generateIdea({ data: input }),
     onMutate: () => {
+      setErrorMessage(null)
       toast.loading("Generating idea…", {
         id: "generate-idea",
         description: "Ketch is building the concept and scoring it now.",
       })
     },
     onSuccess: (nextIdea) => {
+      setErrorMessage(null)
       setIdea(nextIdea)
       setPitch(null)
       setMarketValidation(null)
@@ -127,10 +134,8 @@ function NewIdeaPage() {
     },
     onError: (error) => {
       void refreshGenerationRateLimit()
-      toast.error("Failed to generate idea", {
-        id: "generate-idea",
-        description: error.message,
-      })
+      toast.dismiss("generate-idea")
+      setErrorMessage(error.message)
     },
   })
 
@@ -283,26 +288,24 @@ function NewIdeaPage() {
     setPitch(null)
     setMarketValidation(null)
     clearIdeaLabDraft()
+    setErrorMessage(null)
     toast.success("Idea removed", {
       description: "The current working concept has been cleared from the lab.",
     })
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 md:px-6 md:py-12">
-      <header className="flex flex-col gap-3">
-        <SectionEyebrow icon={WandSparkles}>Idea Lab</SectionEyebrow>
-        <h1 className="font-display text-4xl leading-[1.05] text-balance sm:text-5xl">
-          Describe the founder context.{" "}
-          <span className="italic text-primary">Get the memo.</span>
-        </h1>
-        <p className="max-w-2xl text-base leading-7 text-muted-foreground">
-          A short brief is enough. Ketch handles the structure, scoring, and the
-          shareable report.
-        </p>
-      </header>
+    <AppPage>
+      <AppMasthead
+        eyebrow="Idea Lab"
+        title="Describe the founder context."
+        accent="Get the memo."
+        description="A short brief is enough. Ketch handles the structure, scoring, and the shareable report."
+        meta={<GenerationReadout rateLimit={generationRateLimit} pending={ideaMutation.isPending} />}
+        art="draft"
+      />
 
-      <div className="flex flex-col gap-8">
+      <div className="mt-8 space-y-8 md:mt-12">
         <aside>
           <IdeaBriefForm
             brief={brief}
@@ -312,128 +315,248 @@ function NewIdeaPage() {
             onSubmit={() => ideaMutation.mutate(brief)}
             isLoading={ideaMutation.isPending}
             generationRateLimit={generationRateLimit}
+            locked={Boolean(idea)}
+            errorMessage={errorMessage}
           />
         </aside>
 
-        <section ref={resultRef} className="scroll-mt-28 space-y-4">
-          {ideaMutation.isPending ? (
-            <ResultSkeleton />
-          ) : idea && currentPayload ? (
-            <IdeaCard
-              idea={idea}
-              pitch={pitch}
-              marketValidation={marketValidation}
-              isPitchLoading={pitchMutation.isPending}
-              isMarketValidationLoading={marketValidationMutation.isPending}
-              isRegeneratingTitles={regenerateTitlesMutation.isPending}
-              isSharing={false}
-              isSaved={isSaved}
-              copiedIdeaFormat={
-                copiedFormat === "text" ||
-                copiedFormat === "markdown" ||
-                copiedFormat === "agent-prompt"
-                  ? copiedFormat
-                  : null
-              }
-              isShareLinkCopied={copiedFormat === "link"}
-              generationRateLimit={generationRateLimit}
-              onSelectAlternativeName={(name) => {
-                setIdea((current) => (current ? { ...current, name } : current))
-                toast.success("Startup name swapped", {
-                  description: `${name} is now the active concept name.`,
-                })
-              }}
-              onRegenerateTitles={() => regenerateTitlesMutation.mutate(idea)}
-              onGeneratePitch={() => pitchMutation.mutate(idea)}
-              onGenerateMarketValidation={() => marketValidationMutation.mutate(idea)}
-              onCopyText={handleCopyText}
-              onCopyMarkdown={handleCopyMarkdown}
-              onCopyAgentPrompt={handleCopyAgentPrompt}
-              onCopyShareLink={handleCopyShareLink}
-              onOpenSharedView={handleOpenSharedView}
-              onSave={handleSaveIdea}
-              onRemove={() => {
-                if (
-                  window.confirm(
-                    "Remove the current working concept? Saved snapshots are kept."
-                  )
-                ) {
-                  handleRemoveIdea()
+        <section ref={resultRef} className="scroll-mt-28 sm:scroll-mt-32">
+          <ScrollReveal>
+            {ideaMutation.isPending ? (
+              <ResultSkeleton />
+            ) : idea && currentPayload ? (
+              <IdeaCard
+                idea={idea}
+                pitch={pitch}
+                marketValidation={marketValidation}
+                isPitchLoading={pitchMutation.isPending}
+                isMarketValidationLoading={marketValidationMutation.isPending}
+                isRegeneratingTitles={regenerateTitlesMutation.isPending}
+                isSharing={false}
+                isSaved={isSaved}
+                copiedIdeaFormat={
+                  copiedFormat === "text" ||
+                  copiedFormat === "markdown" ||
+                  copiedFormat === "agent-prompt"
+                    ? copiedFormat
+                    : null
                 }
-              }}
-            />
-          ) : (
-            <ResultEmpty />
-          )}
+                isShareLinkCopied={copiedFormat === "link"}
+                generationRateLimit={generationRateLimit}
+                onSelectAlternativeName={(name) => {
+                  setIdea((current) => (current ? { ...current, name } : current))
+                  toast.success("Startup name swapped", {
+                    description: `${name} is now the active concept name.`,
+                  })
+                }}
+                onRegenerateTitles={() => regenerateTitlesMutation.mutate(idea)}
+                onGeneratePitch={() => pitchMutation.mutate(idea)}
+                onGenerateMarketValidation={() => marketValidationMutation.mutate(idea)}
+                onCopyText={handleCopyText}
+                onCopyMarkdown={handleCopyMarkdown}
+                onCopyAgentPrompt={handleCopyAgentPrompt}
+                onCopyShareLink={handleCopyShareLink}
+                onOpenSharedView={handleOpenSharedView}
+                onSave={handleSaveIdea}
+                onRemove={() => {
+                  if (
+                    window.confirm(
+                      "Remove the current working concept? Saved snapshots are kept."
+                    )
+                  ) {
+                    handleRemoveIdea()
+                  }
+                }}
+              />
+            ) : (
+              <ResultEmpty />
+            )}
+          </ScrollReveal>
         </section>
       </div>
-    </div>
+
+      <div className="mt-16 md:mt-20">
+        <Faq />
+      </div>
+    </AppPage>
   )
 }
 
 function ResultSkeleton() {
   return (
-    <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
-      <CardContent className="space-y-5 p-6 md:p-8">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex gap-2">
-            <Skeleton className="h-6 w-24 rounded-full" />
-            <Skeleton className="h-6 w-28 rounded-full" />
-          </div>
-          <Skeleton className="h-9 w-28 rounded-full" />
-        </div>
-        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="space-y-3">
-            <Skeleton className="h-12 w-2/3" />
-            <Skeleton className="h-6 w-3/4" />
-          </div>
-          <div className="rounded-3xl border border-border/60 bg-muted/30 p-5">
-            <div className="flex items-center justify-between">
-              <div className="space-y-2">
-                <Skeleton className="h-3 w-20" />
-                <Skeleton className="h-3 w-40" />
-              </div>
-              <Skeleton className="size-24 rounded-full" />
-            </div>
-          </div>
-        </div>
+    <AppCard className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex gap-2">
-          <Skeleton className="h-9 w-32 rounded-full" />
-          <Skeleton className="h-9 w-32 rounded-full" />
-          <Skeleton className="h-9 w-32 rounded-full" />
+          <Skeleton className="h-6 w-24 rounded-full" />
+          <Skeleton className="h-6 w-28 rounded-full" />
         </div>
-        <Skeleton className="h-32 w-full rounded-2xl" />
-        <div className="grid gap-4 md:grid-cols-2">
-          <Skeleton className="h-28 w-full rounded-2xl" />
-          <Skeleton className="h-28 w-full rounded-2xl" />
+        <Skeleton className="h-9 w-28 rounded-full" />
+      </div>
+      <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="space-y-3">
+          <Skeleton className="h-12 w-2/3" />
+          <Skeleton className="h-6 w-3/4" />
         </div>
-      </CardContent>
-    </Card>
+        <div className="rounded-2xl border border-border/60 bg-muted/30 p-5">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <Skeleton className="h-3 w-20" />
+              <Skeleton className="h-3 w-40" />
+            </div>
+            <Skeleton className="size-24 rounded-full" />
+          </div>
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <Skeleton className="h-9 w-32 rounded-full" />
+        <Skeleton className="h-9 w-32 rounded-full" />
+        <Skeleton className="h-9 w-32 rounded-full" />
+      </div>
+      <Skeleton className="h-32 w-full rounded-2xl" />
+      <div className="grid gap-4 md:grid-cols-2">
+        <Skeleton className="h-28 w-full rounded-2xl" />
+        <Skeleton className="h-28 w-full rounded-2xl" />
+      </div>
+      <p
+        className="flex items-center gap-2 text-xs text-muted-foreground"
+        suppressHydrationWarning
+      >
+        <WandSparkles className="size-3.5 animate-pulse text-primary" />
+        Drafting the concept, scoring the opportunity, and pulling market signals.
+      </p>
+    </AppCard>
   )
 }
 
 function ResultEmpty() {
   return (
-    <EmptyState
-      icon={<ScoreRing value={0} size={120} strokeWidth={10} tone="muted" />}
-      title="Your idea report appears here."
-      description="Fill in the brief on the left, then press Generate. Ketch will return a full memo with opportunity scoring, market timing, shareable reports, and a phased execution plan."
-      action={
-        <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-muted-foreground">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/70 px-3 py-1">
-            <Lightbulb className="size-3.5 text-primary" />
-            Two minutes for a complete memo
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/70 px-3 py-1">
-            <Target className="size-3.5 text-primary" />
-            Tuned to solo founders
-          </span>
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background/70 px-3 py-1">
-            <Compass className="size-3.5 text-primary" />
-            Local-first, no signup
-          </span>
+    <div className="flex flex-col items-center gap-8 overflow-hidden rounded-3xl border border-border/60 bg-card/70 px-6 py-20 text-center shadow-sm backdrop-blur md:px-10">
+      <div className="relative">
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -inset-12 -z-10 opacity-60"
+        >
+          <ArtField slug="brief" className="size-full" />
         </div>
-      }
-    />
+        <div className="text-muted-foreground/50">
+          <ScoreRing value={0} size={140} strokeWidth={10} tone="muted" />
+        </div>
+      </div>
+      <div className="max-w-xl space-y-3">
+        <h2 className="font-display text-3xl leading-tight text-balance md:text-4xl">
+          Nothing here yet. That is the point.
+        </h2>
+        <p className="text-sm leading-7 text-muted-foreground text-pretty">
+          A Ketch report is never stock. Give the brief on the left a real
+          problem, a real buyer, and a real constraint, then press Generate. What
+          comes back is scored for opportunity, timed against the market, and
+          packaged so you can hand it to someone else without rewriting it.
+        </p>
+      </div>
+      <div className="grid w-full max-w-2xl grid-flow-dense gap-px overflow-hidden rounded-2xl border border-border/60 bg-border/60 sm:grid-cols-3">
+        {[
+          {
+            icon: Lightbulb,
+            headline: "Write one sentence",
+            body: "The workflow that annoys you most is enough to start.",
+          },
+          {
+            icon: Target,
+            headline: "Name the buyer",
+            body: "Generic audiences produce generic scores. Be specific.",
+          },
+          {
+            icon: Sparkles,
+            headline: "Then read the memo",
+            body: "Scoring, timing, pitch, validation, and an execution plan.",
+          },
+        ].map((item) => (
+          <div
+            key={item.headline}
+            className="flex flex-col gap-1.5 bg-card/80 p-5 text-left"
+          >
+            <item.icon className="size-4 text-primary" aria-hidden="true" />
+            <p className="text-sm font-medium">{item.headline}</p>
+            <p className="text-xs leading-6 text-muted-foreground">{item.body}</p>
+          </div>
+        ))}
+      </div>
+      <p className="flex items-center gap-2 text-xs text-muted-foreground">
+        <Gauge className="size-3.5" aria-hidden="true" />
+        Everything runs in this browser. No signup, nothing uploaded.
+      </p>
+    </div>
+  )
+}
+
+/** Live generation readout; counts in tabular figures. */
+function GenerationReadout({
+  rateLimit,
+  pending,
+}: {
+  rateLimit: GenerationRateLimitStatus | null
+  pending: boolean
+}) {
+  const remaining = rateLimit?.remaining ?? 0
+  const limit = rateLimit?.limit ?? 0
+  const exhausted = Boolean(rateLimit?.isExhausted)
+
+  return (
+    <div className="flex w-full flex-wrap items-center gap-x-6 gap-y-3 rounded-2xl border border-border/60 bg-card/70 px-5 py-4 shadow-sm">
+      <div className="flex items-center gap-2">
+        <span
+          className={cn(
+            "size-2 rounded-full",
+            pending
+              ? "animate-pulse bg-primary"
+              : exhausted
+                ? "bg-amber-500"
+                : "bg-emerald-500"
+          )}
+          aria-hidden="true"
+        />
+        <p className="text-sm font-medium">
+          {pending
+            ? "Generating"
+            : rateLimit
+              ? exhausted
+                ? "Cooldown active"
+                : "Lab ready"
+              : "Checking quota"}
+        </p>
+      </div>
+      <div className="flex items-center gap-4 text-xs text-muted-foreground">
+        <p>
+          <span className="font-display text-lg text-foreground tabular-nums">
+            {rateLimit ? rateLimit.used : "—"}
+          </span>
+          <span className="ml-1.5">used</span>
+        </p>
+        <p>
+          <span className="font-display text-lg text-foreground tabular-nums">
+            {rateLimit ? remaining : "—"}
+          </span>
+          <span className="ml-1.5">left</span>
+        </p>
+        <p>
+          <span className="font-display text-lg text-foreground tabular-nums">
+            {rateLimit ? limit : "—"}
+          </span>
+          <span className="ml-1.5">per week</span>
+        </p>
+      </div>
+      <p
+        className="ml-auto text-xs text-muted-foreground"
+        suppressHydrationWarning
+      >
+        {rateLimit?.resetsAt
+          ? exhausted
+            ? `Resets ${new Date(rateLimit.resetsAt).toLocaleString()}`
+            : `Window resets ${new Date(rateLimit.resetsAt).toLocaleDateString()}`
+          : rateLimit
+            ? "No active cooldown"
+            : "Reading generation quota"}
+      </p>
+    </div>
   )
 }

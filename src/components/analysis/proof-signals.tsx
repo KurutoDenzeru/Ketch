@@ -1,15 +1,13 @@
 "use client"
 
-import { Clock3, Flag,  Search, Sparkles } from "lucide-react"
-import type {LucideIcon} from "lucide-react";
+import { Clock3, Flag, Search, Sparkles } from "lucide-react"
+import type { LucideIcon } from "lucide-react"
 
 import type { IdeaAnalysis } from "@/types/idea"
-import { Card, CardContent } from "@/components/ui/card"
-import { SectionEyebrow } from "@/components/section-eyebrow"
+import { Panel, PanelBody, StrengthMeter } from "@/components/analysis/panel"
 
 type Section = {
   label: string
-  value: string
   icon: LucideIcon
 }
 
@@ -19,39 +17,76 @@ const sections: Array<keyof Pick<
 >> = ["whyNow", "proofSignals", "marketGap", "executionPlan"]
 
 const sectionConfig: Record<(typeof sections)[number], Section> = {
-  whyNow: { label: "Why now", value: "", icon: Clock3 },
-  proofSignals: { label: "Proof & signals", value: "", icon: Sparkles },
-  marketGap: { label: "The market gap", value: "", icon: Search },
-  executionPlan: { label: "Execution plan", value: "", icon: Flag },
+  whyNow: { label: "Why now", icon: Clock3 },
+  proofSignals: { label: "Proof and signals", icon: Sparkles },
+  marketGap: { label: "The market gap", icon: Search },
+  executionPlan: { label: "Execution plan", icon: Flag },
 }
 
 type ProofSignalsProps = {
   analysis: IdeaAnalysis
 }
 
-function formatProofSignals(signals: Array<string>) {
-  return signals.length > 0 ? signals.map((item) => `• ${item}`).join("  ") : "—"
-}
-
+/** Proof-signal list spans the full row so the 2-column grid stays balanced. */
 export function ProofSignals({ analysis }: ProofSignalsProps) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid gap-4 md:grid-cols-2 md:grid-flow-dense">
       {sections.map((key) => {
-        const config = { ...sectionConfig[key] }
-        const value =
-          key === "proofSignals"
-            ? formatProofSignals(analysis.proofSignals)
-            : analysis[key]
+        const config = sectionConfig[key]
+        const signals = key === "proofSignals" ? analysis.proofSignals : null
+
         return (
-          <Card
+          <Panel
             key={key}
-            className="rounded-2xl border border-border/60 bg-card/80 py-0 shadow-xs"
+            className={signals ? "md:col-span-2" : undefined}
           >
-            <CardContent className="space-y-3 p-5">
-              <SectionEyebrow icon={config.icon}>{config.label}</SectionEyebrow>
-              <p className="text-sm leading-7 text-foreground">{value}</p>
-            </CardContent>
-          </Card>
+            <PanelBody className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="inline-flex items-center gap-1.5 text-[11px] font-medium tracking-[0.18em] text-muted-foreground uppercase">
+                  <config.icon className="size-3.5" aria-hidden="true" />
+                  {config.label}
+                </p>
+                {signals ? (
+                  <StrengthMeter
+                    level={
+                      signals.length >= 4
+                        ? "high"
+                        : signals.length >= 2
+                          ? "medium"
+                          : "low"
+                    }
+                  />
+                ) : null}
+              </div>
+
+              {signals ? (
+                signals.length > 0 ? (
+                  <ul className="grid gap-2.5 md:grid-cols-2">
+                    {signals.map((item) => (
+                      <li
+                        key={item}
+                        className="flex items-start gap-2.5 text-sm leading-6 text-foreground/85"
+                      >
+                        <span
+                          className="mt-2 size-1.5 shrink-0 rounded-full bg-primary"
+                          aria-hidden="true"
+                        />
+                        <span className="text-pretty">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted-foreground">
+                    No proof signals surfaced for this concept yet.
+                  </p>
+                )
+              ) : (
+                <p className="text-sm leading-7 text-foreground/85 text-pretty">
+                  {analysis[key]}
+                </p>
+              )}
+            </PanelBody>
+          </Panel>
         )
       })}
     </div>

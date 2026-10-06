@@ -1,6 +1,5 @@
+import { cn } from "cn"
 import type { ReactNode } from "react"
-
-import { cn } from "@/lib/utils"
 
 type SectionHeaderProps = {
   eyebrow?: ReactNode
@@ -8,6 +7,8 @@ type SectionHeaderProps = {
   description?: ReactNode
   align?: "start" | "center"
   className?: string
+  titleClassName?: string
+  descriptionClassName?: string
 }
 
 export function SectionHeader({
@@ -16,21 +17,37 @@ export function SectionHeader({
   description,
   align = "start",
   className,
+  titleClassName,
+  descriptionClassName,
 }: SectionHeaderProps) {
   return (
     <div
       className={cn(
-        "flex flex-col gap-3",
+        "flex flex-col gap-4",
         align === "center" ? "items-center text-center" : "items-start text-start",
         className
       )}
     >
-      {eyebrow ? <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">{eyebrow}</div> : null}
-      <h2 className="font-display text-3xl leading-[1.05] text-balance sm:text-4xl md:text-5xl">
+      {eyebrow ? (
+        <div className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+          {eyebrow}
+        </div>
+      ) : null}
+      <h2
+        className={cn(
+          "font-display text-[clamp(1.9rem,3.6vw,3.25rem)] leading-[1.02] font-semibold tracking-[-0.028em] text-balance",
+          titleClassName
+        )}
+      >
         {title}
       </h2>
       {description ? (
-        <p className="max-w-2xl text-base leading-7 text-muted-foreground text-pretty">
+        <p
+          className={cn(
+            "max-w-xl text-lg leading-8 text-muted-foreground text-pretty",
+            descriptionClassName
+          )}
+        >
           {description}
         </p>
       ) : null}

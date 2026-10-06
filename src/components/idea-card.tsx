@@ -1,5 +1,6 @@
 "use client"
 
+import { cn } from "cn"
 import { useEffect, useState } from "react"
 import {
   BarChart3,
@@ -21,13 +22,12 @@ import {
   WandSparkles
 } from "lucide-react"
 import { toast } from "sonner"
-import type {LucideIcon} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
 import type { MarketValidation, StartupIdea, StartupPitch } from "@/types/idea"
 import type { GenerationRateLimitStatus } from "@/types/rate-limit"
 import { AnalysisDashboard } from "@/components/analysis-dashboard"
 import { PitchSection } from "@/components/pitch-section"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import {
@@ -43,7 +43,6 @@ import { SectionEyebrow } from "@/components/section-eyebrow"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { getCategoryIcon } from "@/lib/category-icons"
-import { cn } from "@/lib/utils"
 
 type IdeaCardProps = {
   idea: StartupIdea
@@ -70,6 +69,8 @@ type IdeaCardProps = {
   onSave: () => void
   onRemove?: () => void
   defaultTab?: IdeaTab
+  /** "report" drops the internal hero for hosts that render the name themselves. */
+  variant?: "card" | "report"
 }
 
 type IdeaTab = "overview" | "analysis" | "pitch" | "validation"
@@ -81,26 +82,16 @@ const tabConfig: Array<{ value: IdeaTab; label: string; icon: LucideIcon }> = [
   { value: "validation", label: "Validation", icon: ShieldCheck },
 ]
 
+function getValidationWord(score: number) {
+  if (score <= 4) return "Weak idea"
+  if (score <= 6) return "Moderate idea"
+  return "Strong idea"
+}
+
 function getValidationTone(score: number) {
-  if (score <= 4) {
-    return {
-      label: "Weak idea",
-      badgeClassName:
-        "border-amber-200 bg-amber-100 text-amber-900 dark:border-amber-800/70 dark:bg-amber-950/60 dark:text-amber-200",
-    }
-  }
-  if (score <= 6) {
-    return {
-      label: "Moderate idea",
-      badgeClassName:
-        "border-sky-200 bg-sky-100 text-sky-900 dark:border-sky-800/70 dark:bg-sky-950/60 dark:text-sky-200",
-    }
-  }
-  return {
-    label: "Strong idea",
-    badgeClassName:
-      "border-emerald-200 bg-emerald-100 text-emerald-900 dark:border-emerald-800/70 dark:bg-emerald-950/60 dark:text-emerald-200",
-  }
+  if (score <= 4) return "text-amber-600 dark:text-amber-400"
+  if (score <= 6) return "text-sky-700 dark:text-sky-300"
+  return "text-emerald-600 dark:text-emerald-400"
 }
 
 export function IdeaCard({
@@ -128,6 +119,7 @@ export function IdeaCard({
   onSave,
   onRemove,
   defaultTab = "overview",
+  variant = "card",
 }: IdeaCardProps) {
   const [tab, setTab] = useState<IdeaTab>(defaultTab)
   const [justSaved, setJustSaved] = useState(false)
@@ -139,33 +131,27 @@ export function IdeaCard({
   }, [justSaved])
 
   const CategoryIcon = getCategoryIcon(idea.category)
-  const validationTone = getValidationTone(idea.validationScore)
   const titlesDisabled =
     isRegeneratingTitles || Boolean(generationRateLimit?.isExhausted)
 
   return (
-    <Card className="overflow-hidden rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
-      <CardContent className="space-y-7 p-6 md:p-8">
-        {/* HEADER ROW */}
-        <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge
-              variant="outline"
-              className="h-auto gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-[0.18em] uppercase"
-            >
-              <CategoryIcon className="size-3.5 text-primary" />
+    <Card className="overflow-hidden rounded-2xl border border-border/60 bg-card/70 py-0 shadow-sm transition-[border-color,box-shadow] duration-700 ease-out hover:border-foreground/15 hover:shadow-md">
+      <CardContent className="space-y-8 p-5 sm:space-y-10 sm:p-6 md:p-8">
+        <header className="flex flex-col gap-4 border-b border-border/60 pb-5 sm:flex-row sm:items-center sm:justify-between md:pb-6">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
+            <span className="inline-flex items-center gap-2">
+              <CategoryIcon className="size-4 text-primary" aria-hidden="true" />
               {idea.category}
-            </Badge>
-            <Badge
-              variant="outline"
+            </span>
+            <span
               className={cn(
-                "h-auto gap-1.5 rounded-full px-3 py-1.5 text-[11px] font-semibold tracking-[0.18em] uppercase",
-                validationTone.badgeClassName
+                "inline-flex items-center gap-2",
+                getValidationTone(idea.validationScore)
               )}
             >
-              <Compass className="size-3.5" />
-              {validationTone.label}
-            </Badge>
+              <Compass className="size-4" aria-hidden="true" />
+              {getValidationWord(idea.validationScore)}
+            </span>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <ShareMenu
@@ -181,46 +167,53 @@ export function IdeaCard({
           </div>
         </header>
 
-        {/* TITLE + SCORE */}
-        <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="space-y-3">
-            <h2 className="font-display text-4xl leading-[1.05] text-balance sm:text-5xl">
-              {idea.name}
-            </h2>
-            <p className="max-w-2xl text-base leading-7 text-foreground/80 text-pretty">
-              {idea.tagline}
-            </p>
-          </div>
-          <div className="rounded-3xl border border-border/60 bg-muted/30 p-5">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <SectionEyebrow className="mb-2">Validation</SectionEyebrow>
-                <p className="text-sm leading-6 text-muted-foreground">
-                  Composite score from timing, demand, defensibility, and fit.
+        {variant === "card" ? (
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.65fr)] lg:items-end lg:gap-8">
+            <div className="space-y-4">
+              <h2 className="max-w-[18ch] font-display text-3xl leading-[1.04] tracking-[-0.03em] text-balance sm:text-4xl md:text-5xl">
+                {idea.name}
+              </h2>
+              <p className="max-w-2xl text-base leading-8 text-foreground/80 text-pretty md:text-lg">
+                {idea.tagline}
+              </p>
+            </div>
+            <div className="flex items-center gap-5 border-t border-border/60 pt-5 lg:justify-end lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8">
+              <div className="space-y-1">
+                <p className="text-[11px] font-medium tracking-[0.18em] text-muted-foreground uppercase">
+                  Validation
+                </p>
+                <p className="text-sm leading-6 text-muted-foreground text-pretty">
+                  Composite of timing, demand, defensibility, and fit.
                 </p>
               </div>
               <ScoreRing
                 value={idea.validationScore}
-                size={104}
+                size={96}
                 strokeWidth={9}
-                tone={idea.validationScore >= 7 ? "success" : idea.validationScore >= 5 ? "primary" : "warning"}
+                tone={
+                  idea.validationScore >= 7
+                    ? "success"
+                    : idea.validationScore >= 5
+                      ? "primary"
+                      : "warning"
+                }
               />
             </div>
           </div>
-        </div>
+        ) : null}
 
         {/* TABS */}
         <Tabs
           value={tab}
           onValueChange={(value) => setTab(value as IdeaTab)}
-          className="gap-6"
+          className="gap-6 md:gap-8"
         >
-          <TabsList className="h-auto w-full justify-start gap-1 rounded-2xl border border-border/60 bg-muted/30 p-1">
+          <TabsList className="w-full flex-nowrap gap-1 overflow-x-auto rounded-2xl border border-border/60 bg-muted/30 p-1 md:flex-wrap md:overflow-visible">
             {tabConfig.map(({ value, label, icon: Icon }) => (
               <TabsTrigger
                 key={value}
                 value={value}
-                className="inline-flex h-9 items-center gap-1.5 rounded-xl px-3 text-sm font-medium data-[state=active]:bg-background data-[state=active]:shadow-xs"
+                className="shrink-0 rounded-xl px-3 transition-colors duration-500"
               >
                 <Icon className="size-4" aria-hidden="true" />
                 {label}
@@ -234,12 +227,14 @@ export function IdeaCard({
             ))}
           </TabsList>
 
-          <TabsContent value="overview" className="space-y-5">
-            <div className="rounded-2xl border border-border/60 bg-muted/30 p-5">
-              <SectionEyebrow className="mb-2">Description</SectionEyebrow>
-              <p className="text-sm leading-7 text-foreground">{idea.description}</p>
-            </div>
-            <div className="grid gap-3 md:grid-cols-3">
+          <TabsContent value="overview" className="space-y-8">
+            <section className="space-y-3">
+              <SectionEyebrow>Description</SectionEyebrow>
+              <p className="max-w-3xl text-base leading-8 text-foreground/85 text-pretty">
+                {idea.description}
+              </p>
+            </section>
+            <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 md:grid-flow-dense">
               {(
                 [
                   ["Target audience", idea.audience],
@@ -249,33 +244,36 @@ export function IdeaCard({
               ).map(([label, value]) => (
                 <div
                   key={label}
-                  className="rounded-2xl border border-border/60 bg-muted/30 p-4"
+                  className="space-y-2 border-t border-border/70 pt-4"
                 >
-                  <SectionEyebrow className="mb-2">{label}</SectionEyebrow>
-                  <p className="text-sm leading-6 text-foreground">{value}</p>
+                  <p className="text-[11px] font-medium tracking-[0.18em] text-muted-foreground uppercase">
+                    {label}
+                  </p>
+                  <p className="text-sm leading-7 text-foreground/85 text-pretty">
+                    {value}
+                  </p>
                 </div>
               ))}
             </div>
-            <div className="rounded-2xl border border-border/60 bg-muted/30 p-5">
-              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <SectionEyebrow className="mb-0">Other names we considered</SectionEyebrow>
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <SectionEyebrow>Other names we considered</SectionEyebrow>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="rounded-full"
                   onClick={onRegenerateTitles}
                   disabled={titlesDisabled}
                 >
                   {isRegeneratingTitles ? (
-                    <LoaderCircle className="animate-spin" />
+                    <LoaderCircle className="animate-spin" aria-hidden="true" />
                   ) : (
-                    <RefreshCcw className="size-4" />
+                    <RefreshCcw className="size-4" aria-hidden="true" />
                   )}
                   Generate new titles
                 </Button>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-x-4 gap-y-2">
                 {idea.alternativeNames.map((name) => {
                   const isSelected = name === idea.name
                   return (
@@ -284,10 +282,10 @@ export function IdeaCard({
                       type="button"
                       onClick={() => onSelectAlternativeName(name)}
                       className={cn(
-                        "inline-flex h-9 items-center rounded-full border px-3.5 text-sm font-medium transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                        "border-b pb-0.5 text-sm transition-colors duration-500 focus-visible:rounded-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-background",
                         isSelected
-                          ? "border-primary bg-primary text-primary-foreground shadow-xs"
-                          : "border-border/60 bg-background/75 text-foreground/85 hover:bg-muted/60"
+                          ? "border-primary text-foreground"
+                          : "border-border/70 text-muted-foreground hover:border-primary/60 hover:text-foreground"
                       )}
                     >
                       {name}
@@ -311,101 +309,103 @@ export function IdeaCard({
             />
           </TabsContent>
 
-          <TabsContent value="validation" className="space-y-4">
-            <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
-              <CardContent className="space-y-5 p-6 md:p-7">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                  <div className="space-y-2">
-                    <SectionEyebrow icon={ShieldCheck}>Market validation</SectionEyebrow>
-                    <h3 className="font-display text-2xl leading-tight">
-                      YC-style reality check
-                    </h3>
-                    <p className="max-w-xl text-sm leading-6 text-muted-foreground">
-                      Ask Gemini to estimate competition, risks, and likely
-                      early user groups before sharing or saving.
-                    </p>
-                  </div>
-                  <Button
-                    type="button"
-                    onClick={onGenerateMarketValidation}
-                    disabled={isMarketValidationLoading}
-                    className="rounded-full"
-                  >
-                    {isMarketValidationLoading ? (
-                      <LoaderCircle className="animate-spin" />
-                    ) : (
-                      <ShieldCheck className="size-4" />
-                    )}
-                    {marketValidation ? "Refresh validation" : "Run validation"}
-                  </Button>
-                </div>
+          <TabsContent value="validation" className="space-y-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="space-y-2">
+                <SectionEyebrow icon={ShieldCheck}>Market validation</SectionEyebrow>
+                <h3 className="font-display text-2xl leading-tight text-balance">
+                  YC-style reality check
+                </h3>
+                <p className="max-w-xl text-sm leading-6 text-muted-foreground text-pretty">
+                  Ask Gemini to estimate competition, risks, and likely early
+                  user groups before sharing or saving.
+                </p>
+              </div>
+              <Button
+                type="button"
+                onClick={onGenerateMarketValidation}
+                disabled={isMarketValidationLoading}
+              >
                 {isMarketValidationLoading ? (
-                  <div className="grid gap-3 md:grid-cols-3">
-                    {Array.from({ length: 3 }).map((_, index) => (
-                      <div
-                        key={index}
-                        className="space-y-3 rounded-2xl border border-border/60 bg-muted/30 p-4"
-                      >
-                        <Skeleton className="h-3 w-24" />
-                        <Skeleton className="h-3 w-full" />
-                        <Skeleton className="h-3 w-5/6" />
-                        <Skeleton className="h-3 w-3/6" />
-                      </div>
-                    ))}
-                  </div>
-                ) : marketValidation ? (
-                  <div className="space-y-3">
-                    <div className="grid gap-3 md:grid-cols-3">
-                      {(
-                        [
-                          ["Competition", marketValidation.competition],
-                          ["Risks", marketValidation.risks],
-                          ["Potential users", marketValidation.potentialUsers],
-                        ] as const
-                      ).map(([label, items]) => (
-                        <div
-                          key={label}
-                          className="rounded-2xl border border-border/60 bg-muted/30 p-4"
-                        >
-                          <SectionEyebrow className="mb-3">{label}</SectionEyebrow>
-                          <ul className="space-y-2 text-sm leading-6 text-foreground">
-                            {items.map((item) => (
-                              <li key={item} className="flex items-start gap-2">
-                                <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary" />
-                                {item}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="rounded-2xl border border-border/60 bg-accent/50 p-5">
-                      <SectionEyebrow className="mb-2">Verdict</SectionEyebrow>
-                      <p className="text-sm leading-6 text-foreground">
-                        {marketValidation.verdict}
-                      </p>
-                    </div>
-                  </div>
+                  <LoaderCircle className="animate-spin" aria-hidden="true" />
                 ) : (
-                  <div className="rounded-2xl border border-dashed border-border/60 bg-muted/20 p-5 text-sm text-muted-foreground">
-                    Run market validation to pressure-test the idea before
-                    saving or sharing it.
-                  </div>
+                  <ShieldCheck className="size-4" aria-hidden="true" />
                 )}
-              </CardContent>
-            </Card>
+                {marketValidation ? "Refresh validation" : "Run validation"}
+              </Button>
+            </div>
+            {isMarketValidationLoading ? (
+              <div className="grid gap-4 md:grid-cols-3">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div
+                    key={index}
+                    className="space-y-3 border-t border-border/70 pt-4"
+                  >
+                    <Skeleton className="h-3 w-24" />
+                    <Skeleton className="h-3 w-full" />
+                    <Skeleton className="h-3 w-5/6" />
+                    <Skeleton className="h-3 w-3/6" />
+                  </div>
+                ))}
+              </div>
+            ) : marketValidation ? (
+              <div className="space-y-6">
+                <div className="grid gap-6 md:grid-cols-3 md:gap-8">
+                  {(
+                    [
+                      ["Competition", marketValidation.competition],
+                      ["Risks", marketValidation.risks],
+                      ["Potential users", marketValidation.potentialUsers],
+                    ] as const
+                  ).map(([label, items]) => (
+                    <div
+                      key={label}
+                      className="space-y-3 border-t border-border/70 pt-4"
+                    >
+                      <p className="text-[11px] font-medium tracking-[0.18em] text-muted-foreground uppercase">
+                        {label}
+                      </p>
+                      <ul className="space-y-2 text-sm leading-6 text-foreground/85">
+                        {items.map((item) => (
+                          <li key={item} className="flex items-start gap-2.5">
+                            <span
+                              className="mt-2 size-1.5 shrink-0 rounded-full bg-primary"
+                              aria-hidden="true"
+                            />
+                            <span className="text-pretty">{item}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+                <div className="space-y-2 border-l-2 border-primary pl-5">
+                  <p className="text-[11px] font-medium tracking-[0.18em] text-muted-foreground uppercase">
+                    Verdict
+                  </p>
+                  <p className="max-w-3xl text-base leading-8 text-foreground text-pretty">
+                    {marketValidation.verdict}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="border border-dashed border-border/60 bg-muted/20 p-6 text-sm leading-7 text-muted-foreground">
+                Run market validation to pressure-test the idea before saving
+                or sharing it.
+              </div>
+            )}
           </TabsContent>
         </Tabs>
 
         {/* FOOTER ACTIONS */}
-        <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-border/60 pt-5">
+        <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-border/60 pt-6">
           <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
             {generationRateLimit ? (
               <span
                 className="inline-flex items-center gap-1.5"
                 suppressHydrationWarning
               >
-                <Sparkles className="size-3.5 text-primary" />
+                <Sparkles className="size-3.5 text-primary" aria-hidden="true" />
                 {generationRateLimit.isExhausted
                   ? `Generation cooldown active${
                       generationRateLimit.resetsAt
@@ -423,9 +423,9 @@ export function IdeaCard({
                 variant="ghost"
                 size="sm"
                 onClick={onRemove}
-                className="rounded-full text-muted-foreground hover:text-destructive"
+                className="text-muted-foreground hover:text-destructive"
               >
-                <Trash2 className="size-4" />
+                <Trash2 className="size-4" aria-hidden="true" />
                 Remove
               </Button>
             ) : null}
@@ -438,12 +438,11 @@ export function IdeaCard({
                   description: "Your startup idea is stored in this browser.",
                 })
               }}
-              className="rounded-full"
             >
               {justSaved ? (
-                <Check className="size-4 text-emerald-500" />
+                <Check className="size-4" aria-hidden="true" />
               ) : (
-                <Bookmark className="size-4" />
+                <Bookmark className="size-4" aria-hidden="true" />
               )}
               {justSaved
                 ? isSaved
@@ -482,8 +481,8 @@ function ShareMenu({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button type="button" variant="outline" className="rounded-full">
-          <Share2 className="size-4" />
+        <Button type="button" variant="outline">
+          <Share2 className="size-4" aria-hidden="true" />
           Share
         </Button>
       </DropdownMenuTrigger>

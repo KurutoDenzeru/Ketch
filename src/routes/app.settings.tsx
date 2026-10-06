@@ -16,17 +16,19 @@ import {
 import { toast } from "sonner"
 
 import { useQuery } from "@tanstack/react-query"
+import { cn } from "cn"
 import type { LucideIcon } from "lucide-react"
 import type { SavedIdea } from "@/types/idea"
+import { AppCard, AppMasthead, AppPage } from "@/components/app/app-chrome"
 import { EmptyState } from "@/components/empty-state"
+import { Faq } from "@/components/faq"
+import { ScrollReveal } from "@/components/motion/scroll-reveal"
+import { StaggerGroup, StaggerItem } from "@/components/motion/stagger"
 import { SectionEyebrow } from "@/components/section-eyebrow"
-import { SectionHeader } from "@/components/section-header"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Progress } from "@/components/ui/progress"
-import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getGenerationRateLimitStatus } from "@/lib/gemini"
 import { getActivityLog } from "@/lib/activity-log"
@@ -51,7 +53,6 @@ import {
   recordExportTimestamp,
 } from "@/lib/data-export"
 import { buildSeoHead } from "@/lib/seo"
-import { cn } from "@/lib/utils"
 
 export const Route = createFileRoute("/app/settings")({
   head: () =>
@@ -93,66 +94,79 @@ function SettingsPage() {
   const [section, setSection] = useState<SectionId>("generation")
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 md:px-6 md:py-12">
-      <SectionHeader
+    <AppPage>
+      <AppMasthead
         eyebrow="Settings"
-        title={
-          <>
-            Make Ketch
-            <span className="italic text-primary"> feel like home.</span>
-          </>
-        }
+        title="Make Ketch"
+        accent="feel like home."
         description="Generation quota, data controls, and share-link history. The theme toggle lives in the footer."
+        art="draft"
       />
 
-      <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
-        <aside className="lg:sticky lg:top-24 lg:self-start">
-          <nav aria-label="Settings" className="space-y-1">
-            {sections.map(({ id, label, description, icon: Icon }) => {
-              const active = section === id
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => setSection(id)}
-                  className={cn(
-                    "flex w-full items-center gap-3 rounded-2xl border px-3 py-2.5 text-left transition-colors",
-                    active
-                      ? "border-primary/40 bg-primary/10 text-foreground shadow-xs"
-                      : "border-transparent text-foreground/75 hover:border-border/60 hover:bg-muted/40"
-                  )}
-                  aria-current={active ? "page" : undefined}
-                >
-                  <span
+      <div className="mt-8 grid gap-6 md:mt-12 lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)] lg:gap-8 xl:gap-10">
+        <aside className="lg:sticky lg:top-32 lg:self-start">
+          <ScrollReveal>
+            <nav
+              aria-label="Settings"
+              className="flex gap-2 overflow-x-auto rounded-2xl border border-border/60 bg-card/70 p-2 shadow-sm backdrop-blur lg:flex-col lg:gap-1 lg:overflow-visible"
+            >
+              {sections.map(({ id, label, description, icon: Icon }) => {
+                const active = section === id
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => setSection(id)}
                     className={cn(
-                      "inline-flex size-9 shrink-0 items-center justify-center rounded-xl border",
+                      "group flex w-full shrink-0 items-center gap-3 rounded-xl px-3 py-3 text-left transition-all duration-500 ease-out lg:shrink",
                       active
-                        ? "border-primary/40 bg-primary/10 text-primary"
-                        : "border-border/60 bg-background text-foreground/65"
+                        ? "bg-primary/10 shadow-xs ring-1 ring-primary/30"
+                        : "text-foreground/75 hover:bg-muted/50"
                     )}
+                    aria-current={active ? "page" : undefined}
                   >
-                    <Icon className="size-4" aria-hidden="true" />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-medium">{label}</span>
-                    <span className="block truncate text-[11px] tracking-[0.16em] text-muted-foreground uppercase">
-                      {description}
+                    <span
+                      className={cn(
+                        "inline-flex size-9 shrink-0 items-center justify-center rounded-xl border transition-colors duration-500",
+                        active
+                          ? "border-primary/40 bg-primary/10 text-primary"
+                          : "border-border/60 bg-background text-foreground/65 group-hover:border-foreground/20"
+                      )}
+                    >
+                      <Icon className="size-4" aria-hidden="true" />
                     </span>
-                  </span>
-                  <ChevronRight className="size-4 text-muted-foreground" />
-                </button>
-              )
-            })}
-          </nav>
+                    <span className="min-w-0 flex-1 lg:min-w-0">
+                      <span className="block text-sm font-medium">{label}</span>
+                      <span className="hidden text-[11px] tracking-[0.16em] text-muted-foreground uppercase lg:block">
+                        {description}
+                      </span>
+                    </span>
+                    <ChevronRight
+                      className={cn(
+                        "size-4 shrink-0 transition-transform duration-500 ease-out",
+                        active
+                          ? "translate-x-0.5 text-primary"
+                          : "text-muted-foreground group-hover:translate-x-0.5"
+                      )}
+                    />
+                  </button>
+                )
+              })}
+            </nav>
+          </ScrollReveal>
         </aside>
 
-        <section className="space-y-4">
+        <section>
           {section === "generation" ? <GenerationSection /> : null}
           {section === "data" ? <DataSection /> : null}
           {section === "sharing" ? <SharingSection /> : null}
         </section>
       </div>
-    </div>
+
+      <div className="mt-16 md:mt-20">
+        <Faq />
+      </div>
+    </AppPage>
   )
 }
 
@@ -164,53 +178,72 @@ function GenerationSection() {
   const rateLimit = generationRateLimitQuery.data ?? null
 
   return (
-    <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
-      <CardContent className="space-y-6 p-6 md:p-7">
-        <div>
-          <SectionEyebrow icon={WandSparkles}>Generation</SectionEyebrow>
-          <h3 className="mt-2 font-display text-2xl leading-tight">Quota</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Generation is rate-limited per week to keep the lab fair for everyone.
-          </p>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Stat label="Used" value={rateLimit ? rateLimit.used : "—"} />
-          <Stat label="Remaining" value={rateLimit ? rateLimit.remaining : "—"} />
-          <Stat label="Weekly cap" value={rateLimit ? rateLimit.limit : "—"} />
-        </div>
-
-        {rateLimit ? (
-          <div className="space-y-2">
-            <Progress
-              value={(rateLimit.remaining / rateLimit.limit) * 100}
-              className="h-2"
-            />
-            <p
-              className="text-xs text-muted-foreground"
-              suppressHydrationWarning
-            >
-              {rateLimit.isExhausted
-                ? `Cooldown active — resets ${new Date(rateLimit.resetsAt ?? "").toLocaleString()}.`
-                : `Resets ${new Date(rateLimit.resetsAt ?? "").toLocaleString()}.`}
+    <StaggerGroup className="space-y-6">
+      <StaggerItem className="h-full">
+        <AppCard className="h-full space-y-6">
+          <div>
+            <SectionEyebrow icon={WandSparkles}>Generation</SectionEyebrow>
+            <h2 className="mt-2 font-display text-3xl leading-tight text-balance">
+              Weekly quota
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-pretty text-muted-foreground">
+              Generation is rate-limited per week to keep the lab fair for
+              everyone. The window resets on a fixed schedule, so the counters
+              below are the same ones the lab reads before it runs a model.
             </p>
           </div>
-        ) : (
-          <Skeleton className="h-4 w-1/2" />
-        )}
-        <Separator />
 
-        <div>
-          <h4 className="font-medium">Usage activity</h4>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Your generation activity over the past year.
-          </p>
-          <div className="mt-3">
-            <ContributionGraph />
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 md:grid-flow-dense">
+            <StaggerItem className="h-full">
+              <Stat label="Used" value={rateLimit ? rateLimit.used : "—"} />
+            </StaggerItem>
+            <StaggerItem className="h-full">
+              <Stat label="Remaining" value={rateLimit ? rateLimit.remaining : "—"} />
+            </StaggerItem>
+            <StaggerItem className="h-full">
+              <Stat label="Weekly cap" value={rateLimit ? rateLimit.limit : "—"} />
+            </StaggerItem>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+
+          {rateLimit ? (
+            <div className="space-y-2">
+              <Progress
+                value={(rateLimit.remaining / rateLimit.limit) * 100}
+                className="h-2"
+              />
+              <p
+                className="text-xs text-muted-foreground tabular-nums"
+                suppressHydrationWarning
+              >
+                {rateLimit.resetsAt
+                  ? rateLimit.isExhausted
+                    ? `Cooldown active, resets ${new Date(rateLimit.resetsAt).toLocaleString()}.`
+                    : `Resets ${new Date(rateLimit.resetsAt).toLocaleString()}.`
+                  : "No active cooldown."}
+              </p>
+            </div>
+          ) : (
+            <Skeleton className="h-4 w-1/2" />
+          )}
+        </AppCard>
+      </StaggerItem>
+
+      <StaggerItem className="h-full">
+        <AppCard className="h-full space-y-4">
+          <div>
+            <SectionEyebrow icon={WandSparkles}>Usage activity</SectionEyebrow>
+            <h2 className="mt-2 font-display text-3xl leading-tight text-balance">
+              A year of your lab
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-pretty text-muted-foreground">
+              Every event Ketch recorded in this browser over the past year.
+              Ideas generated, saved, removed, and shared.
+            </p>
+          </div>
+          <ContributionGraph />
+        </AppCard>
+      </StaggerItem>
+    </StaggerGroup>
   )
 }
 
@@ -441,102 +474,141 @@ function DataSection() {
   }
 
   return (
-    <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
-      <CardContent className="space-y-6 p-6 md:p-7">
-        <div>
-          <SectionEyebrow icon={Database}>Data</SectionEyebrow>
-          <h3 className="mt-2 font-display text-2xl leading-tight">Your library</h3>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Everything lives in this browser. Export to move data to another device.
-          </p>
-        </div>
-
-        <div className="grid gap-3 sm:grid-cols-3">
-          <Stat label="Saved ideas" value={saved.length} />
-          <Stat label="Local size" value={`${kb} KB`} />
-          <Stat label="Last export" value={hydrated && lastExportAt ? new Date(lastExportAt).toLocaleDateString() : "—"} />
-        </div>
-
-        <Separator />
-
-        <div>
-          <h4 className="font-medium">Export</h4>
-          <p className="mt-1 text-sm text-muted-foreground">
-            JSON for full restore, Markdown for documentation, plain text for clipboard.
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              className="rounded-full"
-              onClick={() => handleExport("json")}
-              disabled={!hydrated}
-            >
-              <Download className="size-4" />
-              JSON
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="rounded-full"
-              onClick={() => handleExport("markdown")}
-              disabled={!hydrated}
-            >
-              <Download className="size-4" />
-              Markdown
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              className="rounded-full"
-              onClick={() => handleExport("text")}
-              disabled={!hydrated}
-            >
-              <Download className="size-4" />
-              Plain text
-            </Button>
+    <StaggerGroup className="space-y-6">
+      <StaggerItem className="h-full">
+        <AppCard className="h-full space-y-6">
+          <div>
+            <SectionEyebrow icon={Database}>Data</SectionEyebrow>
+            <h2 className="mt-2 font-display text-3xl leading-tight text-balance">
+              Your library
+            </h2>
+            <p className="mt-2 max-w-2xl text-sm leading-6 text-pretty text-muted-foreground">
+              Everything lives in this browser. Export to move data to another
+              device.
+            </p>
           </div>
-        </div>
 
-        <div>
-          <h4 className="font-medium">Import</h4>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Restoring from a previous JSON export. Duplicates are merged.
-          </p>
-          <Label
-            htmlFor="import-file"
-            className="mt-3 inline-flex h-10 cursor-pointer items-center gap-2 rounded-full border border-border/60 bg-background/70 px-4 text-sm font-medium hover:bg-muted/60"
-          >
-            <Upload className="size-4" />
-            Choose JSON file
-            <Input
-              id="import-file"
-              type="file"
-              accept="application/json"
-              className="hidden"
-              onChange={handleImport}
-            />
-          </Label>
-        </div>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 md:grid-flow-dense">
+            <StaggerItem className="h-full">
+              <Stat label="Saved ideas" value={saved.length} />
+            </StaggerItem>
+            <StaggerItem className="h-full">
+              <Stat label="Local size" value={`${kb} KB`} />
+            </StaggerItem>
+            <StaggerItem className="h-full">
+              <Stat
+                label="Last export"
+                value={
+                  hydrated && lastExportAt
+                    ? new Date(lastExportAt).toLocaleDateString()
+                    : "—"
+                }
+              />
+            </StaggerItem>
+          </div>
+        </AppCard>
+      </StaggerItem>
 
-        <Separator />
+      <StaggerGroup className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-2 md:grid-flow-dense">
+        <StaggerItem className="h-full">
+          <AppCard className="flex h-full flex-col space-y-4">
+            <div className="flex items-center gap-2">
+              <Download className="size-4 text-primary" aria-hidden="true" />
+              <h3 className="font-display text-xl leading-tight">Export</h3>
+            </div>
+            <p className="text-sm leading-6 text-pretty text-muted-foreground">
+              Each export contains every saved idea with its name, tagline, full
+              pitch, market validation, and the timestamp it was saved. JSON is
+              the only format Import accepts, because it is the only one that
+              round-trips every field without loss.
+            </p>
+            <div className="mt-auto flex flex-wrap gap-2 pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-full"
+                onClick={() => handleExport("json")}
+                disabled={!hydrated}
+              >
+                <Download className="size-4" />
+                JSON
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                className="rounded-full"
+                onClick={() => handleExport("markdown")}
+                disabled={!hydrated}
+              >
+                <Download className="size-4" />
+                Markdown
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                className="rounded-full"
+                onClick={() => handleExport("text")}
+                disabled={!hydrated}
+              >
+                <Download className="size-4" />
+                Plain text
+              </Button>
+            </div>
+          </AppCard>
+        </StaggerItem>
 
-        <div className="rounded-2xl border border-destructive/40 bg-destructive/5 p-4">
-          <div className="flex items-start gap-3">
-            <span className="inline-flex size-9 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
-              <AlertTriangle className="size-4" />
+        <StaggerItem className="h-full">
+          <AppCard className="flex h-full flex-col space-y-4">
+            <div className="flex items-center gap-2">
+              <Upload className="size-4 text-primary" aria-hidden="true" />
+              <h3 className="font-display text-xl leading-tight">Import</h3>
+            </div>
+            <p className="text-sm leading-6 text-pretty text-muted-foreground">
+              Restoring from a previous Ketch JSON export. Duplicates are merged
+              by fingerprint, so re-importing the same file never creates a
+              second copy of an idea you already have.
+            </p>
+            <div className="mt-auto pt-2">
+              <Label
+                htmlFor="import-file"
+                className="inline-flex h-10 cursor-pointer items-center gap-2 rounded-full border border-border/60 bg-background/70 px-4 text-sm font-medium transition-colors hover:bg-muted/60"
+              >
+                <Upload className="size-4" />
+                Choose JSON file
+                <Input
+                  id="import-file"
+                  type="file"
+                  accept="application/json"
+                  className="hidden"
+                  onChange={handleImport}
+                />
+              </Label>
+            </div>
+          </AppCard>
+        </StaggerItem>
+      </StaggerGroup>
+
+      <StaggerItem className="h-full">
+        <div className="h-full rounded-2xl border border-destructive/40 bg-destructive/5 p-6 md:p-8">
+          <div className="flex items-start gap-4">
+            <span className="inline-flex size-10 shrink-0 items-center justify-center rounded-xl bg-destructive/10 text-destructive">
+              <AlertTriangle className="size-4" aria-hidden="true" />
             </span>
             <div className="flex-1">
-              <h4 className="font-medium">Clear local library</h4>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <h3 className="font-display text-xl leading-tight">
+                Clear local library
+              </h3>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-pretty text-muted-foreground">
                 Removes every saved idea, draft, and share-link history from this
-                device. Public share links keep working.
+                device. Public share links keep working, because the idea itself
+                is encoded in the URL rather than stored here. This cannot be
+                undone.
               </p>
               <Button
                 type="button"
                 variant="destructive"
                 size="sm"
-                className="mt-3 rounded-full"
+                className="mt-4 rounded-full"
                 onClick={handleClear}
                 disabled={!hydrated || saved.length === 0}
               >
@@ -546,8 +618,8 @@ function DataSection() {
             </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </StaggerItem>
+    </StaggerGroup>
   )
 }
 
@@ -579,9 +651,9 @@ function SharingSection() {
   }
 
   return (
-    <div className="space-y-4">
-      <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
-        <CardContent className="space-y-4 p-6 md:p-7">
+    <StaggerGroup className="space-y-6">
+      <StaggerItem className="h-full">
+        <AppCard className="h-full space-y-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <SectionEyebrow icon={Share2}>Shared by you</SectionEyebrow>
@@ -647,19 +719,20 @@ function SharingSection() {
               ))}
             </ul>
           )}
-        </CardContent>
-      </Card>
+        </AppCard>
+      </StaggerItem>
 
-      <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
-        <CardContent className="space-y-4 p-6 md:p-7">
+      <StaggerItem className="h-full">
+        <AppCard className="h-full space-y-4">
+
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <SectionEyebrow icon={Eye}>Recent views</SectionEyebrow>
-              <h3 className="mt-2 font-display text-2xl leading-tight">
+              <h2 className="mt-2 font-display text-2xl leading-tight text-balance">
                 Recently opened shared ideas
-              </h3>
-              <p className="mt-1 text-sm text-muted-foreground">
-                A private log of shared ideas you've opened in this browser.
+              </h2>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-pretty text-muted-foreground">
+                A private log of shared ideas you have opened in this browser.
               </p>
             </div>
             <Button
@@ -719,9 +792,9 @@ function SharingSection() {
               ))}
             </ul>
           )}
-        </CardContent>
-      </Card>
-    </div>
+        </AppCard>
+      </StaggerItem>
+    </StaggerGroup>
   )
 }
 

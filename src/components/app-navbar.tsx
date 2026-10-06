@@ -1,18 +1,11 @@
 "use client"
 
 import { Link, useRouterState } from "@tanstack/react-router"
-import {
-  ArrowRight,
-  Bookmark,
-  Compass,
-  HelpCircle,
-  LineChart,
-  Settings,
-  Sparkles,
-} from "lucide-react"
+import { cn } from "cn"
+import { Bookmark, Settings, Sparkles } from "lucide-react"
+import { useEffect, useState } from "react"
 import type { ReactNode } from "react"
 
-import { Button } from "@/components/ui/button"
 import {
   Tooltip,
   TooltipContent,
@@ -20,7 +13,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { brand, navLinks } from "@/lib/brand"
-import { cn } from "@/lib/utils"
 
 const appNavIcons: Record<string, typeof Sparkles> = {
   Sparkles,
@@ -28,41 +20,37 @@ const appNavIcons: Record<string, typeof Sparkles> = {
   Settings,
 }
 
-const marketingNavIcons: Record<string, typeof Compass> = {
-  Compass,
-  LineChart,
-  HelpCircle,
-}
-
-type AppNavbarProps = {
-  variant: "marketing" | "app"
-}
-
-export function AppNavbar({ variant }: AppNavbarProps) {
+export function AppNavbar() {
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   })
-
-  if (variant === "marketing") {
-    return <MarketingDock pathname={pathname} />
-  }
 
   return <AppDock pathname={pathname} />
 }
 
 function Dock({ children }: { children: ReactNode }) {
+  const [docked, setDocked] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setDocked(window.scrollY > 24)
+    onScroll()
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => window.removeEventListener("scroll", onScroll)
+  }, [])
+
   return (
     <TooltipProvider delayDuration={200}>
       <div
         className="pointer-events-none fixed inset-x-0 z-50
-                   md:bottom-auto md:top-3 top-auto bottom-3
+                   md:bottom-auto md:top-4 top-auto bottom-3
                    flex justify-center px-3"
       >
         <div
-          className="pointer-events-auto flex max-w-fit items-center gap-1
-                     rounded-full border border-border/60
-                     bg-background/70 px-2.5 py-2 shadow-xs
-                     ring-1 ring-foreground/5 backdrop-blur-xl"
+          className={cn(
+            "pointer-events-auto flex max-w-fit items-center gap-1 rounded-full px-2.5 py-2",
+            "transition-[background-color,border-color,box-shadow] duration-500 ease-out",
+            docked ? "glass hairline shadow-md" : "border border-transparent"
+          )}
         >
           {children}
         </div>
@@ -85,7 +73,7 @@ function BrandLockup({ to }: { to: "/" | "/app/new" }) {
     <Link
       to={to}
       aria-label={`${brand.name} home`}
-      className="inline-flex h-9 items-center gap-2 rounded-full pl-1 pr-2.5
+      className="inline-flex h-9 items-center gap-2 rounded-full pl-1 pr-3
                  transition-transform active:scale-95
                  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
     >
@@ -98,7 +86,7 @@ function BrandLockup({ to }: { to: "/" | "/app/new" }) {
           className="size-full object-cover"
         />
       </span>
-      <span className="font-display text-base font-semibold leading-none tracking-tight">
+      <span className="font-display text-lg leading-none font-semibold tracking-[-0.015em]">
         {brand.name}
       </span>
     </Link>
@@ -118,52 +106,6 @@ function NavItemTooltip({ label, children }: NavItemTooltipProps) {
         {label}
       </TooltipContent>
     </Tooltip>
-  )
-}
-
-function MarketingDock({ pathname: _pathname }: { pathname: string }) {
-  return (
-    <Dock>
-      <NavItemTooltip label={`${brand.name} home`}>
-        <BrandLockup to="/" />
-      </NavItemTooltip>
-
-      <DockSeparator />
-
-      <nav
-        aria-label="Primary"
-        className="flex items-center gap-0.5"
-      >
-        {navLinks.marketing.map((link) => {
-          const Icon = marketingNavIcons[link.icon] ?? Compass
-          return (
-            <NavItemTooltip key={link.href} label={link.label}>
-              <a
-                href={link.href}
-                className="inline-flex h-9 items-center gap-2 rounded-full px-3 text-sm font-medium
-                           text-foreground/75 transition-colors
-                           hover:bg-muted/60 hover:text-foreground
-                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-              >
-                <Icon className="size-4" aria-hidden="true" />
-                <span className="hidden md:inline">{link.label}</span>
-              </a>
-            </NavItemTooltip>
-          )
-        })}
-      </nav>
-
-      <DockSeparator />
-
-      <NavItemTooltip label="Open the app">
-        <Button asChild size="sm" className="rounded-full">
-          <Link to="/app/new">
-            <span className="hidden md:inline">Open the app</span>
-            <ArrowRight className="size-4 md:ml-1" />
-          </Link>
-        </Button>
-      </NavItemTooltip>
-    </Dock>
   )
 }
 

@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@import "@fontsource-variable/oxanium";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -11,110 +12,130 @@
 
 :root {
   /* Surfaces (warm cream base) */
-  --background: oklch(0.972 0.013 84);
-  --foreground: oklch(0.205 0.008 67);
-  --card: oklch(0.987 0.010 84);
-  --card-foreground: oklch(0.205 0.008 67);
-  --popover: oklch(0.992 0.008 84);
-  --popover-foreground: oklch(0.205 0.008 67);
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
 
   /* Muted + borders */
-  --muted: oklch(0.937 0.012 84);
-  --muted-foreground: oklch(0.488 0.013 67);
-  --border: oklch(0.910 0.014 84);
-  --input: oklch(0.910 0.014 84);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
 
   /* Brand: terracotta primary (Anthropic-style) */
-  --primary: oklch(0.665 0.130 41);
-  --primary-foreground: oklch(0.985 0.010 84);
-  --secondary: oklch(0.937 0.012 84);
-  --secondary-foreground: oklch(0.260 0.020 41);
-  --accent: oklch(0.927 0.025 65);
-  --accent-foreground: oklch(0.260 0.020 41);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
 
   /* Destructive / status */
-  --destructive: oklch(0.580 0.190 28);
+  --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0.010 84);
 
   /* Focus ring */
-  --ring: oklch(0.665 0.130 41 / 0.45);
+  --ring: oklch(0.708 0 0);
 
   /* Brand accents (used sparingly for charts + highlights) */
   --brand-blue: oklch(0.700 0.082 245);
   --brand-green: oklch(0.620 0.075 130);
   --brand-gold: oklch(0.780 0.100 75);
 
-  /* Chart palette (rebalanced to harmonize with terracotta) */
-  --chart-1: oklch(0.665 0.130 41);
-  --chart-2: oklch(0.700 0.082 245);
-  --chart-3: oklch(0.620 0.075 130);
-  --chart-4: oklch(0.780 0.100 75);
-  --chart-5: oklch(0.460 0.012 67);
+  /* Chart palette: five distinguishable hues. */
+  --chart-1: oklch(0.58 0.176 27);   /* terracotta */
+  --chart-2: oklch(0.60 0.116 244);  /* blue */
+  --chart-3: oklch(0.62 0.132 152);  /* green */
+  --chart-4: oklch(0.74 0.135 82);   /* gold */
+  --chart-5: oklch(0.55 0.088 300);  /* violet */
 
   /* Sidebar / app shell (tuned for the warm cream light mode) */
-  --sidebar: oklch(0.987 0.010 84);
-  --sidebar-foreground: oklch(0.205 0.008 67);
-  --sidebar-primary: oklch(0.665 0.130 41);
-  --sidebar-primary-foreground: oklch(0.985 0.010 84);
-  --sidebar-accent: oklch(0.937 0.012 84);
-  --sidebar-accent-foreground: oklch(0.205 0.008 67);
-  --sidebar-border: oklch(0.910 0.014 84);
-  --sidebar-ring: oklch(0.665 0.130 41 / 0.45);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+
+  /* Depth tokens for glass, floating chrome, and scrims */
+  --surface-raised: oklch(0.995 0.008 84);
+  --surface-sunken: oklch(0.947 0.014 84);
+  --overlay-scrim: oklch(0.205 0.008 67 / 0.45);
+
+  /* Hero headline fill; the glint stop keeps contrast at hero size. */
+  --flash-from: var(--chart-1);
+  --flash-mid: var(--chart-2);
+  --flash-glint: color-mix(in oklch, var(--chart-4) 78%, var(--foreground));
 
   /* Radius scale (3-step) */
-  --radius: 0.75rem;
+  --radius: 0.625rem;
+  --sidebar-border: oklch(0.922 0 0);
 }
 
 .dark {
-  --background: oklch(0.180 0.006 67);
-  --foreground: oklch(0.955 0.010 84);
-  --card: oklch(0.225 0.007 67);
-  --card-foreground: oklch(0.955 0.010 84);
-  --popover: oklch(0.225 0.007 67);
-  --popover-foreground: oklch(0.955 0.010 84);
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
 
-  --muted: oklch(0.275 0.008 67);
-  --muted-foreground: oklch(0.685 0.012 84);
-  --border: oklch(0.310 0.008 67);
-  --input: oklch(0.310 0.008 67);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
 
   /* Terracotta tuned for dark surfaces (slightly brighter) */
-  --primary: oklch(0.720 0.135 41);
-  --primary-foreground: oklch(0.180 0.006 67);
-  --secondary: oklch(0.275 0.008 67);
-  --secondary-foreground: oklch(0.955 0.010 84);
-  --accent: oklch(0.305 0.012 67);
-  --accent-foreground: oklch(0.955 0.010 84);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
 
-  --destructive: oklch(0.704 0.191 22);
+  --destructive: oklch(0.704 0.191 22.216);
   --destructive-foreground: oklch(0.985 0.010 84);
-  --ring: oklch(0.720 0.135 41 / 0.55);
+  --ring: oklch(0.556 0 0);
 
   --brand-blue: oklch(0.760 0.080 245);
   --brand-green: oklch(0.700 0.080 130);
   --brand-gold: oklch(0.820 0.105 75);
 
-  --chart-1: oklch(0.720 0.135 41);
-  --chart-2: oklch(0.760 0.080 245);
-  --chart-3: oklch(0.700 0.080 130);
-  --chart-4: oklch(0.820 0.105 75);
-  --chart-5: oklch(0.685 0.012 84);
+  --chart-1: oklch(0.72 0.142 34);
+  --chart-2: oklch(0.70 0.118 238);
+  --chart-3: oklch(0.74 0.142 158);
+  --chart-4: oklch(0.82 0.128 84);
+  --chart-5: oklch(0.72 0.098 300);
 
-  --sidebar: oklch(0.225 0.007 67);
-  --sidebar-foreground: oklch(0.955 0.010 84);
-  --sidebar-primary: oklch(0.720 0.135 41);
-  --sidebar-primary-foreground: oklch(0.180 0.006 67);
-  --sidebar-accent: oklch(0.275 0.008 67);
-  --sidebar-accent-foreground: oklch(0.955 0.010 84);
-  --sidebar-border: oklch(0.310 0.008 67);
-  --sidebar-ring: oklch(0.720 0.135 41 / 0.55);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+
+  /* Depth tokens (dark) */
+  --surface-raised: oklch(0.258 0.008 67);
+  --surface-sunken: oklch(0.152 0.006 67);
+  --overlay-scrim: oklch(0.120 0.005 67 / 0.60);
+
+  --flash-from: var(--chart-1);
+  --flash-mid: var(--chart-2);
+  --flash-glint: var(--chart-4);
 }
 
 @theme inline {
-  --font-sans: "Plus Jakarta Sans", sans-serif;
-  --font-display: "Fraunces", serif;
+  --font-sans: 'Oxanium Variable', sans-serif;
+
+  --font-display: "Satoshi", var(--font-sans);
   --font-mono:
-    ui-monospace, SFMono-Regular, "JetBrains Mono", "Fira Code", monospace;
+    "JetBrains Mono", ui-monospace, SFMono-Regular, "Fira Code", monospace;
 
   --color-brand-blue: var(--brand-blue);
   --color-brand-green: var(--brand-green);
@@ -152,6 +173,10 @@
   --color-foreground: var(--foreground);
   --color-background: var(--background);
 
+  --color-overlay-scrim: var(--overlay-scrim);
+  --color-surface-sunken: var(--surface-sunken);
+  --color-surface-raised: var(--surface-raised);
+
   /* 3-step radius scale */
   --radius-sm: calc(var(--radius) * 0.5);
   --radius-md: var(--radius);
@@ -159,6 +184,59 @@
   --radius-xl: calc(var(--radius) * 1.5);
   --radius-2xl: calc(var(--radius) * 2);
   --radius-3xl: calc(var(--radius) * 2.5);
+  --font-heading: var(--font-sans);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* Very slow ambient mesh drift, neutralized by the reduced-motion block below. */
+@keyframes ketch-ambient-drift {
+  0%,
+  100% {
+    transform: translate3d(-2%, -1%, 0) scale(1.06);
+  }
+  50% {
+    transform: translate3d(2%, 2%, 0) scale(1.14);
+  }
+}
+
+/* Subtle mottle breathing on the grain layer. */
+@keyframes ketch-mottle {
+  0% {
+    opacity: 0.55;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Masthead light sweep: one beam crosses the stage, then rests. */
+@keyframes ketch-hero-beam {
+  0% {
+    opacity: 0;
+    transform: translate3d(-140%, -6%, 0) rotate(9deg);
+  }
+  14% {
+    opacity: 0.5;
+  }
+  40% {
+    opacity: 0.26;
+  }
+  56%,
+  100% {
+    opacity: 0;
+    transform: translate3d(220%, 6%, 0) rotate(9deg);
+  }
+}
+
+/* Headline flash: the gradient arc slides across the glyphs. */
+@keyframes ketch-text-flash {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 @layer base {
@@ -201,6 +279,80 @@
         var(--background) 100%
       );
     background-attachment: fixed;
+    isolation: isolate;
+  }
+
+  /* Drifting mesh and grain mottle on fixed layers, so only the compositor animates. */
+  body::before,
+  body::after {
+    content: "";
+    position: fixed;
+    inset: -20%;
+    z-index: -1;
+    pointer-events: none;
+    will-change: transform;
+  }
+
+  body::before {
+    background-image:
+      radial-gradient(
+        circle at 22% 28%,
+        color-mix(in oklch, var(--primary) 18%, transparent) 0,
+        transparent 38%
+      ),
+      radial-gradient(
+        circle at 78% 18%,
+        color-mix(in oklch, var(--brand-blue) 14%, transparent) 0,
+        transparent 34%
+      ),
+      radial-gradient(
+        circle at 68% 82%,
+        color-mix(in oklch, var(--accent) 20%, transparent) 0,
+        transparent 40%
+      ),
+      radial-gradient(
+        circle at 18% 78%,
+        color-mix(in oklch, var(--brand-green) 10%, transparent) 0,
+        transparent 36%
+      );
+    animation: ketch-ambient-drift 48s ease-in-out infinite;
+  }
+
+  body::after {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='m'><feTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23m)'/></svg>");
+    background-size: 200px 200px;
+    opacity: 0.028;
+    mix-blend-mode: multiply;
+    animation: ketch-mottle 24s ease-in-out infinite alternate;
+  }
+
+  .dark body::before {
+    background-image:
+      radial-gradient(
+        circle at 22% 28%,
+        color-mix(in oklch, var(--primary) 26%, transparent) 0,
+        transparent 36%
+      ),
+      radial-gradient(
+        circle at 78% 18%,
+        color-mix(in oklch, var(--brand-blue) 18%, transparent) 0,
+        transparent 32%
+      ),
+      radial-gradient(
+        circle at 68% 82%,
+        color-mix(in oklch, var(--accent) 16%, transparent) 0,
+        transparent 38%
+      ),
+      radial-gradient(
+        circle at 18% 78%,
+        color-mix(in oklch, var(--brand-green) 12%, transparent) 0,
+        transparent 34%
+      );
+  }
+
+  .dark body::after {
+    opacity: 0.05;
+    mix-blend-mode: screen;
   }
 
   .dark body {
@@ -249,6 +401,9 @@
   .skip-link:focus-visible {
     transform: translateY(0);
   }
+  button:not(:disabled), [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
 }
 
 @layer utilities {
@@ -267,17 +422,97 @@
   .text-pretty {
     text-wrap: pretty;
   }
+
+  /* Inset hairline: 1px border plus a soft top inner highlight, never a drop shadow. */
+  .hairline {
+    border: 1px solid color-mix(in oklch, var(--border) 60%, transparent);
+    box-shadow: inset 0 1px 0 0 color-mix(in oklch, white 6%, transparent);
+  }
+  .dark .hairline {
+    border-color: color-mix(in oklch, var(--border) 75%, transparent);
+    box-shadow: inset 0 1px 0 0 color-mix(in oklch, white 8%, transparent);
+  }
+
+  /* Hover lift for interactive cards, using transforms only so no layout work happens. */
+  .lift {
+    transition:
+      transform 700ms cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 700ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 700ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .lift:hover {
+    transform: translate3d(0, -4px, 0);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lift:hover {
+      transform: none;
+    }
+  }
+
+  /* Translucent blurred surface for floating chrome. */
+  .glass {
+    background: color-mix(in oklch, var(--card) 72%, transparent);
+    backdrop-filter: blur(20px) saturate(1.4);
+    -webkit-backdrop-filter: blur(20px) saturate(1.4);
+  }
+
+  /* Horizontal fade for art that bleeds off the right edge. */
+  .mask-fade-l {
+    mask-image: linear-gradient(to right, transparent 0%, black 42%);
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 42%
+    );
+  }
+
+  .hero-beam {
+    position: absolute;
+    inset-block: -30%;
+    inset-inline-start: 0;
+    width: 42%;
+    opacity: 0;
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      color-mix(in oklch, var(--brand-blue) 26%, transparent) 40%,
+      color-mix(in oklch, white 34%, transparent) 52%,
+      color-mix(in oklch, var(--primary) 22%, transparent) 64%,
+      transparent
+    );
+    filter: blur(24px);
+    will-change: transform;
+    animation: ketch-hero-beam 9s cubic-bezier(0.5, 0, 0.2, 1) infinite;
+  }
+
+  .flash-text {
+    background-image: linear-gradient(
+      100deg,
+      var(--flash-from) 0%,
+      var(--flash-mid) 30%,
+      var(--flash-glint) 50%,
+      var(--flash-mid) 70%,
+      var(--flash-from) 100%
+    );
+    background-position: 0% 50%;
+    background-size: 250% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    animation: ketch-text-flash 5s ease-in-out infinite;
+  }
+
   .grain-overlay {
     position: fixed;
     inset: 0;
     pointer-events: none;
     z-index: 1;
-    opacity: 0.035;
+    opacity: 0.022;
     mix-blend-mode: multiply;
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
   }
   .dark .grain-overlay {
-    opacity: 0.05;
+    opacity: 0.035;
     mix-blend-mode: screen;
   }
 }
@@ -288,6 +523,7 @@
   *::after {
     animation-duration: 0.001ms !important;
     transition-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
   }
 }

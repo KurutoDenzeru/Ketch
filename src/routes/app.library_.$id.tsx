@@ -3,13 +3,14 @@
 import { useEffect, useMemo, useState } from "react"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Link, createFileRoute, useNavigate, useParams } from "@tanstack/react-router"
+import { cn } from "cn"
 import {
   ArrowLeft,
   Bookmark,
-  CalendarDays,
   ChevronRight,
   LoaderCircle,
   Sparkles,
+  Star,
   Trash2,
   WandSparkles,
 } from "lucide-react"
@@ -22,11 +23,12 @@ import type {
   StartupIdea,
   StartupPitch,
 } from "@/types/idea"
+
+import { AppCard, AppPage } from "@/components/app/app-chrome"
 import { IdeaCard } from "@/components/idea-card"
 import { EmptyState } from "@/components/empty-state"
-import { SectionEyebrow } from "@/components/section-eyebrow"
+import { ScrollReveal } from "@/components/motion/scroll-reveal"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import {
   buildIdeaShareUrl,
   formatIdeaAsAgentPrompt,
@@ -287,7 +289,7 @@ function LibraryDetailPage() {
 
   if (hydrated && !saved) {
     return (
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-12 md:px-6">
+      <AppPage width="narrow">
         <EmptyState
           icon={<Bookmark className="size-10" />}
           title="Saved idea not found"
@@ -298,12 +300,12 @@ function LibraryDetailPage() {
             </Button>
           }
         />
-      </div>
+      </AppPage>
     )
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 md:px-6 md:py-10">
+    <AppPage>
       <nav
         className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground"
         aria-label="Breadcrumb"
@@ -323,16 +325,39 @@ function LibraryDetailPage() {
         <span className="text-foreground">{idea?.name ?? "Loading…"}</span>
       </nav>
 
-      <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
-        <CardContent className="flex flex-wrap items-center justify-between gap-3 p-5 md:p-6">
-          <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-            <SectionEyebrow icon={CalendarDays}>
-              Saved snapshot
-            </SectionEyebrow>
-            <span suppressHydrationWarning>
-              {saved ? new Date(saved.createdAt).toLocaleString() : "—"}
-            </span>
+      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,320px)_minmax(0,1fr)] lg:items-start lg:gap-8 xl:gap-10">
+        <header className="flex flex-col gap-5 lg:sticky lg:top-32">
+          <div className="flex flex-col gap-4">
+            {idea ? (
+              <>
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+                    {idea.category}
+                  </span>
+                  <span
+                    className="inline-flex h-6 items-center gap-1 rounded-full bg-primary/10 px-2 text-[11px] font-semibold text-primary tabular-nums"
+                    aria-label={`Validation score ${idea.validationScore} out of 10`}
+                  >
+                    <Star className="size-3" />
+                    {idea.validationScore}/10
+                  </span>
+                </div>
+                <h1 className="max-w-[16ch] font-display text-[clamp(2rem,4.4vw,3.25rem)] leading-[1.04] tracking-[-0.03em] text-balance">
+                  {idea.name}
+                </h1>
+                <p className="text-base leading-7 text-muted-foreground text-pretty">
+                  {idea.tagline}
+                </p>
+              </>
+            ) : (
+              <>
+                <SkeletonLine className="h-11 w-2/3" />
+                <SkeletonLine className="h-4 w-full" />
+                <SkeletonLine className="h-4 w-4/5" />
+              </>
+            )}
           </div>
+
           <div className="flex flex-wrap items-center gap-2">
             <Button
               type="button"
@@ -378,55 +403,76 @@ function LibraryDetailPage() {
               Remove
             </Button>
           </div>
-        </CardContent>
-      </Card>
 
-      {idea && currentPayload ? (
-        <IdeaCard
-          idea={idea}
-          pitch={pitch}
-          marketValidation={marketValidation}
-          isPitchLoading={pitchMutation.isPending}
-          isMarketValidationLoading={marketValidationMutation.isPending}
-          isRegeneratingTitles={regenerateTitlesMutation.isPending}
-          isSharing={false}
-          isSaved={isIdeaSaved(idea)}
-          copiedIdeaFormat={
-            copiedFormat === "text" ||
-            copiedFormat === "markdown" ||
-            copiedFormat === "agent-prompt"
-              ? copiedFormat
-              : null
-          }
-          isShareLinkCopied={copiedFormat === "link"}
-          generationRateLimit={generationRateLimit}
-          onSelectAlternativeName={(name) => {
-            const next = { ...idea, name }
-            setIdea(next)
-            persist({ idea: next, pitch, marketValidation })
-            toast.success("Startup name swapped", {
-              description: `${name} is now the active saved idea name.`,
-            })
-          }}
-          onRegenerateTitles={() => regenerateTitlesMutation.mutate(idea)}
-          onGeneratePitch={() => pitchMutation.mutate(idea)}
-          onGenerateMarketValidation={() => marketValidationMutation.mutate(idea)}
-          onCopyText={handleCopyText}
-          onCopyMarkdown={handleCopyMarkdown}
-          onCopyAgentPrompt={handleCopyAgentPrompt}
-          onCopyShareLink={handleCopyShareLink}
-          onOpenSharedView={handleOpenSharedView}
-          onSave={handleSave}
-        />
-      ) : (
-        <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
-          <CardContent className="space-y-3 p-6">
-            <div className="h-12 w-2/3 animate-pulse rounded-lg bg-muted" />
-            <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
-            <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
-          </CardContent>
-        </Card>
-      )}
-    </div>
+          <dl className="grid gap-px overflow-hidden rounded-2xl border border-border/60 bg-border/60 text-sm sm:grid-cols-2">
+            <div className="bg-card/70 px-4 py-3">
+              <dt className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+                Saved
+              </dt>
+              <dd className="mt-1 tabular-nums" suppressHydrationWarning>
+                {saved ? new Date(saved.createdAt).toLocaleString() : "—"}
+              </dd>
+            </div>
+            <div className="bg-card/70 px-4 py-3">
+              <dt className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+                Stored
+              </dt>
+              <dd className="mt-1">This browser only</dd>
+            </div>
+          </dl>
+        </header>
+
+        <ScrollReveal>
+          {idea && currentPayload ? (
+            <IdeaCard
+              idea={idea}
+              pitch={pitch}
+              marketValidation={marketValidation}
+              isPitchLoading={pitchMutation.isPending}
+              isMarketValidationLoading={marketValidationMutation.isPending}
+              isRegeneratingTitles={regenerateTitlesMutation.isPending}
+              isSharing={false}
+              isSaved={isIdeaSaved(idea)}
+              copiedIdeaFormat={
+                copiedFormat === "text" ||
+                copiedFormat === "markdown" ||
+                copiedFormat === "agent-prompt"
+                  ? copiedFormat
+                  : null
+              }
+              isShareLinkCopied={copiedFormat === "link"}
+              generationRateLimit={generationRateLimit}
+              onSelectAlternativeName={(name) => {
+                const next = { ...idea, name }
+                setIdea(next)
+                persist({ idea: next, pitch, marketValidation })
+                toast.success("Startup name swapped", {
+                  description: `${name} is now the active saved idea name.`,
+                })
+              }}
+              onRegenerateTitles={() => regenerateTitlesMutation.mutate(idea)}
+              onGeneratePitch={() => pitchMutation.mutate(idea)}
+              onGenerateMarketValidation={() => marketValidationMutation.mutate(idea)}
+              onCopyText={handleCopyText}
+              onCopyMarkdown={handleCopyMarkdown}
+              onCopyAgentPrompt={handleCopyAgentPrompt}
+              onCopyShareLink={handleCopyShareLink}
+              onOpenSharedView={handleOpenSharedView}
+              onSave={handleSave}
+            />
+          ) : (
+            <AppCard className="space-y-3">
+              <div className="h-12 w-2/3 animate-pulse rounded-lg bg-muted" />
+              <div className="h-4 w-1/2 animate-pulse rounded bg-muted" />
+              <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
+            </AppCard>
+          )}
+        </ScrollReveal>
+      </div>
+    </AppPage>
   )
+}
+
+function SkeletonLine({ className }: { className?: string }) {
+  return <div className={cn("animate-pulse rounded bg-muted", className)} />
 }

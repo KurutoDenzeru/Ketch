@@ -1,5 +1,6 @@
 "use client"
 
+import { cn } from "cn"
 import {
   AlertTriangle,
   BrainCircuit,
@@ -23,14 +24,12 @@ import {
   Select,
   SelectContent,
   SelectItem,
-  SelectItemText,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
 import { getCategoryIcon, getFocusIcon } from "@/lib/category-icons"
-import { cn } from "@/lib/utils"
 import {
   
   
@@ -47,6 +46,10 @@ type IdeaBriefFormProps = {
   onSubmit: () => void
   isLoading: boolean
   generationRateLimit: GenerationRateLimitStatus | null
+  /** Set once an idea exists: the brief is frozen and cannot generate again. */
+  locked?: boolean
+  /** Generation failure to surface inside the card. */
+  errorMessage?: string | null
 }
 
 export function IdeaBriefForm({
@@ -55,6 +58,8 @@ export function IdeaBriefForm({
   onSubmit,
   isLoading,
   generationRateLimit,
+  locked = false,
+  errorMessage = null,
 }: IdeaBriefFormProps) {
   const availableFocuses = categoryFocusOptions[brief.category]
   const ActiveFocusIcon = getFocusIcon(brief.categoryFocus)
@@ -92,6 +97,7 @@ export function IdeaBriefForm({
                 <button
                   key={option}
                   type="button"
+                  disabled={locked}
                   onClick={() =>
                     onChange({
                       category: option,
@@ -99,7 +105,7 @@ export function IdeaBriefForm({
                     })
                   }
                   className={cn(
-                    "inline-flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+                    "inline-flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
                     active
                       ? "border-primary bg-primary text-primary-foreground shadow-xs"
                       : "border-border/60 bg-background/70 text-foreground/80 hover:border-border hover:bg-muted/60"
@@ -124,6 +130,7 @@ export function IdeaBriefForm({
             <Input
               id="concept"
               value={brief.concept}
+              disabled={locked}
               onChange={(event) => onChange({ concept: event.target.value })}
               placeholder="An AI copilot for restaurant hiring, a dev tool for incident reviews, etc."
               className="h-11 rounded-xl"
@@ -137,6 +144,7 @@ export function IdeaBriefForm({
             <Input
               id="audience"
               value={brief.audience}
+              disabled={locked}
               onChange={(event) => onChange({ audience: event.target.value })}
               placeholder="Solo founders, agencies, private clinics, indie devs…"
               className="h-11 rounded-xl"
@@ -152,6 +160,7 @@ export function IdeaBriefForm({
           <Textarea
             id="problem"
             value={brief.problem}
+            disabled={locked}
             onChange={(event) => onChange({ problem: event.target.value })}
             placeholder="What painful workflow, inefficiency, or market frustration should this solve?"
             className="min-h-28 rounded-2xl"
@@ -165,6 +174,7 @@ export function IdeaBriefForm({
           </Label>
           <Select
             value={brief.categoryFocus}
+            disabled={locked}
             onValueChange={(value) => onChange({ categoryFocus: value })}
           >
             <SelectTrigger
@@ -184,7 +194,7 @@ export function IdeaBriefForm({
                 return (
                   <SelectItem key={option} value={option} className="py-2">
                     <OptionIcon className="size-4 text-muted-foreground" aria-hidden="true" />
-                    <SelectItemText>{option}</SelectItemText>
+                    {option}
                   </SelectItem>
                 )
               })}
@@ -212,7 +222,7 @@ export function IdeaBriefForm({
                   key={feature}
                   type="button"
                   onClick={() => toggleFeature(feature)}
-                  disabled={limitReached}
+                  disabled={limitReached || locked}
                   className={cn(
                     "inline-flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-all active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
                     active
@@ -230,25 +240,39 @@ export function IdeaBriefForm({
 
         <Separator />
 
+        {errorMessage ? (
+          <p className="flex items-start gap-2 rounded-2xl border border-destructive/40 bg-destructive/5 p-4 text-sm leading-6 text-destructive">
+            <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+            {errorMessage}
+          </p>
+        ) : null}
+
         <div className="flex flex-wrap items-center justify-between gap-4">
           <GenerationStatus
             generationRateLimit={generationRateLimit}
             isExhausted={isExhausted}
           />
-          <Button
-            type="button"
-            onClick={onSubmit}
-            disabled={!canSubmit}
-            size="lg"
-            className="rounded-full px-5"
-          >
-            {isLoading ? (
-              <LoaderCircle className="animate-spin" />
-            ) : (
-              <Sparkles className="size-4" />
-            )}
-            {concept ? "Evaluate idea" : "Generate idea"}
-          </Button>
+          {locked ? (
+            <p className="inline-flex items-center gap-2 text-xs leading-5 text-muted-foreground">
+              <Check className="size-3.5 text-primary" />
+              Brief locked. Remove the idea to write a new one.
+            </p>
+          ) : (
+            <Button
+              type="button"
+              onClick={onSubmit}
+              disabled={!canSubmit}
+              size="lg"
+              className="rounded-full px-5"
+            >
+              {isLoading ? (
+                <LoaderCircle className="animate-spin" />
+              ) : (
+                <Sparkles className="size-4" />
+              )}
+              {concept ? "Evaluate idea" : "Generate idea"}
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

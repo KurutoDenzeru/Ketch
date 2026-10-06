@@ -1,31 +1,34 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { cn } from "cn"
+import { useEffect, useId, useState } from "react"
 import {
   Area,
-  AreaChart,
   CartesianGrid,
+  ComposedChart,
+  Line,
+  Tooltip as RechartsTooltip,
+  ReferenceLine,
   XAxis,
   YAxis,
 } from "recharts"
-import { LineChart, TrendingDown, TrendingUp } from "lucide-react"
+import { Activity, LineChart, TrendingDown, TrendingUp } from "lucide-react"
 
 import type { StartupIdea } from "@/types/idea"
-import { SectionEyebrow } from "@/components/section-eyebrow"
+import { Panel, PanelHeading } from "@/components/analysis/panel"
 import {
   Select,
   SelectContent,
   SelectItem,
-  SelectItemText,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
 import {
   ChartContainer,
-  ChartTooltip,
+  ChartLegend,
+  ChartLegendContent,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-import { cn } from "@/lib/utils"
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value))
@@ -130,6 +133,9 @@ function buildTicks(maxValue: number) {
   return Array.from({ length: 5 }, (_, index) => Math.round(step * index))
 }
 
+/** Interest is a 0-100 index, so the midpoint reads as "above average". */
+const INTEREST_MIDPOINT = 50
+
 type TrendChartProps = {
   idea: StartupIdea
 }
@@ -218,124 +224,199 @@ export function TrendChart({ idea }: TrendChartProps) {
   const maxVolume = Math.max(...chartData.map((point) => point.volume))
   const upperBound = getAxisUpperBound(maxVolume)
   const ticks = buildTicks(maxVolume)
-
+  const gradientId = `trend-fill-${useId().replace(/:/g, "")}`
   const config = {
-    volume: { label: "Search volume", color: "var(--chart-1)" },
+    volume: { label: "Search volume", icon: Activity, color: "var(--chart-1)" },
+    interest: { label: "Interest index", icon: LineChart, color: "var(--chart-2)" },
   }
 
   return (
-    <div className="rounded-3xl border border-border/60 bg-card/80 p-6 shadow-xs md:p-7">
-      <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="min-w-0 space-y-3">
-          <SectionEyebrow icon={LineChart}>Market timing</SectionEyebrow>
-          <h3 className="font-display text-2xl leading-tight">
-            Search and interest curve
-          </h3>
-          {(
+    <Panel>
+      <div className="p-5 sm:p-6 md:p-7">
+        <PanelHeading
+          icon={LineChart}
+          label="Market timing"
+          title="Search volume against interest"
+          description="Monthly demand for the selected keyword, read against the normalized interest index."
+          action={
             <Select
               value={activeSignal.term}
               onValueChange={setSelectedKeyword}
             >
-              <SelectTrigger className="h-11 w-full min-w-0 max-w-full rounded-2xl border-border/60 bg-background/85 sm:min-w-72">
+              <SelectTrigger className="h-11 w-full min-w-0 max-w-full rounded-xl border-border/60 bg-background/85 sm:min-w-72">
                 <span className="text-muted-foreground">Keyword:</span>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent align="start">
                 {keywordOptions.map((term) => (
                   <SelectItem key={term} value={term}>
-                    <SelectItemText>{formatKeywordLabel(term)}</SelectItemText>
+                    {formatKeywordLabel(term)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-          )}
+          }
+        />
+      </div>
+
+      <div className="grid grid-cols-2 border-t border-border/60">
+        <div className="p-5 md:p-6">
+          <p className="text-[11px] font-medium tracking-[0.18em] text-muted-foreground uppercase">
+            Current volume
+          </p>
+          <p className="mt-1.5 font-display text-3xl leading-none tabular-nums">
+            {latestVolume.toLocaleString()}
+          </p>
         </div>
-        <div className="grid w-full gap-3 sm:grid-cols-2 md:w-auto">
-          <div className="rounded-2xl border border-border/60 bg-background/80 p-4">
-            <p className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
-              Current
-            </p>
-            <p className="mt-1 font-display text-3xl leading-none tabular-nums text-primary">
-              {latestVolume.toLocaleString()}
-            </p>
-          </div>
-          <div className="rounded-2xl border border-border/60 bg-background/80 p-4">
-            <p className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
-              Growth
-            </p>
-            <p
-              className={cn(
-                "mt-1 inline-flex items-center gap-1 font-display text-3xl leading-none tabular-nums",
-                growth >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"
-              )}
-            >
-              {growth >= 0 ? <TrendingUp className="size-4" /> : <TrendingDown className="size-4" />}
-              {growth >= 0 ? "+" : ""}
-              {growth}%
-            </p>
-          </div>
+        <div className="border-l border-border/60 p-5 md:p-6">
+          <p className="text-[11px] font-medium tracking-[0.18em] text-muted-foreground uppercase">
+            Growth
+          </p>
+          <p
+            className={cn(
+              "mt-1.5 inline-flex items-center gap-1.5 font-display text-3xl leading-none tabular-nums",
+              growth >= 0
+                ? "text-emerald-600 dark:text-emerald-400"
+                : "text-amber-600 dark:text-amber-400"
+            )}
+          >
+            {growth >= 0 ? (
+              <TrendingUp className="size-4" aria-hidden="true" />
+            ) : (
+              <TrendingDown className="size-4" aria-hidden="true" />
+            )}
+            {growth >= 0 ? "+" : ""}
+            {growth}%
+          </p>
         </div>
       </div>
 
-      {mounted ? (
-        <ChartContainer config={config} className="!aspect-auto h-72 w-full">
-          <AreaChart data={chartData} margin={{ top: 12, right: 12, left: 0, bottom: 0 }}>
-            <defs>
-              <linearGradient id="trendFill" x1="0" x2="0" y1="0" y2="1">
-                <stop offset="5%" stopColor="var(--color-volume)" stopOpacity={0.32} />
-                <stop offset="95%" stopColor="var(--color-volume)" stopOpacity={0.02} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="label"
-              tickLine={false}
-              axisLine={false}
-              interval={0}
-              minTickGap={0}
-              tickMargin={8}
-              tick={{ fontSize: 11 }}
-            />
-            <YAxis
-              tickLine={false}
-              axisLine={false}
-              width={44}
-              domain={[0, upperBound]}
-              ticks={ticks}
-              tickFormatter={(value: number) =>
-                value >= 1000
-                  ? `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 1)}k`
-                  : `${value}`
-              }
-              tick={{ fontSize: 11 }}
-            />
-            <ChartTooltip
-              cursor={false}
-              content={
-                <ChartTooltipContent
-                  indicator="line"
-                  formatter={(value: unknown) => [
-                    typeof value === "number"
-                      ? value.toLocaleString()
-                      : String(value),
-                    "Search volume",
-                  ]}
-                />
-              }
-            />
-            <Area
-              type="monotone"
-              dataKey="volume"
-              name="Search volume"
-              stroke="var(--color-volume)"
-              fill="url(#trendFill)"
-              strokeWidth={2.5}
-            />
-          </AreaChart>
-        </ChartContainer>
-      ) : (
-        <div className="h-72 w-full rounded-2xl border border-dashed border-border/60 bg-background/50" />
-      )}
-    </div>
+      <div className="p-5 sm:p-6 md:p-7">
+        {mounted ? (
+          <ChartContainer
+            config={config}
+            className="!aspect-auto h-64 w-full sm:h-72 lg:h-80 [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/40"
+          >
+            <ComposedChart
+              data={chartData}
+              margin={{ top: 12, right: 8, left: -12, bottom: 0 }}
+            >
+              <defs>
+                <linearGradient
+                  id={gradientId}
+                  x1="0"
+                  x2="0"
+                  y1="0"
+                  y2="1"
+                >
+                  <stop
+                    offset="5%"
+                    stopColor="var(--color-volume)"
+                    stopOpacity={0.32}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="var(--color-volume)"
+                    stopOpacity={0}
+                  />
+                </linearGradient>
+              </defs>
+              <CartesianGrid vertical={false} strokeDasharray="3 6" />
+              <XAxis
+                dataKey="label"
+                tickLine={false}
+                axisLine={false}
+                interval="preserveStartEnd"
+                minTickGap={12}
+                tickMargin={10}
+                dy={6}
+                tick={{ fontSize: 11 }}
+              />
+              <YAxis
+                yAxisId="volume"
+                tickLine={false}
+                axisLine={false}
+                width={44}
+                domain={[0, upperBound]}
+                ticks={ticks}
+                tickFormatter={(value: number) =>
+                  value >= 1000
+                    ? `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 1)}k`
+                    : `${value}`
+                }
+                tick={{ fontSize: 11 }}
+              />
+              <YAxis
+                yAxisId="interest"
+                orientation="right"
+                hide
+                domain={[0, 100]}
+              />
+              <ReferenceLine
+                yAxisId="interest"
+                y={INTEREST_MIDPOINT}
+                stroke="var(--color-interest)"
+                strokeDasharray="2 6"
+                strokeOpacity={0.55}
+              />
+              <RechartsTooltip
+                cursor={{ stroke: "var(--border)", strokeDasharray: "3 6" }}
+                content={
+                  <ChartTooltipContent
+                    className="rounded-xl border-border/60 bg-popover/95 shadow-md"
+                    indicator="line"
+                    formatter={(value: unknown, name: unknown) => {
+                      const numeric =
+                        typeof value === "number" ? value : Number(value)
+                      return (
+                        <div className="flex w-full items-center justify-between gap-4">
+                          <span className="text-muted-foreground">
+                            {name === "interest"
+                              ? "Interest index"
+                              : "Search volume"}
+                          </span>
+                          <span className="font-mono font-medium tabular-nums">
+                            {name === "interest"
+                              ? `${numeric}`
+                              : numeric.toLocaleString()}
+                          </span>
+                        </div>
+                      )
+                    }}
+                  />
+                }
+              />
+              <ChartLegend content={<ChartLegendContent />} />
+              <Area
+                yAxisId="volume"
+                type="monotone"
+                dataKey="volume"
+                name="volume"
+                stroke="var(--color-volume)"
+                fill={`url(#${gradientId})`}
+                strokeWidth={2}
+                activeDot={{ r: 4 }}
+                isAnimationActive={false}
+              />
+              <Line
+                yAxisId="interest"
+                type="monotone"
+                dataKey="interest"
+                name="interest"
+                stroke="var(--color-interest)"
+                strokeWidth={2}
+                strokeDasharray="5 4"
+                dot={false}
+                activeDot={{ r: 4 }}
+                isAnimationActive={false}
+              />
+            </ComposedChart>
+          </ChartContainer>
+        ) : (
+          <div className="h-64 w-full rounded-2xl border border-dashed border-border/60 bg-background/50 sm:h-72 lg:h-80" />
+        )}
+      </div>
+    </Panel>
   )
 }
+

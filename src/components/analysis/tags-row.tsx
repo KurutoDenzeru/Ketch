@@ -1,7 +1,4 @@
-import { BadgeCheck, Tag } from "lucide-react"
-
-import { Badge } from "@/components/ui/badge"
-import { SectionEyebrow } from "@/components/section-eyebrow"
+import { Tag } from "lucide-react"
 
 type TagsRowProps = {
   tags: Array<string>
@@ -12,20 +9,21 @@ export function TagsRow({ tags }: TagsRowProps) {
     return null
   }
   return (
-    <div className="space-y-3">
-      <SectionEyebrow icon={Tag}>Tags</SectionEyebrow>
-      <div className="flex flex-wrap gap-2">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+      <p className="inline-flex items-center gap-1.5 text-[11px] font-medium tracking-[0.18em] text-muted-foreground uppercase">
+        <Tag className="size-3.5" aria-hidden="true" />
+        Tags
+      </p>
+      <ul className="flex flex-wrap items-center gap-x-2 gap-y-1">
         {tags.map((tag) => (
-          <Badge
+          <li
             key={tag}
-            variant="outline"
-            className="h-auto gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium"
+            className="border-b border-border/70 pb-0.5 text-sm text-foreground/80 transition-colors duration-500 hover:border-primary hover:text-foreground"
           >
-            <BadgeCheck className="size-3.5 text-primary" />
             {tag}
-          </Badge>
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   )
 }

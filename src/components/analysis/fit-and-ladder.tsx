@@ -1,20 +1,27 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Bar, CartesianGrid, BarChart as RechartsBarChart, XAxis, YAxis } from "recharts"
-import { BarChart3, LineChart, Sparkles } from "lucide-react"
+import {
+  Bar,
+  CartesianGrid,
+  PolarAngleAxis,
+  PolarGrid,
+  Radar,
+  RadarChart,
+  BarChart as RechartsBarChart,
+  XAxis,
+  YAxis,
+} from "recharts"
+import { LineChart, Sparkles, TrendingUp } from "lucide-react"
 
 import type { IdeaValueLadderStep, StartupIdea } from "@/types/idea"
-import { Card, CardContent } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { SectionEyebrow } from "@/components/section-eyebrow"
+import { Panel, PanelBody, PanelHeading } from "@/components/analysis/panel"
 import { ScoreRing } from "@/components/score-ring"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-import { cn } from "@/lib/utils"
 
 function clamp(value: number, min: number, max: number) {
   return Math.min(max, Math.max(min, value))
@@ -30,6 +37,9 @@ function getValueEquationLabel(score: number) {
   if (score <= 7) return "Promising"
   return "Strong case"
 }
+
+/** The three framework axes the radar reads, in display order. */
+const fitAxes = ["Audience", "Community", "Product"] as const
 
 type FitAndLadderProps = {
   idea: StartupIdea
@@ -67,89 +77,164 @@ export function FitAndLadder({ idea }: FitAndLadderProps) {
     label: step.label,
   }))
 
+  const fitData = fitAxes.map((axis) => ({
+    axis,
+    fit: temperedFit[axis.toLowerCase() as keyof typeof temperedFit],
+  }))
+
   const [mounted, setMounted] = useState(false)
   useEffect(() => {
     setMounted(true)
   }, [])
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
-      <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
-        <CardContent className="space-y-4 p-6">
-          <SectionEyebrow icon={LineChart}>Framework fit</SectionEyebrow>
-          <div className="space-y-4">
-            {(
-              [
-                ["Audience", temperedFit.audience],
-                ["Community", temperedFit.community],
-                ["Product", temperedFit.product],
-              ] as const
-            ).map(([label, score]) => (
-              <div key={label}>
-                <div className="mb-2 flex items-center justify-between text-sm">
-                  <span>{label}</span>
-                  <span className="font-medium tabular-nums">{score}/10</span>
-                </div>
-                <Progress value={score * 10} className="h-2" />
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
-        <CardContent className="space-y-4 p-6">
-          <div className="flex items-start justify-between gap-4">
-            <SectionEyebrow icon={Sparkles}>Value equation</SectionEyebrow>
-            <span
-              className={cn(
-                "rounded-full px-2.5 py-1 text-[11px] font-semibold tracking-[0.16em] uppercase",
-                valueEquationScore >= 7
-                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200"
-                  : valueEquationScore >= 5
-                    ? "bg-sky-100 text-sky-700 dark:bg-sky-900/40 dark:text-sky-200"
-                    : "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-200"
-              )}
-            >
-              {getValueEquationLabel(valueEquationScore)}
-            </span>
-          </div>
-          <div className="flex items-center justify-center py-2">
-            <ScoreRing value={valueEquationScore} size={140} strokeWidth={12} />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs lg:col-span-2">
-        <CardContent className="space-y-4 p-6">
-          <SectionEyebrow icon={BarChart3}>Value ladder</SectionEyebrow>
+    <div className="grid gap-4 lg:grid-cols-5">
+      <Panel className="lg:col-span-3">
+        <PanelBody className="space-y-6">
+          <PanelHeading
+            icon={LineChart}
+            label="Framework fit"
+            title="Audience, community, and product pull"
+            description="How strongly the concept connects to each side of the value equation. Drag a point to read an axis."
+          />
           {mounted ? (
             <ChartContainer
-              config={{ score: { label: "Value score", color: "var(--chart-1)" } }}
-              className="!aspect-auto h-72 w-full"
+              config={{ fit: { label: "Framework fit", icon: LineChart, color: "var(--chart-1)" } }}
+              className="!aspect-auto mx-auto h-64 w-full max-w-sm sm:h-80 [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border/50"
+            >
+              <RadarChart data={fitData} outerRadius="70%" margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
+                <PolarGrid radialLines={false} />
+                <PolarAngleAxis
+                  dataKey="axis"
+                  tick={{ fontSize: 12, fill: "var(--muted-foreground)" }}
+                />
+                {/* Radius ticks are omitted: at panel width they collide with the shape. */}
+                <ChartTooltip
+                  cursor={false}
+                  content={
+                    <ChartTooltipContent
+                      className="rounded-xl border-border/60 bg-popover/95 shadow-md"
+                      hideLabel={false}
+                      formatter={(value: unknown) => (
+                        <div className="flex w-full items-center justify-between gap-4">
+                          <span className="text-muted-foreground">
+                            Framework fit
+                          </span>
+                          <span className="font-mono font-medium tabular-nums">
+                            {String(value)}/10
+                          </span>
+                        </div>
+                      )}
+                    />
+                  }
+                />
+                <Radar
+                  dataKey="fit"
+                  name="fit"
+                  stroke="var(--color-fit)"
+                  fill="var(--color-fit)"
+                  fillOpacity={0.24}
+                  strokeWidth={2}
+                  dot={{ r: 3 }}
+                  isAnimationActive={false}
+                />
+              </RadarChart>
+            </ChartContainer>
+          ) : (
+            <div className="aspect-square w-full rounded-2xl border border-dashed border-border/60 bg-background/50" />
+          )}
+          <ul className="grid grid-cols-3 gap-3 border-t border-border/60 pt-4">
+            {fitData.map((point) => (
+              <li key={point.axis} className="space-y-1">
+                <p className="text-[11px] font-medium tracking-[0.16em] text-muted-foreground uppercase">
+                  {point.axis}
+                </p>
+                <p className="font-display text-2xl leading-none tabular-nums">
+                  {point.fit}
+                  <span className="text-xs text-muted-foreground">/10</span>
+                </p>
+              </li>
+            ))}
+          </ul>
+        </PanelBody>
+      </Panel>
+
+      <Panel className="flex flex-col justify-between lg:col-span-2">
+        <PanelBody className="space-y-2">
+          <PanelHeading
+            icon={Sparkles}
+            label="Value equation"
+            title="Composite case"
+            description="Validation, product, audience, and community weighted into one read."
+          />
+        </PanelBody>
+        <div className="flex flex-col items-center gap-4 px-6 pb-7">
+          <ScoreRing
+            value={valueEquationScore}
+            size={148}
+            strokeWidth={12}
+            tone={valueEquationScore >= 7 ? "success" : valueEquationScore >= 5 ? "primary" : "warning"}
+          />
+          <span className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+            <TrendingUp className="size-4 text-primary" aria-hidden="true" />
+            {getValueEquationLabel(valueEquationScore)}
+          </span>
+        </div>
+      </Panel>
+
+      <Panel className="lg:col-span-5">
+        <PanelBody className="space-y-5">
+          <PanelHeading
+            icon={TrendingUp}
+            label="Value ladder"
+            title="What unlocks, step by step"
+            description="Each rung is the capability that has to land before the next one compounds."
+          />
+          {mounted ? (
+            <ChartContainer
+              config={{
+                score: { label: "Value score", icon: TrendingUp, color: "var(--chart-2)" },
+              }}
+              className="!aspect-auto h-72 w-full sm:h-80 [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/40"
             >
               <RechartsBarChart
                 data={ladderData}
-                margin={{ top: 12, right: 8, left: 4, bottom: 12 }}
-                barCategoryGap={20}
+                layout="vertical"
+                margin={{ top: 4, right: 40, left: 4, bottom: 4 }}
+                barCategoryGap="32%"
               >
-                <CartesianGrid vertical={false} />
-                <XAxis dataKey="step" tickLine={false} axisLine={false} tickMargin={12} />
-                <YAxis
-                  tickLine={false}
-                  axisLine={false}
-                  width={36}
+                <CartesianGrid horizontal={false} strokeDasharray="3 6" />
+                <XAxis
+                  type="number"
                   domain={[0, 10]}
                   ticks={[0, 2, 4, 6, 8, 10]}
+                  tickLine={false}
+                  axisLine={false}
+                  tickMargin={10}
+                  tick={{ fontSize: 11 }}
+                />
+                <YAxis
+                  type="category"
+                  dataKey="step"
+                  tickLine={false}
+                  axisLine={false}
+                  width={64}
+                  tickMargin={8}
+                  tick={{ fontSize: 11 }}
                 />
                 <ChartTooltip
                   cursor={{ fill: "var(--muted)" }}
                   content={
                     <ChartTooltipContent
-                      formatter={(value, _name, item) => [
-                        `${value}/10`,
-                        item.payload.label ?? "Value score",
-                      ]}
+                      className="rounded-xl border-border/60 bg-popover/95 shadow-md"
+                      formatter={(value) => (
+                        <div className="flex w-full items-center justify-between gap-4">
+                          <span className="text-muted-foreground">Value score</span>
+                          <span className="font-mono font-medium tabular-nums">
+                            {value}/10
+                          </span>
+                        </div>
+                      )}
                       labelFormatter={(_label, payload) =>
                         payload[0].payload.label ?? "Value ladder"
                       }
@@ -157,14 +242,34 @@ export function FitAndLadder({ idea }: FitAndLadderProps) {
                     />
                   }
                 />
-                <Bar dataKey="score" fill="var(--color-score)" radius={[18, 18, 6, 6]} />
+                <Bar
+                  dataKey="score"
+                  fill="var(--color-score)"
+                  radius={[0, 6, 6, 0]}
+                  isAnimationActive={false}
+                />
               </RechartsBarChart>
             </ChartContainer>
           ) : (
-            <div className="h-72 w-full rounded-2xl border border-dashed border-border/60 bg-background/50" />
+            <div className="h-72 w-full rounded-2xl border border-dashed border-border/60 bg-background/50 sm:h-80" />
           )}
-        </CardContent>
-      </Card>
+          <ol className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {temperedLadder.map((step, index) => (
+              <li
+                key={`${step.label}-${index}`}
+                className="flex items-baseline gap-2.5 border-l border-border/70 pl-3"
+              >
+                <span className="text-[11px] font-medium tracking-[0.18em] text-muted-foreground uppercase tabular-nums">
+                  {index + 1}
+                </span>
+                <span className="min-w-0 text-sm leading-6 text-foreground/85 text-pretty">
+                  {step.label}
+                </span>
+              </li>
+            ))}
+          </ol>
+        </PanelBody>
+      </Panel>
     </div>
   )
 }

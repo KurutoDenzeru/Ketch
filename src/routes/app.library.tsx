@@ -1,10 +1,13 @@
 "use client"
 
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router"
+import { cn } from "cn"
 import { useEffect, useMemo, useState } from "react"
 import {
+  ArrowUpDown,
   Bookmark,
   ChevronRight,
+  Download,
   Eye,
   Globe,
   Search,
@@ -16,14 +19,23 @@ import {
 import { toast } from "sonner"
 
 import type { IdeaCategory, SavedIdea, ShareableIdeaPayload } from "@/types/idea"
+
+import { AppMasthead, AppPage } from "@/components/app/app-chrome"
 import { EmptyState } from "@/components/empty-state"
-import { RevealOnScroll } from "@/components/reveal-on-scroll"
-import { SectionHeader } from "@/components/section-header"
+import { Faq } from "@/components/faq"
+import { ScrollReveal } from "@/components/motion/scroll-reveal"
+import { StaggerGroup, StaggerItem } from "@/components/motion/stagger"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { getCategoryIcon } from "@/lib/category-icons"
 import {
   getRecentSharedIdeas,
@@ -35,7 +47,6 @@ import { getSharedLinks, removeSharedLink } from "@/lib/shared-links"
 import { recordActivity } from "@/lib/activity-log"
 import { exportIdeasAsJson, exportIdeasAsMarkdown, exportIdeasAsText } from "@/lib/data-export"
 import { buildSeoHead } from "@/lib/seo"
-import { cn } from "@/lib/utils"
 
 export const Route = createFileRoute("/app/library")({
   head: () =>
@@ -206,7 +217,7 @@ function LibraryPage() {
     const payload = items.saved.map((item) => {
       const found = snapshot.saved.find((saved) => saved.id === item.id)
       if (found) return found
-      return { ...item.payload, id: item.id, createdAt: item.createdAt } as SavedIdea
+      return { ...item.payload, id: item.id, createdAt: item.createdAt }
     })
     const text =
       format === "json"
@@ -227,19 +238,17 @@ function LibraryPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 md:px-6 md:py-12">
-      <header className="flex flex-col gap-6">
-        <SectionHeader
-          eyebrow="Library"
-          title={
-            <>
-              Every idea you've
-              <span className="italic text-primary"> kept nearby.</span>
-            </>
-          }
-          description="Saved concepts, share links you've created, and shared ideas you've opened — all in one place."
-        />
-        <div className="flex flex-wrap items-center justify-between gap-3">
+    <AppPage>
+      <AppMasthead
+        eyebrow="Library"
+        title="Every idea you have"
+        accent="kept nearby."
+        description="Saved concepts, share links you created, and shared ideas you opened. All of it stays in this browser until you export it."
+        art="loop"
+      />
+
+      <div className="sticky top-20 z-20 mt-8 rounded-2xl border border-border/60 bg-card/70 px-4 py-3 shadow-sm backdrop-blur-xl md:top-24 md:mt-10">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <Tabs
             value={tab}
             onValueChange={(value) => setTab(value as LibraryTab)}
@@ -251,86 +260,126 @@ function LibraryPage() {
               <TabTrigger value="recent" icon={Eye} label="Recently viewed" count={items.recent.length} />
             </TabsList>
           </Tabs>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <div className="relative w-full sm:w-64">
+              <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={`Filter ${tabLabel(tab)} ideas`}
+                className="h-10 rounded-full bg-background/80 pl-9"
+                aria-label={`Filter ${tabLabel(tab)} ideas`}
+              />
+              {query ? (
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  aria-label="Clear filter"
+                >
+                  <X className="size-4" />
+                </button>
+              ) : null}
+            </div>
+
+            <Select
+              value={sort}
+              onValueChange={(value) => setSort(value as typeof sort)}
+            >
+              <SelectTrigger
+                aria-label="Sort ideas"
+                className="h-9 w-full rounded-full border-border/60 bg-background/80 text-sm sm:w-44"
+              >
+                <ArrowUpDown className="size-3.5 text-muted-foreground" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent align="end">
+                <SelectItem value="newest">Newest first</SelectItem>
+                <SelectItem value="oldest">Oldest first</SelectItem>
+                <SelectItem value="score">Highest score</SelectItem>
+                <SelectItem value="name">Name</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3 border-t border-border/60 pt-3">
+          <p className="text-xs text-muted-foreground">
+            <span className="font-display text-sm text-foreground tabular-nums">
+              {hydrated ? filtered.length : 0}
+            </span>{" "}
+            {hydrated
+              ? tab === "shared"
+                ? filtered.length === 1
+                  ? "public link you created"
+                  : "public links you created"
+                : tab === "recent"
+                  ? filtered.length === 1
+                    ? "shared idea you opened"
+                    : "shared ideas you opened"
+                  : filtered.length === 1
+                    ? "saved idea"
+                    : "saved ideas"
+              : "reading local storage"}
+          </p>
           <div className="flex flex-wrap items-center gap-2">
             <Button
               type="button"
               variant="outline"
+              size="sm"
               className="rounded-full"
               onClick={() => handleExport("json")}
             >
+              <Download className="size-4" />
               Export JSON
             </Button>
             <Button
               type="button"
               variant="ghost"
+              size="sm"
               className="rounded-full"
               onClick={() => handleExport("markdown")}
             >
+              <Download className="size-4" />
               Export Markdown
             </Button>
           </div>
         </div>
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div className="relative w-full sm:max-w-sm">
-            <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={`Filter ${tabLabel(tab)} ideas…`}
-              className="h-10 rounded-full pl-9"
-              aria-label={`Filter ${tabLabel(tab)} ideas`}
-            />
-            {query ? (
-              <button
-                type="button"
-                onClick={() => setQuery("")}
-                className="absolute top-1/2 right-3 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                aria-label="Clear filter"
-              >
-                <X className="size-4" />
-              </button>
-            ) : null}
-          </div>
-          <div className="flex items-center gap-2 text-xs">
-            <span className="font-semibold tracking-[0.16em] text-muted-foreground uppercase">
-              Sort
-            </span>
-            <select
-              value={sort}
-              onChange={(event) => setSort(event.target.value as typeof sort)}
-              className="h-9 rounded-full border border-border/60 bg-background/80 px-3 text-sm"
-              aria-label="Sort"
-            >
-              <option value="newest">Newest</option>
-              <option value="oldest">Oldest</option>
-              <option value="score">Score</option>
-              <option value="name">Name</option>
-            </select>
-          </div>
-        </div>
-      </header>
+      </div>
 
-      {!hydrated ? (
-        <LibrarySkeleton />
-      ) : filtered.length === 0 ? (
-        <LibraryEmpty
-          tab={tab}
-          onCreate={() => navigate({ to: "/app/new" })}
-        />
-      ) : (
-        <div className="space-y-3">
-          {filtered.map((item) => (
-            <RevealOnScroll key={`${item.source}-${item.id}`}>
-              <LibraryRow
-                item={item}
-                onOpen={() => handleSelect(item)}
-                onDelete={() => handleDelete(item)}
-              />
-            </RevealOnScroll>
-          ))}
-        </div>
-      )}
-    </div>
+      <div className="mt-8">
+        {!hydrated ? (
+          <LibrarySkeleton />
+        ) : filtered.length === 0 ? (
+          <LibraryEmpty
+            tab={tab}
+            onCreate={() => navigate({ to: "/app/new" })}
+          />
+        ) : (
+          <ScrollReveal>
+          <StaggerGroup className="grid items-stretch gap-3 sm:grid-cols-2 md:grid-flow-dense lg:grid-cols-2 xl:grid-cols-3">
+              {filtered.map((item) => (
+                <StaggerItem
+                  key={`${item.source}-${item.id}`}
+                  className="h-full"
+                >
+                  <LibraryRow
+                    item={item}
+                    onOpen={() => handleSelect(item)}
+                    onDelete={() => handleDelete(item)}
+                  />
+                </StaggerItem>
+              ))}
+            </StaggerGroup>
+          </ScrollReveal>
+        )}
+      </div>
+
+      <div className="mt-16 md:mt-20">
+        <Faq />
+      </div>
+    </AppPage>
   )
 }
 
@@ -339,6 +388,13 @@ function tabLabel(tab: LibraryTab) {
   if (tab === "shared") return "shared"
   return "recent"
 }
+
+const sourceLabel: Record<LibraryItem["source"], string> = {
+  saved: "Saved locally",
+  "shared-link": "Public link",
+  "recent-view": "Opened",
+}
+
 
 type TabTriggerProps = {
   value: LibraryTab
@@ -351,7 +407,7 @@ function TabTrigger({ value, icon: Icon, label, count }: TabTriggerProps) {
   return (
     <TabsTrigger
       value={value}
-      className="inline-flex h-9 items-center gap-2 rounded-full px-3.5 text-sm font-medium data-active:bg-primary data-active:text-primary-foreground"
+      className="inline-flex h-9 items-center gap-2 rounded-full px-3.5 text-sm font-medium data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
     >
       <Icon className="size-4" />
       {label}
@@ -371,65 +427,75 @@ type LibraryRowProps = {
 function LibraryRow({ item, onOpen, onDelete }: LibraryRowProps) {
   const Icon = getCategoryIcon(item.category)
   return (
-    <Card className="group rounded-2xl border border-border/60 bg-card/80 py-0 shadow-xs transition-shadow hover:shadow-xs">
-      <CardContent className="flex flex-wrap items-center gap-4 p-4 sm:p-5">
-        <button
-          type="button"
-          onClick={onOpen}
-          className="flex flex-1 items-center gap-4 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
-        >
-          <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl border border-border/60 bg-muted/40 text-primary">
+    <div className="group flex h-full flex-col overflow-hidden rounded-2xl border border-border/60 bg-card/70 shadow-sm transition-all duration-500 ease-out hover:-translate-y-0.5 hover:border-foreground/20 hover:shadow-md">
+      <button
+        type="button"
+        onClick={onOpen}
+        className="flex flex-1 flex-col gap-4 p-5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      >
+        <div className="flex items-start justify-between gap-3">
+          <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-2xl border border-border/60 bg-muted/40 text-primary transition-transform duration-700 ease-out group-hover:scale-105">
             <Icon className="size-5" aria-hidden="true" />
           </span>
-          <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-2">
-              <h3 className="font-display text-lg leading-tight">
-                {item.name}
-              </h3>
-              <ScoreChip score={item.validationScore} />
-              <span className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
-                {item.category}
-              </span>
-            </div>
-            <p className="mt-1 line-clamp-2 max-w-3xl text-sm text-muted-foreground">
-              {item.tagline}
-            </p>
-            <p
-              className="mt-2 text-[11px] tracking-[0.16em] text-muted-foreground uppercase"
-              suppressHydrationWarning
-            >
-              {item.source === "saved" ? "Saved" : item.source === "shared-link" ? "Shared link" : "Viewed"}{" "}
-              · {new Date(item.createdAt).toLocaleString()}
-              {item.source === "shared-link" && typeof item.views === "number"
-                ? ` · ${item.views} view${item.views === 1 ? "" : "s"}`
-                : ""}
-            </p>
-          </div>
-        </button>
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Open"
-            onClick={onOpen}
-            className="rounded-full"
-          >
-            <ChevronRight className="size-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Remove"
-            onClick={onDelete}
-            className="rounded-full text-muted-foreground hover:text-destructive"
-          >
-            <Trash2 className="size-4" />
-          </Button>
+          <ScoreChip score={item.validationScore} />
         </div>
-      </CardContent>
-    </Card>
+
+        <div className="min-w-0 flex-1 space-y-2">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <h3 className="font-display text-lg leading-tight text-balance">
+              {item.name}
+            </h3>
+            <span className="text-[11px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+              {item.category}
+            </span>
+          </div>
+          <p className="line-clamp-3 text-sm leading-6 text-muted-foreground text-pretty">
+            {item.tagline}
+          </p>
+        </div>
+
+        <div className="flex items-center justify-between gap-3 border-t border-border/60 pt-3">
+          <p
+            className="text-[11px] tracking-[0.16em] text-muted-foreground uppercase"
+            suppressHydrationWarning
+          >
+            {sourceLabel[item.source]} ·{" "}
+            <span className="tabular-nums">
+              {new Date(item.createdAt).toLocaleString()}
+            </span>
+            {item.source === "shared-link" && typeof item.views === "number"
+              ? ` · ${item.views} view${item.views === 1 ? "" : "s"}`
+              : ""}
+          </p>
+          <ChevronRight
+            className="size-4 shrink-0 text-muted-foreground transition-transform duration-500 ease-out group-hover:translate-x-0.5 group-hover:text-foreground"
+            aria-hidden="true"
+          />
+        </div>
+      </button>
+
+      <div className="flex items-center justify-end gap-1 border-t border-border/60 px-3 py-2">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={onOpen}
+          className="rounded-full"
+        >
+          {item.source === "saved" ? "Open idea" : "Open link"}
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Remove"
+          onClick={onDelete}
+          className="rounded-full text-muted-foreground hover:text-destructive"
+        >
+          <Trash2 className="size-4" />
+        </Button>
+      </div>
+    </div>
   )
 }
 
@@ -498,17 +564,23 @@ function LibraryEmpty({ tab, onCreate }: { tab: LibraryTab; onCreate: () => void
 
 function LibrarySkeleton() {
   return (
-    <div className="space-y-3">
-      {Array.from({ length: 4 }).map((_, i) => (
-        <Card key={i} className="rounded-2xl border border-border/60 bg-card/80 py-0 shadow-xs">
-          <CardContent className="flex items-center gap-4 p-5">
+    <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div
+          key={i}
+          className="flex flex-col gap-4 rounded-2xl border border-border/60 bg-card/70 p-5 shadow-sm"
+        >
+          <div className="flex items-start justify-between gap-3">
             <Skeleton className="size-11 rounded-2xl" />
-            <div className="flex-1 space-y-2">
-              <Skeleton className="h-4 w-1/3" />
-              <Skeleton className="h-3 w-2/3" />
-            </div>
-          </CardContent>
-        </Card>
+            <Skeleton className="h-6 w-16 rounded-full" />
+          </div>
+          <div className="space-y-2">
+            <Skeleton className="h-5 w-2/3" />
+            <Skeleton className="h-3 w-full" />
+            <Skeleton className="h-3 w-4/5" />
+          </div>
+          <Skeleton className="h-3 w-1/2" />
+        </div>
       ))}
     </div>
   )

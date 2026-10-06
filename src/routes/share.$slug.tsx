@@ -12,10 +12,10 @@ import type {
   StartupIdea,
   StartupPitch,
 } from "@/types/idea"
+import { Container } from "@/components/container"
 import { IdeaCard } from "@/components/idea-card"
-import { SectionEyebrow } from "@/components/section-eyebrow"
+import { ScrollReveal } from "@/components/motion/scroll-reveal"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   buildIdeaShareUrl,
@@ -231,104 +231,128 @@ function SharedIdeaRoute() {
 
   if (!hydrated) {
     return (
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 px-4 py-12 md:px-6">
-        <Card className="rounded-3xl border border-border/60 bg-card/80 py-0 shadow-xs">
-          <CardContent className="space-y-3 p-6">
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-12 w-2/3" />
-            <Skeleton className="h-4 w-1/2" />
-          </CardContent>
-        </Card>
-      </div>
+      <Container width="narrow" innerClassName="py-20 md:py-28">
+        <div className="space-y-6">
+          <Skeleton className="h-3 w-32" />
+          <Skeleton className="h-16 w-3/4" />
+          <Skeleton className="h-5 w-1/2" />
+        </div>
+      </Container>
     )
   }
 
   if (!currentPayload || !idea) {
     return (
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-16 md:px-6">
-        <Card className="rounded-3xl border border-dashed border-border/60 bg-card/80 py-0">
-          <CardContent className="space-y-4 p-8 text-center">
-            <SectionEyebrow icon={Globe}>Shared idea</SectionEyebrow>
-            <h1 className="font-display text-3xl leading-tight">
-              No shared idea here.
-            </h1>
+      <Container width="narrow" innerClassName="gap-8 py-20 md:py-28">
+        <header className="space-y-5">
+          <h1 className="max-w-[14ch] font-display text-[clamp(2.25rem,5.5vw,3.75rem)] leading-[1.02] tracking-[-0.03em] text-balance">
+            No shared idea here.
+          </h1>
+          <p className="max-w-xl text-lg leading-8 text-muted-foreground text-pretty">
+            This link may have been revoked, or you may be on a different
+            device. Open a shared link once and {brand.name} will keep the
+            latest snapshot available offline.
+          </p>
+          {recent ? (
             <p className="text-sm text-muted-foreground">
-              This link may have been revoked, or you may be on a different
-              device. Open a shared link once and {brand.name} will keep the
-              latest snapshot available offline.
+              Last opened here:{" "}
+              <strong className="font-medium text-foreground">
+                {recent.payload.idea.name}
+              </strong>
             </p>
-            {recent ? (
-              <p className="text-xs text-muted-foreground">
-                Last opened here: <strong>{recent.payload.idea.name}</strong>
-              </p>
-            ) : null}
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              <Button onClick={() => navigate({ to: "/app/new" })} className="rounded-full">
-                <Compass className="size-4" />
-                Open the lab
-              </Button>
-              <Button
-                onClick={() => navigate({ to: "/app/library" })}
-                variant="outline"
-                className="rounded-full"
-              >
-                <Bookmark className="size-4" />
-                View library
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          ) : null}
+        </header>
+        <div className="flex flex-wrap items-center gap-3 border-t border-border/60 pt-8">
+          <Button onClick={() => navigate({ to: "/app/new" })}>
+            <Compass className="size-4" aria-hidden="true" />
+            Open the lab
+          </Button>
+          <Button
+            onClick={() => navigate({ to: "/app/library" })}
+            variant="outline"
+          >
+            <Bookmark className="size-4" aria-hidden="true" />
+            View library
+          </Button>
+        </div>
+      </Container>
     )
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 px-4 py-8 md:px-6 md:py-10">
-      <header className="flex flex-col gap-3">
-        <SectionEyebrow icon={Globe}>Shared snapshot</SectionEyebrow>
-        <h1 className="font-display text-3xl leading-tight sm:text-4xl">
-          A shared startup idea.
-        </h1>
-        <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-          Anyone with this link can review the full memo. Save it locally,
-          refresh the pitch, or generate a tighter market validation pass.
-        </p>
-      </header>
+    <Container width="wide" as="article" innerClassName="py-16 md:py-24">
+        <header className="space-y-8">
+          <div className="flex flex-wrap items-center justify-between gap-4 text-sm text-muted-foreground">
+            <span className="inline-flex items-center gap-2">
+              <Globe className="size-4 text-primary" aria-hidden="true" />
+              Shared snapshot
+            </span>
+            <span className="inline-flex items-baseline gap-2">
+              <span className="font-display text-2xl leading-none font-semibold tabular-nums text-foreground">
+                {idea.validationScore}
+              </span>
+              <span className="tabular-nums">/10 validation</span>
+            </span>
+          </div>
 
-      <IdeaCard
-        idea={idea}
-        pitch={pitch}
-        marketValidation={marketValidation}
-        isPitchLoading={pitchMutation.isPending}
-        isMarketValidationLoading={marketValidationMutation.isPending}
-        isRegeneratingTitles={regenerateTitlesMutation.isPending}
-        isSharing={false}
-        isSaved={isIdeaSaved(idea)}
-        copiedIdeaFormat={
-          copiedFormat === "text" ||
-          copiedFormat === "markdown" ||
-          copiedFormat === "agent-prompt"
-            ? copiedFormat
-            : null
-        }
-        isShareLinkCopied={copiedFormat === "link"}
-        generationRateLimit={generationRateLimit}
-        onSelectAlternativeName={(name) => {
-          setIdea((current) => (current ? { ...current, name } : current))
-          toast.success("Startup name swapped", {
-            description: `${name} is now the active concept name.`,
-          })
-        }}
-        onRegenerateTitles={() => regenerateTitlesMutation.mutate(idea)}
-        onGeneratePitch={() => pitchMutation.mutate(idea)}
-        onGenerateMarketValidation={() => marketValidationMutation.mutate(idea)}
-        onCopyText={handleCopyText}
-        onCopyMarkdown={handleCopyMarkdown}
-        onCopyAgentPrompt={handleCopyAgentPrompt}
-        onCopyShareLink={handleCopyShareLink}
-        onOpenSharedView={handleOpenSharedView}
-        onSave={handleSave}
-      />
-    </div>
+          <div className="space-y-6">
+          <h1 className="max-w-[16ch] font-display text-[clamp(2.25rem,6vw,4.5rem)] leading-[1.02] tracking-[-0.035em] text-balance">
+              {idea.name}
+            </h1>
+            <p className="max-w-2xl font-display text-lg leading-relaxed text-muted-foreground italic text-pretty sm:text-xl">
+              {idea.tagline}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-border/60 pt-6 text-sm text-muted-foreground">
+            <span>{idea.category}</span>
+            <span className="tabular-nums">
+              Validation score {idea.validationScore} of 10
+            </span>
+            <span className="text-pretty">
+              {idea.audience.slice(0, 80)}
+              {idea.audience.length > 80 ? "…" : ""}
+            </span>
+          </div>
+        </header>
+
+        <ScrollReveal className="mt-12 md:mt-16">
+          <IdeaCard
+            variant="report"
+            idea={idea}
+            pitch={pitch}
+            marketValidation={marketValidation}
+            isPitchLoading={pitchMutation.isPending}
+            isMarketValidationLoading={marketValidationMutation.isPending}
+            isRegeneratingTitles={regenerateTitlesMutation.isPending}
+            isSharing={false}
+            isSaved={isIdeaSaved(idea)}
+            copiedIdeaFormat={
+              copiedFormat === "text" ||
+              copiedFormat === "markdown" ||
+              copiedFormat === "agent-prompt"
+                ? copiedFormat
+                : null
+            }
+            isShareLinkCopied={copiedFormat === "link"}
+            generationRateLimit={generationRateLimit}
+            onSelectAlternativeName={(name) => {
+              setIdea((current) => (current ? { ...current, name } : current))
+              toast.success("Startup name swapped", {
+                description: `${name} is now the active concept name.`,
+              })
+            }}
+            onRegenerateTitles={() => regenerateTitlesMutation.mutate(idea)}
+            onGeneratePitch={() => pitchMutation.mutate(idea)}
+            onGenerateMarketValidation={() => marketValidationMutation.mutate(idea)}
+            onCopyText={handleCopyText}
+            onCopyMarkdown={handleCopyMarkdown}
+            onCopyAgentPrompt={handleCopyAgentPrompt}
+            onCopyShareLink={handleCopyShareLink}
+            onOpenSharedView={handleOpenSharedView}
+            onSave={handleSave}
+          />
+        </ScrollReveal>
+      </Container>
   )
 }

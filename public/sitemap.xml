@@ -4,12 +4,12 @@
     <loc>https://ketch.krtclcdy.workers.dev/</loc>
   </url>
   <url>
-    <loc>https://ketch.krtclcdy.workers.dev/saved</loc>
+    <loc>https://ketch.krtclcdy.workers.dev/app/new</loc>
   </url>
   <url>
-    <loc>https://ketch.krtclcdy.workers.dev/shared</loc>
+    <loc>https://ketch.krtclcdy.workers.dev/app/library</loc>
   </url>
   <url>
-    <loc>https://ketch.krtclcdy.workers.dev/idea</loc>
+    <loc>https://ketch.krtclcdy.workers.dev/app/settings</loc>
   </url>
 </urlset>

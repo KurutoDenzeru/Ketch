@@ -1,4 +1,5 @@
-import { cn } from "@/lib/utils"
+import { cn } from "cn"
+import { useEffect, useState } from "react"
 
 type ScoreRingProps = {
   value: number
@@ -10,7 +11,10 @@ type ScoreRingProps = {
   className?: string
 }
 
-const toneMap: Record<NonNullable<ScoreRingProps["tone"]>, { stroke: string; text: string }> = {
+const toneMap: Record<
+  NonNullable<ScoreRingProps["tone"]>,
+  { stroke: string; text: string }
+> = {
   primary: {
     stroke: "stroke-primary",
     text: "text-foreground",
@@ -43,15 +47,24 @@ export function ScoreRing({
   className,
 }: ScoreRingProps) {
   const safeValue = Math.max(0, Math.min(value, max))
-  const ratio = safeValue / max
+  const ratio = max > 0 ? safeValue / max : 0
   const radius = (size - strokeWidth) / 2
   const circumference = 2 * Math.PI * radius
-  const offset = circumference * (1 - ratio)
+  const targetOffset = circumference * (1 - ratio)
   const palette = toneMap[tone]
+
+  // Server renders the empty track; the arc sweeps in after mount.
+  const [drawn, setDrawn] = useState(false)
+  useEffect(() => {
+    setDrawn(true)
+  }, [])
 
   return (
     <div
-      className={cn("relative inline-flex items-center justify-center", className)}
+      className={cn(
+        "relative inline-flex shrink-0 items-center justify-center",
+        className
+      )}
       style={{ width: size, height: size }}
       role="img"
       aria-label={label ?? `Score ${safeValue} of ${max}`}
@@ -69,7 +82,7 @@ export function ScoreRing({
           r={radius}
           fill="none"
           strokeWidth={strokeWidth}
-          className="stroke-border/70"
+          className="stroke-border/60"
         />
         <circle
           cx={size / 2}
@@ -79,18 +92,24 @@ export function ScoreRing({
           strokeWidth={strokeWidth}
           strokeLinecap="round"
           strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          className={cn("transition-all duration-700 ease-out", palette.stroke)}
+          strokeDashoffset={drawn ? targetOffset : circumference}
+          className={cn(
+            "transition-[stroke-dashoffset] duration-1000 ease-out motion-reduce:transition-none",
+            palette.stroke
+          )}
         />
       </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5">
         <span
-          className={cn("font-display leading-none tabular-nums", palette.text)}
+          className={cn(
+            "font-display leading-none font-semibold tabular-nums",
+            palette.text
+          )}
           style={{ fontSize: size * 0.34 }}
         >
           {Math.round(safeValue)}
         </span>
-        <span className="text-[10px] font-semibold tracking-[0.18em] text-muted-foreground uppercase">
+        <span className="text-[10px] font-medium tracking-[0.18em] text-muted-foreground uppercase tabular-nums">
           {max === 10 ? "/ 10" : `/ ${max}`}
         </span>
       </div>
